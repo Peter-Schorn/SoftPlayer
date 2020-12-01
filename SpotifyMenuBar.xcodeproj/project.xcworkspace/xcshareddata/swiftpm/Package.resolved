@@ -1,0 +1,43 @@
+{
+  "object": {
+    "pins": [
+      {
+        "package": "KeychainAccess",
+        "repositoryURL": "https://github.com/kishikawakatsumi/KeychainAccess",
+        "state": {
+          "branch": null,
+          "revision": "654d52d30f3dd4592e944c3e0bccb53178c992f6",
+          "version": "4.2.1"
+        }
+      },
+      {
+        "package": "RegularExpressions",
+        "repositoryURL": "https://github.com/Peter-Schorn/RegularExpressions.git",
+        "state": {
+          "branch": null,
+          "revision": "22ba1cc5aa92ffc093151ced2751886bc07fd9d6",
+          "version": "2.1.2"
+        }
+      },
+      {
+        "package": "SpotifyAPI",
+        "repositoryURL": "https://github.com/Peter-Schorn/SpotifyAPI",
+        "state": {
+          "branch": null,
+          "revision": "f31de547c1f2bf5c7d403f3bcbb0d1dca672b8d5",
+          "version": "1.1.2"
+        }
+      },
+      {
+        "package": "swift-log",
+        "repositoryURL": "https://github.com/apple/swift-log",
+        "state": {
+          "branch": null,
+          "revision": "173f567a2dfec11d74588eea82cecea555bdc0bc",
+          "version": "1.4.0"
+        }
+      }
+    ]
+  },
+  "version": 1
+}
