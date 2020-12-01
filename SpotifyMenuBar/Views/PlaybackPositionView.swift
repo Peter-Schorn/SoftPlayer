@@ -28,7 +28,7 @@ struct PlaybackPositionView: View {
                 isDragging: $isDragging,
                 range: 0...duration,
                 knobDiameter: 10,
-                leadingRectangleColor: .gray,
+                leadingRectangleColor: Color.gray,
                 onEnded: { _ in self.updatePlaybackPosition() }
             )
             .padding(.bottom, 5)
@@ -40,9 +40,8 @@ struct PlaybackPositionView: View {
                 Text(formattedDuration)
                     .font(.caption)
             }
+            .padding(.horizontal, 5)
         }
-        .padding(.horizontal, 10)
-//        .padding(.bottom, 5)
         .onReceive(timer) { _ in
             if self.isDragging ||
                     playerManager.player.playerState != .playing {

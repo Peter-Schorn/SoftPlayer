@@ -26,7 +26,9 @@ struct PlayerControlsView: View {
         VStack(spacing: 0) {
             
             PlaybackPositionView()
+                .padding(.horizontal, 10)
             
+            // MARK: - Main Player Controls -
             HStack(spacing: 17) {
             
                     // MARK: Shuffle
@@ -129,7 +131,7 @@ struct PlayerControlsView: View {
             .padding(.horizontal, 10)
             
             // MARK: Sound Volume
-            HStack {
+            HStack(spacing: 0) {
                 Image(systemName: "speaker.fill")
                 PlayerPositionSliderView(
                     value: $playerManager.soundVolume,
@@ -140,7 +142,7 @@ struct PlayerControlsView: View {
                 )
                 Image(systemName: "speaker.wave.3.fill")
             }
-            .padding(.horizontal, 10)
+            .padding(.horizontal, 15)
             .frame(height: 30)
             .frame(maxWidth: .infinity)
             .padding(.top, 5)
