@@ -11,27 +11,27 @@ struct PlayerView: View {
     var track: SpotifyTrack? { playerManager.currentTrack }
     
     var body: some View {
-        VStack {
+        VStack(spacing: 5) {
             playerManager.artworkImage
                 .resizable()
                 .frame(
                     width: CGFloat(AppDelegate.popoverWidth),
                     height: CGFloat(AppDelegate.popoverWidth)
                 )
+                .padding(.bottom, 5)
             
-            Group {
+            VStack(spacing: 5) {
                 Text(track?.name ?? "")
                     .fontWeight(.semibold)
                     .multilineTextAlignment(.center)
                     .lineLimit(2)
-                    .frame(height: 40)
                 
                 Text(albumArtistTitle ?? "")
-                    .foregroundColor(Color.primary.opacity(0.9))
                     .lineLimit(1)
-                    .padding(.bottom, -1)
+                    .foregroundColor(Color.primary.opacity(0.9))
             }
-            .padding(.horizontal, 10)
+            .padding(.horizontal, 8)
+            .frame(height: 60)
             
             PlayerControlsView()
             Spacer()
