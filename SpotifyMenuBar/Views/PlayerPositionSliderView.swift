@@ -39,21 +39,26 @@ struct PlayerPositionSliderView: View {
         GeometryReader { geometry in
             ZStack {
                 HStack(spacing: 0) {
+                    // MARK: Leading Rectangle
                     Capsule()
                         .fill(leadingRectangleColor)
+                        .brightness(-0.1)
                         .frame(
                             width: leadingRectangleWidth(geometry),
                             height: sliderHeight
                         )
+                    // MARK: Trailing Rectangle
                     Capsule()
                         .fill(Color.gray.opacity(0.3))
                         .frame(height: sliderHeight)
                 }
                 HStack(spacing: 0) {
+                    // MARK: Knob
                     Circle()
                         .fill(Color.white)
                         .frame(width: knobDiameter)
                         .scaleEffect(isDragging ? 1.3 : 1)
+                        .shadow(radius: 5)
                         .transition(knobTransition)
                         .offset(x: knobOffset(geometry))
                         .gesture(knobDragGesture(geometry))
@@ -61,10 +66,10 @@ struct PlayerPositionSliderView: View {
                 }
             }
             .contentShape(Rectangle())
-//            .background(Color.blue.opacity(0.2))
             .gesture(knobPositionDragGesture(geometry))
         }
         .frame(height: knobDiameter + 7)
+        .padding(.horizontal, 5)
 
     }
     
