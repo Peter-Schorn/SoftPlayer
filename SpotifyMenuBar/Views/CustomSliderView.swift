@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct PlayerPositionSliderView: View {
+struct CustomSliderView: View {
     
     @Binding var value: CGFloat
     @Binding var isDragging: Bool
@@ -42,6 +42,7 @@ struct PlayerPositionSliderView: View {
                     // MARK: Leading Rectangle
                     Capsule()
                         .fill(leadingRectangleColor)
+                        // MARK: FIXME: remove brightness modifier
                         .brightness(-0.1)
                         .frame(
                             width: leadingRectangleWidth(geometry),
