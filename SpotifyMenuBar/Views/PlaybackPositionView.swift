@@ -8,7 +8,7 @@ struct PlaybackPositionView: View {
     
     @State private var isDragging = false
     
-    let timerStep: Double
+    let timerInterval: Double
     let timer: Publishers.Autoconnect<Timer.TimerPublisher>
     
     var duration: CGFloat {
@@ -16,19 +16,19 @@ struct PlaybackPositionView: View {
     }
     
     init() {
-        self.timerStep = 0.5
+        self.timerInterval = 0.5
         self.timer = Timer.publish(every: 0.5, on: .main, in: .common)
             .autoconnect()
     }
     
     var body: some View {
         VStack(spacing: -5) {
-            PlayerPositionSliderView(
+            CustomSliderView(
                 value: $playerManager.playerPosition,
                 isDragging: $isDragging,
                 range: 0...duration,
                 knobDiameter: 10,
-                leadingRectangleColor: Color.gray,
+                leadingRectangleColor: .gray,
                 onEnded: { _ in self.updatePlaybackPosition() }
             )
             .padding(.bottom, 5)
@@ -47,18 +47,18 @@ struct PlaybackPositionView: View {
                     playerManager.player.playerState != .playing {
                 return
             }
-            if playerManager.playerPosition + CGFloat(timerStep) >= duration {
+            if playerManager.playerPosition + CGFloat(timerInterval) >= duration {
                 playerManager.playerPosition = duration
                 self.playerManager.updatePlayerState()
             }
             else {
-                playerManager.playerPosition += CGFloat(timerStep)
+                playerManager.playerPosition += CGFloat(timerInterval)
             }
         }
     }
     
     var formattedPlaybackPosition: String {
-        if playerManager.currentTrack?.duration == nil {
+        if playerManager.player.playerPosition == nil {
             return "- : -"
         }
         let timeString: String?

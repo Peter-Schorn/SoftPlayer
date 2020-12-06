@@ -49,13 +49,13 @@ struct RootView: View {
                 state: spotify.authorizationState
             )
             .receive(on: RunLoop.main)
-            .sink(receiveCompletion: handleRequestTokensCompletion(_:))
+            .sink(receiveCompletion: receiveRequestTokensCompletion(_:))
         
         spotify.generateNewAuthorizationParameters()
 
     }
     
-    func handleRequestTokensCompletion(
+    func receiveRequestTokensCompletion(
         _ completion: Subscribers.Completion<Error>
     ) {
         print("request tokens completion:", completion)
@@ -67,10 +67,11 @@ struct RootView: View {
             case .failure(let error):
                 self.alertTitle =
                         "Could not Authorize with your Spotify account"
+                
                 if let authError = error as? SpotifyAuthorizationError,
                    authError.accessWasDenied {
                     self.alertMessage =
-                        "You denied the authorization request"
+                        "You denied the authorization request (:"
                 }
                 else {
                     self.alertMessage = error.localizedDescription
@@ -87,14 +88,18 @@ struct RootView_Previews: PreviewProvider {
     static let playerManager = PlayerManager(spotify: Spotify())
     
     static var previews: some View {
-        RootView()
-            .environmentObject(playerManager)
-            .environmentObject(playerManager.spotify)
-            .onAppear(perform: onAppear)
-//            .frame(
-//                width: CGFloat(AppDelegate.popoverWidth),
-//                height: CGFloat(AppDelegate.popoverHeight)
-//            )
+
+        ForEach(ColorScheme.allCases, id: \.self) { colorScheme in
+            RootView()
+                .preferredColorScheme(colorScheme)
+                .environmentObject(playerManager)
+                .environmentObject(playerManager.spotify)
+                .onAppear(perform: onAppear)
+            //            .frame(
+            //                width: CGFloat(AppDelegate.popoverWidth),
+            //                height: CGFloat(AppDelegate.popoverHeight)
+            //            )
+        }
     }
     
     static func onAppear() {

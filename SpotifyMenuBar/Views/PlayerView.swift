@@ -33,7 +33,49 @@ struct PlayerView: View {
             .padding(.horizontal, 8)
             .frame(height: 60)
             
-            PlayerControlsView()
+            // MARK: Player Controls
+            VStack(spacing: 0) {
+                
+                PlaybackPositionView()
+                    .padding(.horizontal, 10)
+                
+                // MARK: - Main Player Controls -
+                HStack(spacing: 17) {
+                    
+                    // MARK: Shuffle
+                    ShuffleButton()
+                        .padding(.bottom, 1)
+
+                    PreviousTrackButton()
+
+                    // MARK: Play/Pause
+                    PlayPauseButton()
+                        .frame(width: 40, height: 40)
+
+                    NextTrackButton()
+                    
+                    // MARK: Repeat Mode
+                    RepeatButton()
+                        .padding(.trailing, 1)
+                    
+                    // MARK: Available Devices
+    //                AvailableDevicesView()
+    //                    .scaleEffect(1.2)
+    //                    .padding(.bottom, 2)
+    //                    .disabled(!allowedActions.contains(.transferPlayback))
+                    
+                }
+                .font(.largeTitle)
+                .padding(.horizontal, 10)
+                
+                // MARK: Sound Volume
+                SoundVolumeSlider()
+                    .padding(.horizontal, 15)
+                    .frame(height: 30)
+                    .frame(maxWidth: .infinity)
+                    .padding(.top, 5)
+            }
+            
             Spacer()
         }
         .frame(
