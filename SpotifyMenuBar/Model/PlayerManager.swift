@@ -28,6 +28,11 @@ class PlayerManager: ObservableObject {
     @Published var playerPosition: CGFloat = 0
     @Published var soundVolume: CGFloat = 100
     
+    var allowedActions: Set<PlaybackActions> {
+        return self.currentlyPlayingContext?.allowedActions
+            ?? PlaybackActions.allCases
+    }
+    
     // MARK: Publishers
     let artworkURLDidChange = PassthroughSubject<Void, Never>()
     
@@ -42,7 +47,7 @@ class PlayerManager: ObservableObject {
         bundleIdentifier: "com.spotify.client"
     )!
 
-    let logger = Logger(label: "PlayerManager", level: .trace)
+    let logger = Logger(label: "PlayerManager", level: .warning)
     
     private var previousArtworkURL: String?
     
