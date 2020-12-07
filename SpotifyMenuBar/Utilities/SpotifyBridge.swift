@@ -84,7 +84,7 @@ extension SBApplication: SpotifyApplication { }
     /// The disc number of the track.
     @objc optional var discNumber: Int { get }
     
-    /// The length of the track in seconds.
+    /// The length of the track in milliseconds.
     @objc optional var duration: Int { get }
     
     /// The number of times this track has been played.

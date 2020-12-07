@@ -17,7 +17,7 @@ struct PlaybackPositionView: View {
     
     init() {
         self.timerInterval = 0.5
-        self.timer = Timer.publish(every: 0.5, on: .main, in: .common)
+        self.timer = Timer.publish(every: timerInterval, on: .main, in: .common)
             .autoconnect()
     }
     
@@ -28,7 +28,8 @@ struct PlaybackPositionView: View {
                 isDragging: $isDragging,
                 range: 0...duration,
                 knobDiameter: 10,
-                leadingRectangleColor: .gray,
+                knobScaleEffectMagnitude: 1.3,
+                leadingRectangleColor: .playbackPositionLeadingRectangle,
                 onEnded: { _ in self.updatePlaybackPosition() }
             )
             .padding(.bottom, 5)

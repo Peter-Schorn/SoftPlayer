@@ -23,6 +23,12 @@ class PlayerManager: ObservableObject {
     /// Devices with `nil` for `id` and/or are restricted are filtered out.
     @Published var availableDevices: [Device] = []
 
+    @Published var playlists: [Playlist<PlaylistsItemsReference>] = []
+    
+    /// The playlists that are **owned** by the current user. These are the
+    /// playlists that tracks and episodes can be added to.
+    @Published var currentUserPlaylists: [Playlist<PlaylistsItemsReference>] = []
+    
     @Published var shuffleIsOn = false
     @Published var repeatMode = RepeatMode.off
     @Published var playerPosition: CGFloat = 0
@@ -33,21 +39,40 @@ class PlayerManager: ObservableObject {
             ?? PlaybackActions.allCases
     }
     
+    private var _currentUser: SpotifyUser? = nil
+    private var currentUserPublisher: AnyPublisher<SpotifyUser, Never>? = nil
+    var currentUser: Future<SpotifyUser, Never> {
+        Future { promise in
+            if let currentUser = self._currentUser {
+                promise(.success(currentUser))
+            }
+            else {
+                self.retrieveCurrentUserCancellable =
+                    self.retrieveCurrentUser().sink { currentUser in
+                        promise(.success(currentUser))
+                    }
+            }
+        }
+    }
+    
     // MARK: Publishers
+    
+    /// `PlayerView` displays an alert when this subject emits.
+    let alertSubject = PassthroughSubject<String, Never>()
+    
     let artworkURLDidChange = PassthroughSubject<Void, Never>()
     
-    /// Emits when the popover is is shown.
-    let popoverDidShow = PassthroughSubject<Void, Never>()
+    /// Emits when the popover is about to be shown.
+    let popoverWillShow = PassthroughSubject<Void, Never>()
 
     /// A publisher that emits when the Spotify player state changes.
     let playerStateDidChange = DistributedNotificationCenter
         .default().publisher(for: .spotifyPlayerStateDidChange)
 
+    
     let player: SpotifyApplication = SBApplication(
         bundleIdentifier: "com.spotify.client"
     )!
-
-    let logger = Logger(label: "PlayerManager", level: .warning)
     
     private var previousArtworkURL: String?
     
@@ -56,6 +81,11 @@ class PlayerManager: ObservableObject {
     private var retrieveAvailableDevicesCancellable: AnyCancellable? = nil
     private var loadArtworkImageCancellanble: AnyCancellable? = nil
     private var retrieveCurrentlyPlayingContextCancellable: AnyCancellable? = nil
+    private var retrievePlaylistsCancellable: AnyCancellable? = nil
+    private var retrieveCurrentUserCancellable: AnyCancellable? = nil
+    private var retrieveCurrentUserPlaylistsCancellable: AnyCancellable? = nil
+    
+    let logger = Logger(label: "PlayerManager", level: .warning)
     
     init(spotify: Spotify) {
         
@@ -68,7 +98,9 @@ class PlayerManager: ObservableObject {
                 self.logger.trace(
                     "received player state did change notification"
                 )
-                self.updatePlayerState()
+                if self.spotify.isAuthorized {
+                    self.updatePlayerState()
+                }
             })
             .store(in: &cancellables)
         
@@ -76,22 +108,37 @@ class PlayerManager: ObservableObject {
             .sink(receiveValue: self.loadArtworkImage)
             .store(in: &cancellables)
         
-        self.popoverDidShow.sink {
-            self.updatePlayerState()
+        self.popoverWillShow.sink {
+            if self.spotify.isAuthorized {
+                self.updatePlayerState()
+                self.retrievePlaylists()
+            }
         }
         .store(in: &cancellables)
         
         self.spotify.$isAuthorized.sink { isAuthorized in
             if isAuthorized {
                 self.updatePlayerState()
+                self.retrievePlaylists()
             }
         }
         .store(in: &cancellables)
+
+        self.spotify.api.authorizationManager.didDeauthorize
+            .receive(on: RunLoop.main)
+            .sink {
+                self._currentUser = nil
+                self.currentUserPublisher = nil
+            }
+            .store(in: &cancellables)
         
-        self.updatePlayerState()
+        if self.spotify.isAuthorized {
+            self.updatePlayerState()
+        }
     }
     
     func updatePlayerState() {
+        self.logger.trace("update player state")
         self.retrieveCurrentlyPlayingContext()
         self.retrieveAvailableDevices()
         self.currentTrack = self.player.currentTrack
@@ -102,6 +149,7 @@ class PlayerManager: ObservableObject {
             self.logger.trace("sound volume: \(soundVolume) to \(newSoundVolume)")
         }
         if let playerPosition = self.player.playerPosition {
+            self.logger.trace("new player position: \(playerPosition)")
             self.playerPosition = CGFloat(playerPosition)
         }
 //        self.logger.trace(
@@ -144,6 +192,7 @@ class PlayerManager: ObservableObject {
                 },
                 receiveValue: { data, response in
                     if let nsImage = NSImage(data: data) {
+                        
                         self.artworkImage = Image(nsImage: nsImage)
                     }
                     else {
@@ -183,26 +232,24 @@ class PlayerManager: ObservableObject {
     /// and whether play/pause is disabled.
     func retrieveCurrentlyPlayingContext() {
         
-//        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            self.retrieveCurrentlyPlayingContextCancellable =
-                self.spotify.api.currentPlayback(market: "from_token")
-                    .receive(on: RunLoop.main)
-                    .sink(
-                        receiveCompletion: { completion in
-                            if case .failure(let error) = completion {
-                                self.logger.error(
-                                    "couldn't get currently playing context: \(error)"
-                                )
-                                if let authError = error as? SpotifyAuthenticationError {
-                                    if authError.error == "invalid_grant" {
-                                        self.spotify.isAuthorized = false
-                                    }
+        self.retrieveCurrentlyPlayingContextCancellable =
+            self.spotify.api.currentPlayback(market: "from_token")
+                .receive(on: RunLoop.main)
+                .sink(
+                    receiveCompletion: { completion in
+                        if case .failure(let error) = completion {
+                            self.logger.error(
+                                "couldn't get currently playing context: \(error)"
+                            )
+                            if let authError = error as? SpotifyAuthenticationError {
+                                if authError.error == "invalid_grant" {
+                                    self.spotify.isAuthorized = false
                                 }
                             }
-                        },
-                        receiveValue: self.updateCurrentlyPlayingContext(_:)
-                    )
-//        }
+                        }
+                    },
+                    receiveValue: self.updateCurrentlyPlayingContext(_:)
+                )
         
     }
     
@@ -222,4 +269,89 @@ class PlayerManager: ObservableObject {
         
     }
     
+    private func retrieveCurrentUser() -> AnyPublisher<SpotifyUser, Never> {
+        
+        if let currentUserPublisher = self.currentUserPublisher {
+            self.logger.notice("using previous current user publisher")
+            return currentUserPublisher
+        }
+        
+        let currentUserPublisher = self.spotify.api.currentUserProfile()
+            .catch { error -> Empty<SpotifyUser, Never> in
+                self.logger.error(
+                    "couldn't retrieve current user: \(error)"
+                )
+                return Empty()
+            }
+            .receive(on: RunLoop.main)
+            .handleEvents(
+                receiveOutput: { currentUser in
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                        self.logger.notice("received current user")
+                        self._currentUser = currentUser
+                    }
+                },
+                receiveCompletion: { _ in
+                    self.currentUserPublisher = nil
+                }
+            )
+            .share()
+            .eraseToAnyPublisher()
+        
+        return currentUserPublisher
+    }
+    
+    /// Retreives the user's playlists.
+    func retrievePlaylists() {
+        
+        let retrievePlaylistsPublisher = self.spotify.api
+            .currentUserPlaylists(limit: 50)
+            .extendPages(self.spotify.api)
+            .handleEvents(receiveOutput: { page in
+                self.logger.trace(
+                    "received playlist page at offset \(page.offset)"
+                )
+            })
+            .collect()
+            .map { $0.flatMap(\.items) }
+            .catch { error -> Empty<[Playlist<PlaylistsItemsReference>], Never> in
+                self.logger.error(
+                    "couldn't retrieve playlists: \(error)"
+                )
+                return Empty()
+            }
+            .receive(on: RunLoop.main)
+        
+        self.retrievePlaylistsCancellable = Publishers.Zip(
+            currentUser, retrievePlaylistsPublisher
+        )
+        .sink { currentUser, playlists in
+            self.playlists = playlists
+            self.currentUserPlaylists = self.playlists.filter { playlist in
+                playlist.owner?.uri == currentUser.uri
+            }
+        }
+           
+    }
+    
+}
+
+extension Publisher {
+    
+    func handleAuthenticationError(
+        spotify: Spotify
+    ) -> Any {
+        
+        return self.tryCatch { error -> Empty<Output, Error> in
+            if let authError = error as? SpotifyAuthenticationError,
+                   authError.error == "invalid_grant"
+                   {
+                spotify.isAuthorized = false
+                return Empty()
+            }
+            throw error
+        }
+
+    }
+
 }

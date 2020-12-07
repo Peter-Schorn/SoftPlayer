@@ -9,6 +9,7 @@ struct CustomSliderView: View {
     
     let range: ClosedRange<CGFloat>
     let knobDiameter: CGFloat
+    let knobScaleEffectMagnitude: CGFloat
     let leadingRectangleColor: Color
 
     /// Called when the drag gesture ends.
@@ -24,6 +25,7 @@ struct CustomSliderView: View {
         isDragging: Binding<Bool>,
         range: ClosedRange<CGFloat>,
         knobDiameter: CGFloat,
+        knobScaleEffectMagnitude: CGFloat = 1,
         leadingRectangleColor: Color,
         onEnded: ((DragGesture.Value) -> Void)? = nil
     ) {
@@ -31,6 +33,7 @@ struct CustomSliderView: View {
         self._isDragging = isDragging
         self.range = range
         self.knobDiameter = knobDiameter
+        self.knobScaleEffectMagnitude = knobScaleEffectMagnitude
         self.leadingRectangleColor = leadingRectangleColor
         self.onEnded = onEnded
     }
@@ -42,15 +45,14 @@ struct CustomSliderView: View {
                     // MARK: Leading Rectangle
                     Capsule()
                         .fill(leadingRectangleColor)
-                        // MARK: FIXME: remove brightness modifier
-                        .brightness(-0.1)
                         .frame(
                             width: leadingRectangleWidth(geometry),
                             height: sliderHeight
                         )
                     // MARK: Trailing Rectangle
                     Capsule()
-                        .fill(Color.gray.opacity(0.3))
+                        .fill(Color.primary.opacity(0.25))
+//                        .fill(Color.sliderTrailingRectangle)
                         .frame(height: sliderHeight)
                 }
                 HStack(spacing: 0) {
@@ -58,7 +60,7 @@ struct CustomSliderView: View {
                     Circle()
                         .fill(Color.white)
                         .frame(width: knobDiameter)
-                        .scaleEffect(isDragging ? 1.3 : 1)
+                        .scaleEffect(isDragging ? knobScaleEffectMagnitude : 1)
                         .shadow(radius: 5)
                         .transition(knobTransition)
                         .offset(x: knobOffset(geometry))
@@ -76,11 +78,11 @@ struct CustomSliderView: View {
     
     func knobOffset(_ geometry: GeometryProxy) -> CGFloat {
         let maxKnobOffset = geometry.size.width - self.knobDiameter
-        return self.value.map(from: self.range, to: 0...maxKnobOffset)
+        return max(0, self.value.map(from: self.range, to: 0...maxKnobOffset))
     }
     
     func leadingRectangleWidth(_ geometry: GeometryProxy) -> CGFloat {
-        return knobOffset(geometry) + knobDiameter / 2
+        return max(0, knobOffset(geometry) + knobDiameter / 2)
     }
     
     func knobDragGesture(_ geometry: GeometryProxy) -> some Gesture {

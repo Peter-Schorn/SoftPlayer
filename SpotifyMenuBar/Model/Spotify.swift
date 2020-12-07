@@ -43,7 +43,7 @@ final class Spotify: ObservableObject {
     /// than an incoming redirect from Spotify was the result of a request
     /// made by this app, and not an attacker. **This value is regenerated**
     /// **after each authorization process completes.**
-    var authorizationState = String.randomURLSafe(length: 128)
+    var authorizationState: String
     var codeVerifier: String
     var codeChallenge: String
     
@@ -93,6 +93,7 @@ final class Spotify: ObservableObject {
         
         self.codeVerifier = String.randomURLSafe(length: 128)
         self.codeChallenge = codeVerifier.makeCodeChallenge()
+        self.authorizationState = String.randomURLSafe(length: 128)
 
         let urlTypes = Bundle.main.object(
             forInfoDictionaryKey: "CFBundleURLTypes"
@@ -219,11 +220,6 @@ final class Spotify: ObservableObject {
         // user to interact with the rest of the app.
         self.isAuthorized = self.api.authorizationManager.isAuthorized()
         
-        print(
-            "Spotify.handleChangesToAuthorizationManager: isAuthorized:",
-            self.isAuthorized
-        )
-        
         do {
             // Encode the authorization information to data.
             let authManagerData = try JSONEncoder().encode(
@@ -232,7 +228,6 @@ final class Spotify: ObservableObject {
             
             // Save the data to the keychain.
             keychain[data: authorizationManagerKey] = authManagerData
-            print("did save authorization manager to keychain")
             
         } catch {
             print(
@@ -265,7 +260,6 @@ final class Spotify: ObservableObject {
              app is quit and relaunched.
              */
             try keychain.remove(authorizationManagerKey)
-            print("did remove authorization manager from keychain")
             
         } catch {
             print(
