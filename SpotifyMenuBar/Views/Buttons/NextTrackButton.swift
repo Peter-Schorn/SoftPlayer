@@ -7,7 +7,9 @@ struct NextTrackButton: View {
     @EnvironmentObject var spotify: Spotify
     @EnvironmentObject var playerManager: PlayerManager
     
-//    @State private var seekForwardTimer = <#value#>
+    @GestureState var isLongPressing = false
+
+    @State private var seekForwardsTimerCancellable: Cancellable? = nil
     
     var body: some View {
         
@@ -23,17 +25,28 @@ struct NextTrackButton: View {
             // MARK: Next Track
             
             Image(systemName: "forward.end.fill")
-                .gesture(
-                    LongPressGesture()
-                        .onChanged { x in
-                            print("onchanged: \(x)")
-                        }
+                .tapAndLongPressAndHoldGesture(
+                    onTap: { self.playerManager.player.nextTrack?() },
+                    isLongPressing: $isLongPressing
                 )
-                .onTapGesture {
-                    self.playerManager.player.nextTrack?()
-                }
                 .disabled(!playerManager.allowedActions.contains(.skipToNext))
-            
+                .onChange(of: isLongPressing) { isLongPressing in
+                    if isLongPressing {
+                        self.seekForwards15Seconds()
+                        self.seekForwardsTimerCancellable = Timer.publish(
+                            every: 0.75, on: .main, in: .common
+                        )
+                        .autoconnect()
+                        .sink { _ in
+                            self.seekForwards15Seconds()
+                        }
+                        
+                    }
+                    else {
+                        self.seekForwardsTimerCancellable?.cancel()
+                        
+                    }
+                }
         }
     }
     
@@ -42,9 +55,15 @@ struct NextTrackButton: View {
             print("NextTrackButton: couldn't get player position")
             return
         }
-        self.playerManager.setPlayerPosition(
-            to: CGFloat(currentPosition + 15)
-        )
+        let newPosition: Double
+        if let duration = self.playerManager.currentTrack?.duration {
+            newPosition = (currentPosition + 15)
+                .clamped(to: 0...Double(duration / 1000))
+        }
+        else {
+            newPosition = currentPosition + 15
+        }
+        self.playerManager.setPlayerPosition(to: CGFloat(newPosition))
     }
     
 }
