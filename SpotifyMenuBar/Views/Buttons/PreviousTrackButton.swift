@@ -7,6 +7,10 @@ struct PreviousTrackButton: View {
     @EnvironmentObject var spotify: Spotify
     @EnvironmentObject var playerManager: PlayerManager
     
+    @GestureState var isLongPressing = false
+
+    @State private var seekBackwardsTimerCancellable: Cancellable? = nil
+    
     var body: some View {
         
             // MARK: Seek Backwards 15 Seconds
@@ -18,16 +22,37 @@ struct PreviousTrackButton: View {
                 .buttonStyle(PlainButtonStyle())
             }
             else {
-                // MARK: Previous Track
-                Button(action: {
-                    self.playerManager.player.previousTrack?()
-                }, label: {
-                    Image(systemName: "backward.end.fill")
-                })
-                .buttonStyle(PlainButtonStyle())
-                .disabled(!playerManager.allowedActions.contains(.skipToPrevious))
-                .onLongPressGesture(perform: seekBackwards15Seconds)
+                Image(systemName: "backward.end.fill")
+                    .tapAndLongPressAndHoldGesture(
+                        onTap: {
+                            self.playerManager.player.previousTrack?()
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+                                self.playerManager.updatePlayerState()
+                            }
+                        },
+                        isLongPressing: $isLongPressing
+                    )
+                    .disabled(!playerManager.allowedActions.contains(.skipToPrevious))
+                    .onChange(of: isLongPressing) { isLongPressing in
+                        if isLongPressing {
+                            self.seekBackwards15Seconds()
+                            self.seekBackwardsTimerCancellable = Timer.publish(
+                                every: 0.75, on: .main, in: .common
+                            )
+                            .autoconnect()
+                            .sink { _ in
+                                self.seekBackwards15Seconds()
+                            }
+                            
+                        }
+                        else {
+                            self.seekBackwardsTimerCancellable?.cancel()
+                        }
+                    }
+
             }
+        
+            
     }
     
     func seekBackwards15Seconds() {
@@ -35,9 +60,8 @@ struct PreviousTrackButton: View {
             print("PreviousTrackButton: couldn't get player position")
             return
         }
-        self.playerManager.setPlayerPosition(
-            to: CGFloat(currentPosition - 15)
-        )
+        let newPosition = max(0, currentPosition - 15)
+        self.playerManager.setPlayerPosition(to: CGFloat(newPosition))
     }
     
 }

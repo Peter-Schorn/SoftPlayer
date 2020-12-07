@@ -26,6 +26,7 @@ struct AvailableDevicesView: View {
             Image(systemName: "hifispeaker.2.fill")
         }
         .menuStyle(BorderlessButtonMenuStyle())
+        .disabled(!playerManager.allowedActions.contains(.transferPlayback))
         .frame(width: 30)
         .alert(isPresented: $alertIsPresented, content: {
             Alert(

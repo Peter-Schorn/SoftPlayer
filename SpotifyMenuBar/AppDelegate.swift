@@ -1,13 +1,14 @@
 import Cocoa
 import AppKit
 import SwiftUI
+import Combine
 import SpotifyWebAPI
 
 @NSApplicationMain
 class AppDelegate: NSObject, NSApplicationDelegate {
 
-    static let popoverWidth = 250
-    static let popoverHeight = 470
+    static let popoverWidth: CGFloat = 250
+    static let popoverHeight: CGFloat = 470
     
 //    var window: NSWindow!
     
@@ -19,6 +20,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var playerManager: PlayerManager!
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        
+        NSApplication.shared.isAutomaticCustomizeTouchBarMenuItemEnabled = true
         
         self.spotify = Spotify()
         
@@ -39,8 +42,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             width: Self.popoverWidth, height: Self.popoverHeight
         )
         popover.behavior = .transient
-        popover.contentViewController = NSHostingController(rootView: rootView)
         popover.animates = false
+
+        let viewController = NSViewController()
+        viewController.view = NSHostingView(rootView: rootView)
+        viewController.view.addSubview(PopoverContentView(playerManager: playerManager))
+        popover.contentViewController = viewController
+        
+//        popover.contentViewController = NSHostingController(rootView: rootView)
+
         self.popover = popover
 
         self.statusBarItem = NSStatusBar.system.statusItem(
@@ -50,22 +60,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
              button.image = NSImage(named: "music.note")
              button.action = #selector(togglePopover(_:))
         }
-        
-//        self.window = NSWindow(
-//            contentRect: NSRect(x: 0, y: 0, width: 210, height: 400),
-//            styleMask: [
-//                .titled,
-//                .closable,
-//                .miniaturizable,
-//                .fullSizeContentView
-//            ],
-//            backing: .buffered, defer: false)
-//        window.center()
-//        window.setFrameAutosaveName("Main Window")
-//        window.title = "Reddit"
-//
-//        window.contentView = NSHostingView(rootView: rootView)
-//        window.makeKeyAndOrderFront(nil)
         
     }
 
@@ -77,15 +71,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         if let button = self.statusBarItem.button {
             if self.popover.isShown {
                 self.popover.performClose(sender)
-            } else {
-                self.playerManager.popoverDidShow.send()
+            }
+            else {
+                self.playerManager.popoverWillShow.send()
                 self.popover.show(
                     relativeTo: button.bounds,
                     of: button,
                     preferredEdge: NSRectEdge.minY
                 )
                 self.popover.contentViewController?.view.window?.becomeKey()
-
             }
         }
     }
@@ -231,4 +225,3 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
 }
-

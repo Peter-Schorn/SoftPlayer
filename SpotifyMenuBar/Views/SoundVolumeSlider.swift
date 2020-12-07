@@ -4,7 +4,6 @@ import SpotifyWebAPI
 
 struct SoundVolumeSlider: View {
     
-    @EnvironmentObject var spotify: Spotify
     @EnvironmentObject var playerManager: PlayerManager
 
     var body: some View {
