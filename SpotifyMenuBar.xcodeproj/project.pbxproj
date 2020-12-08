@@ -11,9 +11,14 @@
 		47038541257E7DE300D0E79A /* PopoverBackgroundView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47038540257E7DE300D0E79A /* PopoverBackgroundView.swift */; };
 		47038544257E801100D0E79A /* BlurView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47038543257E801100D0E79A /* BlurView.swift */; };
 		47038549257E8A3C00D0E79A /* TouchBarPlaylistsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47038548257E8A3C00D0E79A /* TouchBarPlaylistsView.swift */; };
-		474C7C922570F713004A3DB5 /* AvailableDevicesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 474C7C912570F713004A3DB5 /* AvailableDevicesView.swift */; };
+		4712E601257FAD0C00A881D5 /* TouchBarIdentifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4712E600257FAD0C00A881D5 /* TouchBarIdentifiers.swift */; };
+		4712E604257FB1A100A881D5 /* NotificationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4712E603257FB1A100A881D5 /* NotificationView.swift */; };
+		4712E607257FD19500A881D5 /* PlayPlaylistsTouchBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4712E606257FD19500A881D5 /* PlayPlaylistsTouchBarView.swift */; };
+		474C7C922570F713004A3DB5 /* AvailableDevicesButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 474C7C912570F713004A3DB5 /* AvailableDevicesButton.swift */; };
 		4768023A2570CDF800397202 /* Logging in Frameworks */ = {isa = PBXBuildFile; productRef = 476802392570CDF800397202 /* Logging */; };
 		47699875257DDE8400B7D6F5 /* ViewExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47699874257DDE8400B7D6F5 /* ViewExtensions.swift */; };
+		477560E02580083200B7FFED /* SpotifyAPIExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 477560DF2580083200B7FFED /* SpotifyAPIExtensions.swift */; };
+		477560E62580140D00B7FFED /* TouchBarPlaylistButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 477560E52580140D00B7FFED /* TouchBarPlaylistButton.swift */; };
 		47832F482566474300AADEA3 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47832F472566474300AADEA3 /* AppDelegate.swift */; };
 		47832F4A2566474300AADEA3 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47832F492566474300AADEA3 /* RootView.swift */; };
 		47832F4D2566474300AADEA3 /* SpotifyMenuBar.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 47832F4B2566474300AADEA3 /* SpotifyMenuBar.xcdatamodeld */; };
@@ -46,8 +51,13 @@
 		47038540257E7DE300D0E79A /* PopoverBackgroundView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PopoverBackgroundView.swift; sourceTree = "<group>"; };
 		47038543257E801100D0E79A /* BlurView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlurView.swift; sourceTree = "<group>"; };
 		47038548257E8A3C00D0E79A /* TouchBarPlaylistsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TouchBarPlaylistsView.swift; sourceTree = "<group>"; };
-		474C7C912570F713004A3DB5 /* AvailableDevicesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AvailableDevicesView.swift; sourceTree = "<group>"; };
+		4712E600257FAD0C00A881D5 /* TouchBarIdentifiers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TouchBarIdentifiers.swift; sourceTree = "<group>"; };
+		4712E603257FB1A100A881D5 /* NotificationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationView.swift; sourceTree = "<group>"; };
+		4712E606257FD19500A881D5 /* PlayPlaylistsTouchBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayPlaylistsTouchBarView.swift; sourceTree = "<group>"; };
+		474C7C912570F713004A3DB5 /* AvailableDevicesButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AvailableDevicesButton.swift; sourceTree = "<group>"; };
 		47699874257DDE8400B7D6F5 /* ViewExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewExtensions.swift; sourceTree = "<group>"; };
+		477560DF2580083200B7FFED /* SpotifyAPIExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotifyAPIExtensions.swift; sourceTree = "<group>"; };
+		477560E52580140D00B7FFED /* TouchBarPlaylistButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TouchBarPlaylistButton.swift; sourceTree = "<group>"; };
 		47832F442566474300AADEA3 /* SpotifyMenuBar.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SpotifyMenuBar.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		47832F472566474300AADEA3 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		47832F492566474300AADEA3 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
@@ -140,6 +150,8 @@
 				47FD3DFA256FA7CF000E2346 /* ImageNames.swift */,
 				4795210C25744AA6000A5B82 /* MiscellaneousUtilities.swift */,
 				47699874257DDE8400B7D6F5 /* ViewExtensions.swift */,
+				4712E600257FAD0C00A881D5 /* TouchBarIdentifiers.swift */,
+				477560DF2580083200B7FFED /* SpotifyAPIExtensions.swift */,
 			);
 			path = Utilities;
 			sourceTree = "<group>";
@@ -156,11 +168,14 @@
 		47F6EC4F257C95BD007079D2 /* Buttons */ = {
 			isa = PBXGroup;
 			children = (
+				477560E52580140D00B7FFED /* TouchBarPlaylistButton.swift */,
 				47F6EC50257C95D8007079D2 /* ShuffleButton.swift */,
 				47F6EC55257C963F007079D2 /* PreviousTrackButton.swift */,
 				47F6EC59257C967D007079D2 /* PlayPauseButton.swift */,
 				47F6EC5F257C96B7007079D2 /* NextTrackButton.swift */,
 				47F6EC5C257C9699007079D2 /* RepeatButton.swift */,
+				47038538257E1A6F00D0E79A /* AddToPlaylistButton.swift */,
+				474C7C912570F713004A3DB5 /* AvailableDevicesButton.swift */,
 			);
 			path = Buttons;
 			sourceTree = "<group>";
@@ -173,13 +188,13 @@
 				47038540257E7DE300D0E79A /* PopoverBackgroundView.swift */,
 				47FD3DF2256FA726000E2346 /* LoginView.swift */,
 				47FD3E02256FB031000E2346 /* PlayerView.swift */,
+				4712E606257FD19500A881D5 /* PlayPlaylistsTouchBarView.swift */,
+				4712E603257FB1A100A881D5 /* NotificationView.swift */,
 				47038548257E8A3C00D0E79A /* TouchBarPlaylistsView.swift */,
 				47038543257E801100D0E79A /* BlurView.swift */,
-				47038538257E1A6F00D0E79A /* AddToPlaylistButton.swift */,
 				4789987725747F0F00866EE1 /* PlaybackPositionView.swift */,
 				47F6EC63257C96D7007079D2 /* SoundVolumeSlider.swift */,
 				4789987A25749FD500866EE1 /* CustomSliderView.swift */,
-				474C7C912570F713004A3DB5 /* AvailableDevicesView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -276,7 +291,9 @@
 				47F6EC5A257C967D007079D2 /* PlayPauseButton.swift in Sources */,
 				47F6EC51257C95D8007079D2 /* ShuffleButton.swift in Sources */,
 				47F6EC60257C96B7007079D2 /* NextTrackButton.swift in Sources */,
+				4712E601257FAD0C00A881D5 /* TouchBarIdentifiers.swift in Sources */,
 				47832F4D2566474300AADEA3 /* SpotifyMenuBar.xcdatamodeld in Sources */,
+				4712E607257FD19500A881D5 /* PlayPlaylistsTouchBarView.swift in Sources */,
 				47FD3DE3256F9599000E2346 /* SpotifyBridge.swift in Sources */,
 				4789987825747F0F00866EE1 /* PlaybackPositionView.swift in Sources */,
 				47038539257E1A6F00D0E79A /* AddToPlaylistButton.swift in Sources */,
@@ -287,15 +304,18 @@
 				47FD3DFB256FA7CF000E2346 /* ImageNames.swift in Sources */,
 				47038544257E801100D0E79A /* BlurView.swift in Sources */,
 				47038541257E7DE300D0E79A /* PopoverBackgroundView.swift in Sources */,
+				477560E02580083200B7FFED /* SpotifyAPIExtensions.swift in Sources */,
 				47F6EC56257C963F007079D2 /* PreviousTrackButton.swift in Sources */,
 				47832F4A2566474300AADEA3 /* RootView.swift in Sources */,
 				47F6EC64257C96D7007079D2 /* SoundVolumeSlider.swift in Sources */,
 				47D8CF83256664C60034FA1E /* PlayerManager.swift in Sources */,
-				474C7C922570F713004A3DB5 /* AvailableDevicesView.swift in Sources */,
+				474C7C922570F713004A3DB5 /* AvailableDevicesButton.swift in Sources */,
 				47FD3DDA256F642F000E2346 /* PlayerStateNotification.swift in Sources */,
 				47F6EC5D257C9699007079D2 /* RepeatButton.swift in Sources */,
+				4712E604257FB1A100A881D5 /* NotificationView.swift in Sources */,
 				47FD3DF3256FA726000E2346 /* LoginView.swift in Sources */,
 				4795210D25744AA6000A5B82 /* MiscellaneousUtilities.swift in Sources */,
+				477560E62580140D00B7FFED /* TouchBarPlaylistButton.swift in Sources */,
 				47832F482566474300AADEA3 /* AppDelegate.swift in Sources */,
 				4789987B25749FD500866EE1 /* CustomSliderView.swift in Sources */,
 			);

@@ -44,12 +44,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         popover.behavior = .transient
         popover.animates = false
 
-        let viewController = NSViewController()
-        viewController.view = NSHostingView(rootView: rootView)
-        viewController.view.addSubview(PopoverContentView(playerManager: playerManager))
-        popover.contentViewController = viewController
+//        let viewController = NSViewController()
+//        viewController.view = NSHostingView(rootView: rootView)
+//        viewController.view.addSubview(PopoverContentView(playerManager: playerManager))
+//        popover.contentViewController = viewController
         
-//        popover.contentViewController = NSHostingController(rootView: rootView)
+        popover.contentViewController = NSHostingController(rootView: rootView)
 
         self.popover = popover
 

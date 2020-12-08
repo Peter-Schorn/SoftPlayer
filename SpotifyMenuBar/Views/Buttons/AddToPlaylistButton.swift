@@ -16,11 +16,13 @@ struct AddToPlaylistButton: View {
     var body: some View {
         Menu {
             ForEach(
-                playerManager.currentUserPlaylists, id: \.uri
+                playerManager.playlistsSortedByLastAddedDate, id: \.uri
             ) { playlist in
-                Button(playlist.name) {
+                Button(action: {
                     self.addCurrentItemToPlaylist(playlist)
-                }
+                }, label: {
+                    Text(playlist.name)
+                })
             }
         } label: {
             HStack {
@@ -47,6 +49,9 @@ struct AddToPlaylistButton: View {
             )
             return
         }
+        
+        self.playerManager.playlistsLastAddedDates[playlist.uri] = Date()
+        self.playerManager.updatePlaylistsSortedByLastAddedDate()
         
         let itemName = playerManager.currentTrack?.name ?? "unknown"
         

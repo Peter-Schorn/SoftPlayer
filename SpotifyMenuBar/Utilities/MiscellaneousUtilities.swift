@@ -3,6 +3,26 @@ import SpotifyWebAPI
 import Combine
 import SwiftUI
 
+extension Publisher {
+    
+    func handleAuthenticationError(
+        spotify: Spotify
+    ) -> Publishers.TryCatch<Self, Empty<Self.Output, Error>> {
+        
+        return self.tryCatch { error -> Empty<Output, Error> in
+            if let authError = error as? SpotifyAuthenticationError,
+                   authError.error == "invalid_grant"
+                   {
+                spotify.isAuthorized = false
+                return Empty()
+            }
+            throw error
+        }
+
+    }
+
+}
+
 extension DateComponentsFormatter {
     
     static let playbackTimeWithHours: DateComponentsFormatter = {
