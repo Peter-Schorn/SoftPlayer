@@ -32,10 +32,10 @@ struct TouchBarPlaylistButton: View {
             )
             .resizable()
             .aspectRatio(contentMode: .fill)
-            .colorMultiply(.gray)
-            .blur(radius: 3)
+            .colorMultiply(Color(#colorLiteral(red: 0.4762042937, green: 0.4762042937, blue: 0.4762042937, alpha: 1)))
+            .blur(radius: 2)
+            .frame(width: 133, height: 28)
             .cornerRadius(3)
-            .frame(width: 133, height: 26)
             .overlay(
                 HStack {
                     Text(playlist.name)
