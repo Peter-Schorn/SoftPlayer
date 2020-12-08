@@ -2,14 +2,35 @@ import Foundation
 import SwiftUI
 import AppKit
 
-struct TouchBarPlaylistsView: NSViewRepresentable {
-    
-    func makeNSView(context: Context) -> NSView {
-        return NSView()
+class TouchBarPlaylistsViewController: NSViewController {
+
+    override func loadView() {
+        self.view = NSView()
     }
     
-    func updateNSView(_ nsView: NSView, context: Context) {
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        self.view.window?.makeFirstResponder(self)
+
+        // Do any additional setup after loading the view.
+    }
+
+}
+
+extension TouchBarPlaylistsViewController: NSTouchBarDelegate {
+    
+    override func makeTouchBar() -> NSTouchBar? {
         
+        print("makeTouchBar")
+        
+        let touchBar = NSTouchBar()
+        touchBar.delegate = self
+        touchBar.customizationIdentifier = .playlists
+        touchBar.defaultItemIdentifiers = [.playlistsScrubber]
+        touchBar.customizationAllowedItemIdentifiers = [.playlistsScrubber]
+        return touchBar
+
     }
     
     func touchBar(
@@ -17,39 +38,86 @@ struct TouchBarPlaylistsView: NSViewRepresentable {
         makeItemForIdentifier identifier: NSTouchBarItem.Identifier
     ) -> NSTouchBarItem? {
         
-        let scrubberItem: NSCustomTouchBarItem
+        print("makeItemForIdentifier \(identifier)")
         
-        scrubberItem = NSCustomTouchBarItem(identifier: identifier)
-        scrubberItem.customizationLabel = NSLocalizedString(
-            "Choose Photo", comment: ""
-        )
+        guard identifier == .playlistsScrubber else { return nil }
+        
         
         let scrubber = NSScrubber()
+
         scrubber.register(
-            NSScrubberImageItemView.self,
-            forItemIdentifier: .init(rawValue: "")
+            NSScrubberTextItemView.self,
+            forItemIdentifier: .playlistsScrubberItem
         )
-        scrubber.mode = .free
-        scrubber.selectionBackgroundStyle = .roundedBackground
-        //            scrubber.delegate = self
-        //            scrubber.dataSource = self
-        scrubber.showsAdditionalContentIndicators = true
+
         scrubber.scrubberLayout = NSScrubberFlowLayout()
-        
+        scrubber.mode = .free
+        scrubber.isContinuous = false
+        scrubber.showsAdditionalContentIndicators = true
+        scrubber.itemAlignment = .leading
+        scrubber.selectionBackgroundStyle = .roundedBackground
+
+        scrubber.delegate = self
+        scrubber.dataSource = self
+
+        let scrubberItem = NSCustomTouchBarItem(identifier: identifier)
         scrubberItem.view = scrubber
-        
-        // Set the scrubber's width to be 400.
-        let viewBindings: [String: NSView] = ["scrubber": scrubber]
-        
-        let hconstraints = NSLayoutConstraint.constraints(
-            withVisualFormat: "H:[scrubber(400)]",
-            options: [],
-            metrics: nil,
-            views: viewBindings
-        )
-        NSLayoutConstraint.activate(hconstraints)
-        
+
         return scrubberItem
+
+    }
+
+}
+
+extension TouchBarPlaylistsViewController: NSScrubberDelegate {
+    
+    func scrubber(_ scrubber: NSScrubber, didSelectItemAt index: Int) {
+        print("selected at index \(index)")
+    }
+
+}
+
+extension TouchBarPlaylistsViewController: NSScrubberDataSource {
+
+    func numberOfItems(for scrubber: NSScrubber) -> Int {
+//        print("number of items")
+        return 40
+    }
+
+    func scrubber(
+        _ scrubber: NSScrubber,
+        viewForItemAt index: Int
+    ) -> NSScrubberItemView {
+
+//        print("scrubber viewForItemAt \(index)")
+
+        let itemView = scrubber.makeItem(
+            withIdentifier: .playlistsScrubberItem,
+            owner: nil
+        ) as! NSScrubberTextItemView
+
+        itemView.title = "\(index)"
+//        itemView.textField.stringValue = "Button \(index)"
+
+        return itemView
+
+    }
+
+}
+
+struct TouchBarPlaylistsView: NSViewControllerRepresentable {
+    
+    func makeNSViewController(
+        context: Context
+    ) -> TouchBarPlaylistsViewController {
+        return TouchBarPlaylistsViewController()
     }
     
+    func updateNSViewController(
+        _ nsViewController: TouchBarPlaylistsViewController,
+        context: Context
+    ) {
+        
+    }
+
 }
