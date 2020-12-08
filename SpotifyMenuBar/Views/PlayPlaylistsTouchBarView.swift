@@ -48,7 +48,7 @@ struct PlayPlaylistsTouchBarView: View {
                     content: TouchBarPlaylistButton.init(playlist:)
                 )
             }
-            .frame(width: 562, alignment: .leading)
+            .frame(width: 560, alignment: .leading)
             
             navigationButtons
         }
@@ -66,23 +66,23 @@ struct PlayPlaylistsTouchBarView: View {
     }
     
     var navigationButtons: some View {
-        HStack {
+        HStack(spacing: 2) {
             Button(action: {
                 self.offset -= 1
             }, label: {
                 Image(systemName: "arrowtriangle.backward.fill")
-                    .padding(.horizontal, 10)
+                    .padding(.horizontal, 13)
             })
             .disabled(self.offset <= 0)
             Button(action: {
                 self.offset += 1
             }, label: {
                 Image(systemName: "arrowtriangle.forward.fill")
-                    .padding(.horizontal, 10)
+                    .padding(.horizontal, 13)
             })
             .disabled(self.nextNavigationButtonIsDisabled())
         }
-        .padding(2)
+        .padding(.vertical, 2)
         .cornerRadius(5)
         .shadow(radius: 5)
     }
