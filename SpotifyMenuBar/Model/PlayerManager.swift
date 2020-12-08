@@ -385,7 +385,7 @@ class PlayerManager: ObservableObject {
             }
             self.spotify.api.playlistImage(playlist)
                 .flatMap { images -> AnyPublisher<Image, Error> in
-                    guard let image = images.first else {
+                    guard let image = images.largest else {
                         self.logger.warning(
                             "images array was empty for '\(playlist.name)'"
                         )
