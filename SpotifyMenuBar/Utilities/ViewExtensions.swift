@@ -8,6 +8,30 @@ extension View {
         return AnyView(self)
     }
 
+    @ViewBuilder func `if`<TrueContent: View>(
+        _ condition: Bool,
+        then trueContent: (Self) -> TrueContent
+    ) -> some View {
+        if condition {
+            trueContent(self)
+        } else {
+            self
+        }
+    }
+
+    @ViewBuilder func `if`<TrueContent: View, FalseContent: View>(
+        _ condition: Bool,
+        then trueContent: (Self) -> TrueContent,
+        else falseContent: (Self) -> FalseContent
+    ) -> some View {
+        if condition {
+            trueContent(self)
+        } else {
+            falseContent(self)
+        }
+    }
+    
+
     /**
      A gesture that recognizs a tap and a long press.
      

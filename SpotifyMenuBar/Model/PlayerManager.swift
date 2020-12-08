@@ -24,6 +24,13 @@ class PlayerManager: ObservableObject {
     @Published var availableDevices: [Device] = []
 
     @Published var playlists: [Playlist<PlaylistsItemsReference>] = []
+    @Published var playlistImages: [String: Image] = [:]
+    
+    /// The most recently played playlists will appear first.
+    @Published var playlistsSortedByLastPlayedDate: [Playlist<PlaylistsItemsReference>] = []
+    
+    /// The playlists that items were most recently added to will appear first.
+    @Published var playlistsSortedByLastAddedDate: [Playlist<PlaylistsItemsReference>] = []
     
     /// The playlists that are **owned** by the current user. These are the
     /// playlists that tracks and episodes can be added to.
@@ -52,6 +59,39 @@ class PlayerManager: ObservableObject {
                         promise(.success(currentUser))
                     }
             }
+        }
+    }
+    
+    private let playlistsLastPlayedDatesKey = "playlistsLastPlayedDate"
+    private let playlistsLastAddedDatesKey = "playlistsLastPlayedDate"
+    
+    /// The dates that the playlists were last played.
+    var playlistsLastPlayedDates: [String: Date] {
+        get {
+            return UserDefaults.standard.dictionary(
+                forKey: playlistsLastPlayedDatesKey
+            ) as? [String: Date] ?? [:]
+        }
+        set {
+            UserDefaults.standard.setValue(
+                newValue,
+                forKey: playlistsLastPlayedDatesKey
+            )
+        }
+    }
+    
+    /// The dates that items were last added to the playlists.
+    var playlistsLastAddedDates: [String: Date] {
+        get {
+            return UserDefaults.standard.dictionary(
+                forKey: playlistsLastAddedDatesKey
+            ) as? [String: Date] ?? [:]
+        }
+        set {
+            UserDefaults.standard.setValue(
+                newValue,
+                forKey: playlistsLastAddedDatesKey
+            )
         }
     }
     
@@ -85,7 +125,7 @@ class PlayerManager: ObservableObject {
     private var retrieveCurrentUserCancellable: AnyCancellable? = nil
     private var retrieveCurrentUserPlaylistsCancellable: AnyCancellable? = nil
     
-    let logger = Logger(label: "PlayerManager", level: .warning)
+    let logger = Logger(label: "PlayerManager", level: .notice)
     
     init(spotify: Spotify) {
         
@@ -129,6 +169,8 @@ class PlayerManager: ObservableObject {
             .sink {
                 self._currentUser = nil
                 self.currentUserPublisher = nil
+                self.playlistsLastPlayedDates = [:]
+                self.playlistsLastAddedDates = [:]
             }
             .store(in: &cancellables)
         
@@ -212,11 +254,14 @@ class PlayerManager: ObservableObject {
         self.retrieveAvailableDevicesCancellable = self.spotify.api
             .availableDevices()
             .receive(on: RunLoop.main)
+            .handleAuthenticationError(spotify: self.spotify)
             .sink(
                 receiveCompletion: { completion in
-//                    self.logger.trace(
-//                        "retreive available devices completion: \(completion)"
-//                    )
+                    if case .failure(let error) = completion {
+                        self.logger.error(
+                            "couldn't retreive available devices: \(error)"
+                        )
+                    }
                 },
                 receiveValue: { devices in
                     self.availableDevices = devices
@@ -235,17 +280,13 @@ class PlayerManager: ObservableObject {
         self.retrieveCurrentlyPlayingContextCancellable =
             self.spotify.api.currentPlayback(market: "from_token")
                 .receive(on: RunLoop.main)
+                .handleAuthenticationError(spotify: self.spotify)
                 .sink(
                     receiveCompletion: { completion in
                         if case .failure(let error) = completion {
                             self.logger.error(
                                 "couldn't get currently playing context: \(error)"
                             )
-                            if let authError = error as? SpotifyAuthenticationError {
-                                if authError.error == "invalid_grant" {
-                                    self.spotify.isAuthorized = false
-                                }
-                            }
                         }
                     },
                     receiveValue: self.updateCurrentlyPlayingContext(_:)
@@ -277,19 +318,18 @@ class PlayerManager: ObservableObject {
         }
         
         let currentUserPublisher = self.spotify.api.currentUserProfile()
+            .receive(on: RunLoop.main)
+            .handleAuthenticationError(spotify: self.spotify)
             .catch { error -> Empty<SpotifyUser, Never> in
                 self.logger.error(
                     "couldn't retrieve current user: \(error)"
                 )
                 return Empty()
             }
-            .receive(on: RunLoop.main)
             .handleEvents(
                 receiveOutput: { currentUser in
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                        self.logger.notice("received current user")
-                        self._currentUser = currentUser
-                    }
+                    self.logger.notice("received current user")
+                    self._currentUser = currentUser
                 },
                 receiveCompletion: { _ in
                     self.currentUserPublisher = nil
@@ -307,20 +347,21 @@ class PlayerManager: ObservableObject {
         let retrievePlaylistsPublisher = self.spotify.api
             .currentUserPlaylists(limit: 50)
             .extendPages(self.spotify.api)
-            .handleEvents(receiveOutput: { page in
-                self.logger.trace(
-                    "received playlist page at offset \(page.offset)"
-                )
-            })
+//            .handleEvents(receiveOutput: { page in
+//                self.logger.trace(
+//                    "received playlist page at offset \(page.offset)"
+//                )
+//            })
             .collect()
             .map { $0.flatMap(\.items) }
+            .receive(on: RunLoop.main)
+            .handleAuthenticationError(spotify: self.spotify)
             .catch { error -> Empty<[Playlist<PlaylistsItemsReference>], Never> in
                 self.logger.error(
                     "couldn't retrieve playlists: \(error)"
                 )
                 return Empty()
             }
-            .receive(on: RunLoop.main)
         
         self.retrievePlaylistsCancellable = Publishers.Zip(
             currentUser, retrievePlaylistsPublisher
@@ -330,28 +371,94 @@ class PlayerManager: ObservableObject {
             self.currentUserPlaylists = self.playlists.filter { playlist in
                 playlist.owner?.uri == currentUser.uri
             }
+            self.retrievePlaylistImages()
+            self.updatePlaylistsSortedByLastPlayedDate()
+            self.updatePlaylistsSortedByLastAddedDate()
         }
            
     }
     
-}
-
-extension Publisher {
-    
-    func handleAuthenticationError(
-        spotify: Spotify
-    ) -> Any {
-        
-        return self.tryCatch { error -> Empty<Output, Error> in
-            if let authError = error as? SpotifyAuthenticationError,
-                   authError.error == "invalid_grant"
-                   {
-                spotify.isAuthorized = false
-                return Empty()
+    func retrievePlaylistImages() {
+        for playlist in self.playlists {
+            guard self.playlistImages[playlist.uri] == nil else {
+                continue
             }
-            throw error
+            self.spotify.api.playlistImage(playlist)
+                .flatMap { images -> AnyPublisher<Image, Error> in
+                    guard let image = images.first else {
+                        self.logger.warning(
+                            "images array was empty for '\(playlist.name)'"
+                        )
+                        return Empty().eraseToAnyPublisher()
+                    }
+                    return image.load()
+                }
+                .receive(on: RunLoop.main)
+                .sink(
+                    receiveCompletion: { completion in
+                        if case .failure(let error) = completion {
+                            self.logger.error(
+                                "couldn't retrieve playlist image: \(error)"
+                            )
+                        }
+                    },
+                    receiveValue: { image in
+                        self.playlistImages[playlist.uri] = image
+                    }
+                )
+                .store(in: &cancellables)
         }
+    }
+    
+    /// Re-sorts the playlists by last played date.
+    func updatePlaylistsSortedByLastPlayedDate() {
+        self.logger.notice("updatePlaylistsSortedByLastPlayedDate")
+        DispatchQueue.global().async {
+            let sortedPlaylists = self.playlists.sorted { lhs, rhs in
+                
+                // return true if lhs should be ordered before rhs
 
+                let lhsDate = self.playlistsLastPlayedDates[lhs.uri]
+                let rhsDate = self.playlistsLastPlayedDates[rhs.uri]
+                switch (lhsDate, rhsDate) {
+                    case (.some(let lhsDate), .some(let rhsDate)):
+                        return lhsDate > rhsDate
+                    case (.some(_), nil):
+                        return true
+                    default:
+                        return false
+                }
+
+            }
+            DispatchQueue.main.async {
+                self.playlistsSortedByLastPlayedDate = sortedPlaylists
+            }
+        }
+    }
+
+    /// Re-sorts the playlists by the last date items were added to them.
+    func updatePlaylistsSortedByLastAddedDate() {
+        self.logger.notice("updatePlaylistsSortedByLastAddedDate")
+        DispatchQueue.global().async {
+            let sortedPlaylists = self.currentUserPlaylists.sorted { lhs, rhs in
+                
+                // return true if lhs should be ordered before rhs
+
+                let lhsDate = self.playlistsLastAddedDates[lhs.uri]
+                let rhsDate = self.playlistsLastAddedDates[rhs.uri]
+                switch (lhsDate, rhsDate) {
+                    case (.some(let lhsDate), .some(let rhsDate)):
+                        return lhsDate > rhsDate
+                    case (.some(_), nil):
+                        return true
+                    default:
+                        return false
+                }
+            }
+            DispatchQueue.main.async {
+                self.playlistsSortedByLastAddedDate = sortedPlaylists
+            }
+        }
     }
 
 }

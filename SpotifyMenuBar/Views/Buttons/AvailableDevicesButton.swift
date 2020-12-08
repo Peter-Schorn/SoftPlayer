@@ -3,7 +3,7 @@ import Combine
 import Logging
 import SpotifyWebAPI
 
-struct AvailableDevicesView: View {
+struct AvailableDevicesButton: View {
     
     @EnvironmentObject var spotify: Spotify
     @EnvironmentObject var playerManager: PlayerManager
@@ -27,7 +27,7 @@ struct AvailableDevicesView: View {
         }
         .menuStyle(BorderlessButtonMenuStyle())
         .disabled(!playerManager.allowedActions.contains(.transferPlayback))
-        .frame(width: 30)
+        .frame(width: 33)
         .alert(isPresented: $alertIsPresented, content: {
             Alert(
                 title: Text(alertTitle),
@@ -73,7 +73,9 @@ struct AvailableDevicesView: View {
             .sink(receiveCompletion: { completion in
                 switch completion {
                     case .finished:
-                        self.playerManager.retrieveAvailableDevices()
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                            self.playerManager.retrieveAvailableDevices()
+                        }
                     case .failure(let error):
                         self.alertTitle = "Couldn't Transfer Playback " +
                             #"to "\#(device.name)""#
@@ -86,12 +88,12 @@ struct AvailableDevicesView: View {
     
 }
 
-struct AvailableDevicesView_Previews: PreviewProvider {
+struct AvailableDevicesButton_Previews: PreviewProvider {
     
     static let playerManager = PlayerManager(spotify: Spotify())
     
     static var previews: some View {
-        AvailableDevicesView()
+        AvailableDevicesButton()
             .environmentObject(playerManager.spotify)
             .environmentObject(playerManager)
             .padding(20)
