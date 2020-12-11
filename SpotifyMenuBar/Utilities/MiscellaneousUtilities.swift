@@ -1,5 +1,6 @@
 import Foundation
 import SpotifyWebAPI
+import RegularExpressions
 import Combine
 import SwiftUI
 
@@ -22,6 +23,7 @@ extension Publisher {
     }
 
 }
+
 
 extension DateComponentsFormatter {
     
@@ -54,6 +56,29 @@ extension ProcessInfo {
 
 }
 
+/// Returns the largest element, with `nil` being considered the smallest,
+/// meaning that if one parameter is `nil` and the other is non-`nil`, then
+/// the non-`nil` parameter will always be returned.
+/// If both `lhs` and `rhs` are `nil`, then returns `nil`.
+func maxNilSmallest<T: Comparable>(_ lhs: T?, _ rhs: T?) -> T? {
+    switch (lhs, rhs) {
+        case (.some(let lhs), .some(let rhs)):
+            return max(lhs, rhs)
+        case (.some(let t), nil), (nil, .some(let t)):
+            return t
+        default:
+            return nil
+    }
+}
+
+extension String {
+    
+    /// An array of all the words in the string.
+    var words: [String] {
+        return try! self.regexSplit("\\W+", ignoreIfEmpty: true)
+    }
+
+}
 
 
 extension Comparable {

@@ -20,11 +20,8 @@ struct PlayPlaylistsTouchBarView: View {
     
     var playlists: ArraySlice<Playlist<PlaylistsItemsReference>> {
 
-//        let playlistNames = playerManager.playlistsSortedByLastPlayedDate.map {
-//            playlist in
-//
-//            playlist.name
-//        }
+//        let playlistNames = playerManager.playlistsSortedByLastPlayedDate
+//            .map(\.name)
 //
 //        for (index, playlist) in playlistNames.enumerated() {
 //            print("\(index + 1). '\(playlist)'")
@@ -92,7 +89,7 @@ struct PlayPlaylistsTouchBarView: View {
         let playlistsCount = self.playerManager
                 .playlistsSortedByLastPlayedDate.count
         
-//        print("\(offset * 4) >= \(playlistsCount + 4)")
+//        print("\(offset * 4 + 1) >= \(playlistsCount + 4)")
         return (offset + 1) * 4 >= playlistsCount
     }
     

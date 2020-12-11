@@ -99,7 +99,7 @@ extension SBApplication: SpotifyApplication { }
     /// How popular is this track? 0-100
     @objc optional var popularity: Int { get }
     
-    /// The ID of the item.
+    /// The URI of the item.
     @objc optional func id() -> String
     
     /// The name of the track.

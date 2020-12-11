@@ -21,31 +21,36 @@ struct TouchBarPlaylistButton: View {
     @State private var alertMessage = ""
     
     @State private var cancellables: Set<AnyCancellable> = []
+    @State private var playPlaylistCancellable: AnyCancellable? = nil
+    
+    var playlistImage: Image {
+        if let identifier = try? SpotifyIdentifier(uri: playlist.uri),
+                let image = self.playerManager.image(for: identifier) {
+            return image
+        }
+        return Image(.spotifyAlbumPlaceholder)
+    }
     
     var body: some View {
         
         Button(action: {
             self.playPlaylist(playlist)
         }, label: {
-            (self.playerManager.playlistImages[playlist.uri]
-                ?? Image(.spotifyAlbumPlaceholder)
-            )
-            .resizable()
-            .aspectRatio(contentMode: .fill)
-            .colorMultiply(Color(#colorLiteral(red: 0.4762042937, green: 0.4762042937, blue: 0.4762042937, alpha: 1)))
-            .blur(radius: 2)
-            .frame(width: 133, height: 28)
-            .cornerRadius(3)
-            .overlay(
-                HStack {
+            playlistImage
+                .resizable()
+                .aspectRatio(contentMode: .fill)
+                .colorMultiply(Color(#colorLiteral(red: 0.4762042937, green: 0.4762042937, blue: 0.4762042937, alpha: 1)))
+                .blur(radius: 2)
+                .frame(width: 133, height: 28)
+                .cornerRadius(3)
+                .overlay(
                     Text(playlist.name)
                         .font(.caption)
                         .fontWeight(.semibold)
                         .lineLimit(1)
                         .padding(.horizontal, 5)
                         .fixedSize(horizontal: false, vertical: true)
-                }
-            )
+                )
         })
         .buttonStyle(PlainButtonStyle())
         .alert(isPresented: $alertIsPresented) {
@@ -69,9 +74,9 @@ struct TouchBarPlaylistButton: View {
         )
         
         self.playerManager.playlistsLastPlayedDates[playlist.uri] = Date()
-//        self.playerManager.updatePlaylistsSortedByLastPlayedDate()
         
-        self.spotify.api.getAvailableDeviceThenPlay(playbackRequest)
+        self.playPlaylistCancellable = self.spotify.api
+            .getAvailableDeviceThenPlay(playbackRequest)
             .receive(on: RunLoop.main)
             .handleAuthenticationError(spotify: self.spotify)
             .sink(
@@ -87,7 +92,6 @@ struct TouchBarPlaylistButton: View {
                 },
                 receiveValue: { }
             )
-            .store(in: &cancellables)
 
     }
 

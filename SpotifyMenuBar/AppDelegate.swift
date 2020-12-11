@@ -21,7 +21,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         
-        NSApplication.shared.isAutomaticCustomizeTouchBarMenuItemEnabled = true
+//        NSApplication.shared.isAutomaticCustomizeTouchBarMenuItemEnabled = true
         
         self.spotify = Spotify()
         
@@ -43,6 +43,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         )
         popover.behavior = .transient
         popover.animates = false
+        popover.delegate = self
 
 //        let viewController = NSViewController()
 //        viewController.view = NSHostingView(rootView: rootView)
@@ -68,9 +69,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     @objc func togglePopover(_ sender: AnyObject?) {
+        print("togglePopover")
         if let button = self.statusBarItem.button {
             if self.popover.isShown {
                 self.popover.performClose(sender)
+//                self.playerManager.popoverDidClose
+//                print("self.playerManager.popoverDidDismiss.send()")
             }
             else {
                 self.playerManager.popoverWillShow.send()
@@ -222,6 +226,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
         // If we got here, it is time to quit.
         return .terminateNow
+    }
+
+}
+
+extension AppDelegate: NSPopoverDelegate {
+    
+
+    func popoverDidClose(_ notification: Notification) {
+        self.playerManager.popoverDidClose.send()
     }
 
 }

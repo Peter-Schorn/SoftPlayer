@@ -10,7 +10,6 @@ struct PlayPauseButton: View {
     var body: some View {
         Button(action: {
             self.playerManager.player.playpause?()
-            //                    print(self.playerManager.availableDevices)
         }, label: {
             if self.playerManager.player.playerState == .playing {
                 Image(systemName: "pause.circle.fill")
@@ -22,8 +21,21 @@ struct PlayPauseButton: View {
             }
         })
         .buttonStyle(PlainButtonStyle())
+//        .disabled(playPauseIsDisabled)
         
     }
+    
+    var playPauseIsDisabled: Bool {
+        switch self.playerManager.player.playerState {
+            case .playing:
+                return !self.playerManager.allowedActions.contains(.pause)
+            case .stopped, .paused:
+                return !self.playerManager.allowedActions.contains(.resume)
+            default:
+                return false
+        }
+    }
+
 }
 
 struct PlayPauseButton_Previews: PreviewProvider {

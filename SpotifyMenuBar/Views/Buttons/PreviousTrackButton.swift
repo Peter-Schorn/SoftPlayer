@@ -11,13 +11,15 @@ struct PreviousTrackButton: View {
 
     @State private var seekBackwardsTimerCancellable: Cancellable? = nil
     
+    let size: Size
+    
     var body: some View {
         
             // MARK: Seek Backwards 15 Seconds
             if playerManager.currentTrack?.identifier?.idCategory == .episode {
                 Button(action: seekBackwards15Seconds, label: {
                     Image(systemName: "gobackward.15")
-                        .font(.title)
+                        .font(size == .large ? .title : .body)
                 })
                 .buttonStyle(PlainButtonStyle())
             }
@@ -72,3 +74,7 @@ struct PreviousTrackButton_Previews: PreviewProvider {
     }
 }
 
+
+enum Size {
+    case small, large
+}
