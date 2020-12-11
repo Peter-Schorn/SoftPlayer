@@ -30,7 +30,7 @@ struct PlaybackPositionView: View {
                 knobDiameter: 10,
                 knobScaleEffectMagnitude: 1.3,
                 leadingRectangleColor: .playbackPositionLeadingRectangle,
-                onEnded: { _ in self.updatePlaybackPosition() }
+                onEndedDragging: { _ in self.updatePlaybackPosition() }
             )
             .padding(.bottom, 5)
             

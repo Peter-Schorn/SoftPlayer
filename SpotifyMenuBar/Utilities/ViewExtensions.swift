@@ -31,6 +31,12 @@ extension View {
         }
     }
     
+    func onKeyEvent(perform action: @escaping (NSEvent) -> Void) -> some View {
+        self.background(
+            KeyEventHandler(receiveKeyEvent: action)
+        )
+    }
+    
 
     /**
      A gesture that recognizs a tap and a long press.

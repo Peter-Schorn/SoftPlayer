@@ -15,20 +15,31 @@ struct AddToPlaylistButton: View {
 
     var body: some View {
         Menu {
-            ForEach(
-                playerManager.playlistsSortedByLastAddedDate, id: \.uri
-            ) { playlist in
-                Button(action: {
-                    self.addCurrentItemToPlaylist(playlist)
-                }, label: {
-                    Text(playlist.name)
-                })
+            if playerManager.playlistsSortedByLastAddedDate.isEmpty {
+                Text("No Playlists Found")
+            }
+            else {
+                ForEach(
+                    playerManager.playlistsSortedByLastAddedDate, id: \.uri
+                ) { playlist in
+
+                    Button(action: {
+                        self.addCurrentItemToPlaylist(playlist)
+                    }, label: {
+                        Text(playlist.name)
+                    })
+                }
             }
         } label: {
             HStack {
                 Image(systemName: "music.note.list")
             }
         }
+//        .menuStyle(BorderlessButtonMenuStyle())
+        
+//        PopupButton()
+        
+        .help("Add the current track or episode to a playlist")
         .frame(width: 50)
         .alert(isPresented: $alertIsPresented) {
             Alert(
@@ -37,6 +48,15 @@ struct AddToPlaylistButton: View {
             )
         }
 
+    }
+    
+    func playlistImage(uri: String) -> Image {
+        
+        if let identifier = try? SpotifyIdentifier(uri: uri),
+                let image = self.playerManager.image(for: identifier) {
+            return image
+        }
+        return Image(.spotifyAlbumPlaceholder)
     }
     
     /// Adds the currently playing track/episode to a playlist.
@@ -87,4 +107,13 @@ struct AddToPlaylistButton_Previews: PreviewProvider {
     static var previews: some View {
         PlayerView_Previews.previews
     }
+}
+
+
+struct PlainMenuStyle: MenuStyle {
+    
+    func makeBody(configuration: Configuration) -> some View {
+        Menu(configuration)
+    }
+
 }

@@ -11,13 +11,16 @@ struct NextTrackButton: View {
 
     @State private var seekForwardsTimerCancellable: Cancellable? = nil
     
+    let size: Size
+    
     var body: some View {
         
         if playerManager.currentTrack?.identifier?.idCategory == .episode {
             // MARK: Seek Forwards 15 Seconds
             Button(action: seekForwards15Seconds, label: {
                 Image(systemName: "goforward.15")
-                    .font(.title)
+                    .font(size == .large ? .title : .body)
+
             })
             .buttonStyle(PlainButtonStyle())
         }
