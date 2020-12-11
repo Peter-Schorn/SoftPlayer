@@ -71,6 +71,10 @@ struct LoginView: View {
         }
         .frame(minWidth: 175)
         .padding()
+        .onExitCommand {
+            let delegate = NSApplication.shared.delegate as! AppDelegate
+            delegate.popover.performClose(nil)
+        }
     }
     
 }

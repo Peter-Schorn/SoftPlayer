@@ -19,11 +19,13 @@ struct RootView: View {
         VStack {
             if spotify.isAuthorized && !Self.debugShowLoginView {
                 PlayerView()
+//                PlaylistsView(isPresented: .constant(true))
             }
             else {
                 LoginView()
             }
         }
+        
 //        .background(
 //            Rectangle().fill(BackgroundStyle())
 //        )
@@ -37,6 +39,7 @@ struct RootView: View {
             spotify.redirectURLSubject,
             perform: handleRedirectURL(_:)
         )
+        
     }
     
     func handleRedirectURL(_ url: URL) {
@@ -98,10 +101,10 @@ struct RootView_Previews: PreviewProvider {
                 .environmentObject(playerManager)
                 .environmentObject(playerManager.spotify)
                 .onAppear(perform: onAppear)
-            //            .frame(
-            //                width: CGFloat(AppDelegate.popoverWidth),
-            //                height: CGFloat(AppDelegate.popoverHeight)
-            //            )
+                .frame(
+                    width: CGFloat(AppDelegate.popoverWidth),
+                    height: CGFloat(AppDelegate.popoverHeight)
+                )
         }
     }
     

@@ -13,7 +13,7 @@ struct CustomSliderView: View {
     let leadingRectangleColor: Color
 
     /// Called when the drag gesture ends.
-    let onEnded: ((DragGesture.Value) -> Void)?
+    let onEndedDragging: ((DragGesture.Value) -> Void)?
 
     let sliderHeight: CGFloat = 5
 
@@ -27,7 +27,7 @@ struct CustomSliderView: View {
         knobDiameter: CGFloat,
         knobScaleEffectMagnitude: CGFloat = 1,
         leadingRectangleColor: Color,
-        onEnded: ((DragGesture.Value) -> Void)? = nil
+        onEndedDragging: ((DragGesture.Value) -> Void)? = nil
     ) {
         self._value = value
         self._isDragging = isDragging
@@ -35,7 +35,7 @@ struct CustomSliderView: View {
         self.knobDiameter = knobDiameter
         self.knobScaleEffectMagnitude = knobScaleEffectMagnitude
         self.leadingRectangleColor = leadingRectangleColor
-        self.onEnded = onEnded
+        self.onEndedDragging = onEndedDragging
     }
     
     var body: some View {
@@ -111,7 +111,7 @@ struct CustomSliderView: View {
             }
             .onEnded { dragValue in
                 self.isDragging = false
-                self.onEnded?(dragValue)
+                self.onEndedDragging?(dragValue)
             }
     }
     
@@ -137,7 +137,7 @@ struct CustomSliderView: View {
             }
             .onEnded { dragValue in
                 self.isDragging = false
-                self.onEnded?(dragValue)
+                self.onEndedDragging?(dragValue)
             }
     }
     

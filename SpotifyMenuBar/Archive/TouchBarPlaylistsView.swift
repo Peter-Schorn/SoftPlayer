@@ -105,7 +105,7 @@ extension TouchBarPlaylistsViewController: NSScrubberDataSource {
 
 }
 
-struct TouchBarPlaylistsView: NSViewControllerRepresentable {
+private struct TouchBarPlaylistsView: NSViewControllerRepresentable {
     
     func makeNSViewController(
         context: Context
