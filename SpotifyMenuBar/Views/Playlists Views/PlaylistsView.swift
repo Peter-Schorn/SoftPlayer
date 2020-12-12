@@ -6,9 +6,13 @@ import Logging
 
 struct PlaylistsView: View {
 
-    static let animation = Animation.easeInOut
+    static let animation = Animation.easeInOut(duration: 3)
     
     @Environment(\.colorScheme) var colorScheme
+    
+    @Namespace var namespace
+    
+    let albumImageId = "albumImage"
     
     @EnvironmentObject var playerManager: PlayerManager
     @EnvironmentObject var spotify: Spotify
@@ -20,10 +24,6 @@ struct PlaylistsView: View {
     @State private var alertMessage = ""
     
     @State private var cancellables: Set<AnyCancellable> = []
-    
-    var playingEpisode: Bool {
-        playerManager.currentTrack?.identifier?.idCategory == .episode
-    }
     
     var body: some View {
         VStack(spacing: 0) {
@@ -51,13 +51,13 @@ struct PlaylistsView: View {
                         $0.shadow(radius: 3, y: 2)
                     }
             )
-            PlaylistsScrollView(isPresented: $isPresented)
+            PlaylistsScrollView(isShowingPlaylistsView: $isPresented)
+                .transition(.move(edge: .bottom))
         }
         .background(
             Rectangle().fill(BackgroundStyle())
         )
         .touchBar(content: PlayPlaylistsTouchBarView.init)
-        .transition(.move(edge: .bottom))
         .onExitCommand {
            self.dissmissView(animated: true)
         }
@@ -74,6 +74,10 @@ struct PlaylistsView: View {
                 .frame(width: 70, height: 70)
                 .cornerRadius(5)
                 .shadow(radius: 2)
+                .matchedGeometryEffect(
+                    id: albumImageId, in: namespace
+                )
+                
             VStack(spacing: 0) {
                 Group {
                     Text(playerManager.currentTrack?.name ?? "")

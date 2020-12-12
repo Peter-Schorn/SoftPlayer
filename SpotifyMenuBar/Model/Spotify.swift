@@ -129,7 +129,7 @@ final class Spotify: ObservableObject {
                     AuthorizationCodeFlowPKCEManager.self,
                     from: authManagerData
                 )
-                print("found authorization information in keychain")
+//                print("found authorization information in keychain")
                 
                 /*
                  This assignment causes `authorizationManagerDidChange`

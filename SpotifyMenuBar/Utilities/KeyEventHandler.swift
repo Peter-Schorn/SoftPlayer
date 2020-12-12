@@ -6,11 +6,9 @@ import Combine
 /// https://stackoverflow.com/a/61155272/12394554
 struct KeyEventHandler: NSViewRepresentable {
     
-    let receiveKeyEvent: (NSEvent) -> Void
+    @Binding var isFirstResponder: Bool
     
-    init(receiveKeyEvent: @escaping (NSEvent) -> Void) {
-        self.receiveKeyEvent = receiveKeyEvent
-    }
+    let receiveKeyEvent: (NSEvent) -> Void
     
     private class KeyHandlerView: NSView {
         
@@ -29,6 +27,8 @@ struct KeyEventHandler: NSViewRepresentable {
         
         override func keyDown(with event: NSEvent) {
 //            print("keyDown: \(event.charactersIgnoringModifiers ?? "")")
+            
+            // key code 53 = escape key
             if event.charactersIgnoringModifiers != nil, event.keyCode != 53 {
                 self.receiveKeyEvent(event)
             }
@@ -49,7 +49,17 @@ struct KeyEventHandler: NSViewRepresentable {
     }
     
     func updateNSView(_ nsView: NSView, context: Context) {
-//        print("updateNSView")
+//        if self.isFirstResponder {
+//            DispatchQueue.main.async {
+//                nsView.window?.makeFirstResponder(nsView)
+//            }
+//            
+//        }
+//        else {
+//            DispatchQueue.main.async {
+//                nsView.resignFirstResponder()
+//            }
+//        }
     }
     
 }
