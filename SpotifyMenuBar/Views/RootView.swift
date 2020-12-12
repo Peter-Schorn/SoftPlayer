@@ -25,10 +25,6 @@ struct RootView: View {
                 LoginView()
             }
         }
-        
-//        .background(
-//            Rectangle().fill(BackgroundStyle())
-//        )
         .alert(isPresented: $alertIsPresented) {
             Alert(
                 title: Text(alertTitle),

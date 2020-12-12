@@ -32,14 +32,10 @@ extension View {
     }
     
     func onKeyEvent(
-        perform action: @escaping (NSEvent) -> Void,
-        isFirstResponder: Binding<Bool> = .constant(true)
+        perform action: @escaping (NSEvent) -> Void
     ) -> some View {
         self.background(
-            KeyEventHandler(
-                isFirstResponder: isFirstResponder,
-                receiveKeyEvent: action
-            )
+            KeyEventHandler(receiveKeyEvent: action)
         )
     }
     

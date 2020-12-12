@@ -69,8 +69,6 @@ struct PlaylistsCellView: View {
             }
         }
         .disabled(isSelected)
-        //        .disabled(Int.random(in: 1...3) == 1)
-//        .padding(.horizontal, 10)
         .padding(.trailing, 10)
         .padding(.leading, 5)
     }
