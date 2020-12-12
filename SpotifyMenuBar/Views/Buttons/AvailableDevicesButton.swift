@@ -20,10 +20,7 @@ struct AvailableDevicesButton: View {
                 Text("No Devices Found")
             }
             else {
-                ForEach(
-                    playerManager.availableDevices,
-                    id: \.id
-                ) { device in
+                ForEach(playerManager.availableDevices, id: \.id) { device in
                     Button(action: {
                         transferPlayback(to: device)
                     }, label: {

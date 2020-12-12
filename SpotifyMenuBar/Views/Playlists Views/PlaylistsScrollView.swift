@@ -113,16 +113,15 @@ struct PlaylistsScrollView: View {
                         isFirstResponder: $searchFieldIsFocused,
                         onCommit: onSearchFieldCommit
                     )
-                    .id(searchFieldId)
-                    .padding(.vertical, 5)
-                    .padding(.leading, 3)
+                    .padding(.leading, 8)
                     .padding(.trailing, -5)
                     
                     filterMenuView
-                        .padding(.trailing, 3)
+                        .padding(.trailing, 10)
                 }
-                .padding(.top, 5)
-                .padding(.bottom, -15)
+                .padding(.top, 10)
+                .padding(.bottom, -7)
+                .id(searchFieldId)
                 
                 ForEach(
                     self.filteredPlaylists,
@@ -140,7 +139,6 @@ struct PlaylistsScrollView: View {
                 Spacer()
                     .frame(height: 10)
             }
-            .padding(.horizontal, 3)
             .alert(isPresented: $alertIsPresented) {
                 Alert(
                     title: Text(alertTitle),
@@ -156,7 +154,6 @@ struct PlaylistsScrollView: View {
                 self.receiveKeyEvent(event, scrollView: scrollView)
             }
             .onChange(of: searchText) { text in
-//                print("search text change scroll")
                 scrollView.scrollTo(searchFieldId, anchor: .top)
             }
             .onReceive(playerManager.keyEventSubject) { event in
@@ -183,6 +180,7 @@ struct PlaylistsScrollView: View {
             Image(systemName: "line.horizontal.3.decrease.circle.fill")
         }
         .menuStyle(BorderlessButtonMenuStyle())
+        .help("Filters")
         .frame(width: 30)
     }
     
