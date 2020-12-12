@@ -122,7 +122,7 @@ struct PlaylistsScrollView: View {
                         .padding(.trailing, 3)
                 }
                 .padding(.top, 5)
-                .padding(.bottom, -12)
+                .padding(.bottom, -15)
                 
                 ForEach(
                     self.filteredPlaylists,
@@ -137,7 +137,8 @@ struct PlaylistsScrollView: View {
                     }
                     .id(playlist.offset)
                 }
-                .padding(.bottom, 10)
+                Spacer()
+                    .frame(height: 10)
             }
             .padding(.horizontal, 3)
             .alert(isPresented: $alertIsPresented) {
@@ -148,7 +149,6 @@ struct PlaylistsScrollView: View {
             }
             .onAppear {
 //                if !ProcessInfo.processInfo.isPreviewing {
-                print("\nPlaylistsScrollView DID APPEAR\n")
                     scrollView.scrollTo(0, anchor: .top)
 //                }
             }

@@ -122,7 +122,7 @@ final class Spotify: ObservableObject {
         // Check to see if the authorization information is saved in
         // the keychain.
         if let authManagerData = keychain[data: authorizationManagerKey] {
-            
+
             do {
                 // Try to decode the data.
                 let authorizationManager = try JSONDecoder().decode(
@@ -130,26 +130,27 @@ final class Spotify: ObservableObject {
                     from: authManagerData
                 )
 //                print("found authorization information in keychain")
-                
+
                 /*
                  This assignment causes `authorizationManagerDidChange`
                  to emit a signal, meaning that
                  `handleChangesToAuthorizationManager()` will be called.
-                 
+
                  Note that if you had subscribed to
                  `authorizationManagerDidChange` after this line,
                  then `handleChangesToAuthorizationManager()` would not
                  have been called and the @Published `isAuthorized` property
                  would not have been properly updated.
-                 
+
                  We do not need to update `isAuthorized` here because it
                  is already done in `handleChangesToAuthorizationManager()`.
                  */
                 self.api.authorizationManager = authorizationManager
+
                 // MARK: DEBUG
 //                self.api.authorizationManager.setExpirationDate(to: Date())
 //                self.api.authorizationManager.deauthorize()
-                
+
             } catch {
                 print("could not decode authorizationManager from data:\n\(error)")
             }

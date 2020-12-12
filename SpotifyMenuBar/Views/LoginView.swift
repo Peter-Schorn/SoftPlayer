@@ -71,10 +71,11 @@ struct LoginView: View {
         }
         .frame(minWidth: 175)
         .padding()
-        .onExitCommand {
-            let delegate = NSApplication.shared.delegate as! AppDelegate
-            delegate.popover.performClose(nil)
-        }
+        .background(FocusView(isFirstResponder: .constant(true)))
+//        .onExitCommand {
+//            let delegate = NSApplication.shared.delegate as! AppDelegate
+//            delegate.popover.performClose(nil)
+//        }
     }
     
 }
