@@ -22,16 +22,26 @@ struct AvailableDevicesButton: View {
             else {
                 ForEach(
                     playerManager.availableDevices,
-                    id: \.id,
-                    content: deviceView(_:)
-                )
+                    id: \.id
+                ) { device in
+                    Button(action: {
+                        transferPlayback(to: device)
+                    }, label: {
+                        HStack {
+                            Text(device.name)
+                            if device.isActive {
+                                Image(systemName: "checkmark")
+                            }
+                        }
+                    })
+                }
             }
         } label: {
             Image(systemName: "hifispeaker.2.fill")
         }
         .menuStyle(BorderlessButtonMenuStyle())
-        .help("Transfer playback to a different device")
         .disabled(!playerManager.allowedActions.contains(.transferPlayback))
+        .help("Transfer playback to a different device")
         .scaleEffect(1.2)
         .frame(width: 33)
         .alert(isPresented: $alertIsPresented, content: {
@@ -42,20 +52,6 @@ struct AvailableDevicesButton: View {
         })
         
     }
-    
-    func deviceView(_ device: Device) -> some View {
-        Button(action: {
-            transferPlayback(to: device)
-        }, label: {
-            HStack {
-                Text(device.name)
-                if device.isActive {
-                    Image(systemName: "checkmark")
-                }
-            }
-        })
-    }
-    
     
     func transferPlayback(to device: Device) {
         guard let id = device.id else {

@@ -3,7 +3,7 @@ import Combine
 import AppKit
 import SwiftUI
 import KeychainAccess
-@testable import SpotifyWebAPI
+import SpotifyWebAPI
 
 /**
  A helper class that wraps around an instance of `SpotifyAPI`
