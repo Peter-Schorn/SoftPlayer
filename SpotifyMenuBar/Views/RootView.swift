@@ -106,7 +106,7 @@ struct RootView_Previews: PreviewProvider {
     
     static func onAppear() {
 //        RootView.debugShowLoginView = true
-        playerManager.spotify.isAuthorized = true
+//        playerManager.spotify.isAuthorized = true
 //        playerManager.spotify.isRetrievingTokens = false
     }
 }

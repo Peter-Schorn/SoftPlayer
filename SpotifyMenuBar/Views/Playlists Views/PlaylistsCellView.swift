@@ -65,12 +65,10 @@ struct PlaylistsCellView: View {
                     Image(systemName: "text.badge.plus")
                 })
                 .help(addToPlaylistTooltip)
-                .padding(.trailing, 5)
             }
         }
         .disabled(isSelected)
-        .padding(.trailing, 10)
-        .padding(.leading, 5)
+        .padding(.horizontal, 10)
     }
     
     /// Adds the currently playing track/episode to a playlist.
