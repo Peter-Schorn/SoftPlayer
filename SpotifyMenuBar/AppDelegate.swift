@@ -55,7 +55,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         self.popover = popover
 
         self.statusBarItem = NSStatusBar.system.statusItem(
-            withLength: CGFloat(NSStatusItem.variableLength)
+            withLength: NSStatusItem.squareLength
         )
         if let button = self.statusBarItem.button {
              button.image = NSImage(named: "music.note")
@@ -69,7 +69,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     @objc func togglePopover(_ sender: AnyObject?) {
-        print("togglePopover")
+//        print("togglePopover")
         if let button = self.statusBarItem.button {
             if self.popover.isShown {
                 self.popover.performClose(sender)
