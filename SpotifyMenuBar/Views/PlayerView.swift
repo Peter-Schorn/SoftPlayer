@@ -5,7 +5,7 @@ import SpotifyWebAPI
 
 struct PlayerView: View {
 
-    static let animation = Animation.easeInOut(duration: 0.5)
+    static let animation = Animation.easeIn(duration: 0.5)
     
     @EnvironmentObject var spotify: Spotify
     @EnvironmentObject var playerManager: PlayerManager
@@ -73,21 +73,20 @@ struct PlayerView: View {
             // MARK: Large Album Image
             playerManager.artworkImage
                 .resizable()
+//                .matchedGeometryEffect(
+//                    id: albumImageId,
+//                    in: namespace,
+//                    anchor: .center,
+//                    isSource: false
+//                )
                 .transition(.scale)
                 // MARK: Matched Geometry Effect
-                .matchedGeometryEffect(
-                    id: albumImageId,
-                    in: namespace,
-                    anchor: .center,
-                    isSource: false
-                )
                 .frame(
                     width: AppDelegate.popoverWidth,
                     height: AppDelegate.popoverWidth
                 )
 //                .transition(.scale)
-                
-//                .padding(.bottom, 5)
+                .padding(.bottom, 5)
 
             // MARK: Large Playing Title
             VStack(spacing: 5) {
@@ -108,10 +107,10 @@ struct PlayerView: View {
             }
             .padding(.horizontal, 10)
             .frame(height: 60)
-            .transition(.scale)
-            .matchedGeometryEffect(
-                id: playingTitleId, in: namespace
-            )
+//            .transition(.scale)
+//            .matchedGeometryEffect(
+//                id: playingTitleId, in: namespace
+//            )
 
             // MARK: Main Player Controls
             VStack(spacing: 0) {
@@ -154,9 +153,9 @@ struct PlayerView: View {
                 .padding(.top, 5)
 
             }
-            .matchedGeometryEffect(
-                id: playerControlsId, in: namespace
-            )
+//            .matchedGeometryEffect(
+//                id: playerControlsId, in: namespace
+//            )
             .padding(.horizontal, 10)
 
             Spacer()
@@ -196,6 +195,7 @@ struct PlayerView: View {
         .background(
             Rectangle().fill(BackgroundStyle())
         )
+        .transition(.move(edge: .bottom))
         .touchBar(content: PlayPlaylistsTouchBarView.init)
         .onExitCommand {
             print("playlistsView onExitCommand")
@@ -212,19 +212,19 @@ struct PlayerView: View {
             // MARK: Small Album Image
             playerManager.artworkImage
                 .resizable()
+                // MARK: Matched Geometry Effect
+//                .matchedGeometryEffect(
+//                    id: albumImageId,
+//                    in: namespace,
+//                    anchor: .center,
+//                    isSource: true
+//                )
                 .transition(.scale)
-                .matchedGeometryEffect(
-                    id: albumImageId,
-                    in: namespace,
-                    anchor: .center,
-                    isSource: true
-                )
                 .aspectRatio(contentMode: .fit)
                 .frame(width: 70, height: 70)
                 .cornerRadius(5)
                 .shadow(radius: 2)
 //                .transition(.scale)
-                // MARK: Matched Geometry Effect
                 
                 
             VStack(spacing: 0) {
@@ -247,9 +247,9 @@ struct PlayerView: View {
                         )
                 }
                 .transition(.scale)
-                .matchedGeometryEffect(
-                    id: playingTitleId, in: namespace
-                )
+//                .matchedGeometryEffect(
+//                    id: playingTitleId, in: namespace
+//                )
                 // MARK: Small Player Controls
                 HStack(spacing: 15) {
                     ShuffleButton()
@@ -261,9 +261,9 @@ struct PlayerView: View {
                     RepeatModeButton()
                         .scaleEffect(0.8)
                 }
-                .matchedGeometryEffect(
-                    id: playerControlsId, in: namespace
-                )
+//                .matchedGeometryEffect(
+//                    id: playerControlsId, in: namespace
+//                )
                 .padding(.vertical, 5)
             }
             .padding(5)

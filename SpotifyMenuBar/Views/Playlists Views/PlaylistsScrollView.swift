@@ -115,10 +115,11 @@ struct PlaylistsScrollView: View {
                     )
                     .id(searchFieldId)
                     .padding(.vertical, 5)
-                    .padding(.leading, 5)
+                    .padding(.leading, 3)
                     .padding(.trailing, -5)
                     
                     filterMenuView
+                        .padding(.trailing, 3)
                 }
                 .padding(.top, 5)
                 .padding(.bottom, -12)
@@ -136,8 +137,9 @@ struct PlaylistsScrollView: View {
                     }
                     .id(playlist.offset)
                 }
+                .padding(.bottom, 10)
             }
-            .padding(.horizontal, 5)
+            .padding(.horizontal, 3)
             .alert(isPresented: $alertIsPresented) {
                 Alert(
                     title: Text(alertTitle),
