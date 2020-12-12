@@ -209,13 +209,12 @@ struct PlaylistsScrollView: View {
             return
         }
         if let firstPlaylist = self.filteredPlaylists.first?.element {
-//            DispatchQueue.main.async {
-                withAnimation(highlightAnimation) {
-                    self.selectedPlaylistURI = firstPlaylist.uri
-                }
-                print("playing playlist \(firstPlaylist.name)")
-                self.playPlaylist(firstPlaylist)
-//            }
+            withAnimation(highlightAnimation) {
+                self.selectedPlaylistURI = firstPlaylist.uri
+            }
+            print("playing playlist \(firstPlaylist.name)")
+            self.playPlaylist(firstPlaylist)
+            
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
                 withAnimation(highlightAnimation) {
                     self.selectedPlaylistURI = nil

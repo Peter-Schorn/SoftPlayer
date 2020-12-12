@@ -278,6 +278,7 @@ struct PlayerView: View {
             self.isShowingPlaylistsView = false
         }
         self.playerManager.updatePlaylistsSortedByLastModifiedDate()
+        self.playerManager.retrieveAvailableDevices()
     }
 
     func receiveKeyEvent(_ event: NSEvent) {
