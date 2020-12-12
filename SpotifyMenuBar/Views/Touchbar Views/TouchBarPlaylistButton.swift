@@ -64,8 +64,6 @@ struct TouchBarPlaylistButton: View {
     
     func playPlaylist(_ playlist: Playlist<PlaylistsItemsReference>) {
         
-//        let x = playerManager.currentlyPlayingContext?.context?.uri
-        
         self.isMakingRequestToPlayPlaylist = true
         
         let playbackRequest = PlaybackRequest(

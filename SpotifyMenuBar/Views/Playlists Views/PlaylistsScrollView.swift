@@ -17,7 +17,7 @@ struct PlaylistsScrollView: View {
     @EnvironmentObject var playerManager: PlayerManager
     @EnvironmentObject var spotify: Spotify
 
-    @Binding var isPresented: Bool
+    @Binding var isShowingPlaylistsView: Bool
     
     @AppStorage("onlyShowMyPlaylists") var onlyShowMyPlaylists = false
     
@@ -146,7 +146,7 @@ struct PlaylistsScrollView: View {
             }
             .onAppear {
 //                if !ProcessInfo.processInfo.isPreviewing {
-                    print("\nscroll to 0\n")
+                print("\nPlaylistsScrollView DID APPEAR\n")
                     scrollView.scrollTo(0, anchor: .top)
 //                }
             }
@@ -157,8 +157,9 @@ struct PlaylistsScrollView: View {
 //                print("search text change scroll")
                 scrollView.scrollTo(searchFieldId, anchor: .top)
             }
-            
-            
+            .onReceive(playerManager.keyEventSubject) { event in
+                self.receiveKeyEvent(event, scrollView: scrollView)
+            }
             
         }
         
@@ -184,12 +185,16 @@ struct PlaylistsScrollView: View {
     }
     
     func receiveKeyEvent(_ event: NSEvent, scrollView: ScrollViewProxy) {
-        if let character = event.charactersIgnoringModifiers {
+        
+        if [76, 36].contains(event.keyCode) {
+            self.onSearchFieldCommit()
+        }
+        else if let character = event.charactersIgnoringModifiers {
             print("PlaylistsScrollView receiveKeyEvent: '\(character)'")
             print(event)
-            
-            self.searchText += character
+
             self.searchFieldIsFocused = true
+            self.searchText += character
             print("scrolling to search field")
             scrollView.scrollTo(searchFieldId, anchor: .top)
         }
@@ -197,7 +202,7 @@ struct PlaylistsScrollView: View {
     
     func onSearchFieldCommit() {
         print("onSearchFieldCommit")
-        guard isPresented else {
+        guard isShowingPlaylistsView else {
             print("skipping because not presented")
             return
         }
@@ -206,7 +211,7 @@ struct PlaylistsScrollView: View {
                 withAnimation(highlightAnimation) {
                     self.selectedPlaylistURI = firstPlaylist.uri
                 }
-                print("playlist playlist \(firstPlaylist.name)")
+                print("playing playlist \(firstPlaylist.name)")
                 self.playPlaylist(firstPlaylist)
 //            }
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {

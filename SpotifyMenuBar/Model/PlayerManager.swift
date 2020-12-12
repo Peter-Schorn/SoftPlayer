@@ -149,6 +149,8 @@ class PlayerManager: ObservableObject {
     /// `PlayerView` displays an alert when this subject emits.
     let alertSubject = PassthroughSubject<String, Never>()
     
+    let keyEventSubject = PassthroughSubject<NSEvent, Never>()
+    
     let artworkURLDidChange = PassthroughSubject<Void, Never>()
     
     /// Emits when the popover is about to be shown.
