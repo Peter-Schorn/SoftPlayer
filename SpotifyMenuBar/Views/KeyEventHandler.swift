@@ -6,8 +6,6 @@ import Combine
 /// https://stackoverflow.com/a/61155272/12394554
 struct KeyEventHandler: NSViewRepresentable {
     
-    @Binding var isFirstResponder: Bool
-    
     let receiveKeyEvent: (NSEvent) -> Void
     
     private class KeyHandlerView: NSView {
@@ -49,17 +47,7 @@ struct KeyEventHandler: NSViewRepresentable {
     }
     
     func updateNSView(_ nsView: NSView, context: Context) {
-//        if self.isFirstResponder {
-//            DispatchQueue.main.async {
-//                nsView.window?.makeFirstResponder(nsView)
-//            }
-//            
-//        }
-//        else {
-//            DispatchQueue.main.async {
-//                nsView.resignFirstResponder()
-//            }
-//        }
+        
     }
     
 }

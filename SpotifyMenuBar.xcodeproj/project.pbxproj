@@ -203,7 +203,6 @@
 				4712E600257FAD0C00A881D5 /* TouchBarIdentifiers.swift */,
 				477560DF2580083200B7FFED /* SpotifyWebAPIExtensions.swift */,
 				47DC186825824B5800EF11BA /* Loggers.swift */,
-				47891C942583128900063460 /* KeyEventHandler.swift */,
 			);
 			path = Utilities;
 			sourceTree = "<group>";
@@ -239,13 +238,14 @@
 				47832F492566474300AADEA3 /* RootView.swift */,
 				47FD3DF2256FA726000E2346 /* LoginView.swift */,
 				47FD3E02256FB031000E2346 /* PlayerView.swift */,
-				470315222583EED900B2BDF2 /* FocusView.swift */,
 				4789987725747F0F00866EE1 /* PlaybackPositionView.swift */,
 				47F6EC63257C96D7007079D2 /* SoundVolumeSlider.swift */,
 				4789987A25749FD500866EE1 /* CustomSliderView.swift */,
 				4712E603257FB1A100A881D5 /* NotificationView.swift */,
 				4703151D2583BEA800B2BDF2 /* FocusableTextField.swift */,
 				47038543257E801100D0E79A /* BlurView.swift */,
+				470315222583EED900B2BDF2 /* FocusView.swift */,
+				47891C942583128900063460 /* KeyEventHandler.swift */,
 				47343A662582C90F00EF6750 /* Playlists Views */,
 				47343A672582C92200EF6750 /* Touchbar Views */,
 			);

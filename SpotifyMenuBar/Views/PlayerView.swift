@@ -48,10 +48,7 @@ struct PlayerView: View {
             )
         }
         .background(
-            KeyEventHandler(
-                isFirstResponder: .constant(true),
-                receiveKeyEvent: receiveKeyEvent(_:)
-            )
+            KeyEventHandler(receiveKeyEvent: receiveKeyEvent(_:))
             .touchBar(content: PlayPlaylistsTouchBarView.init)
         )
         .onExitCommand {
