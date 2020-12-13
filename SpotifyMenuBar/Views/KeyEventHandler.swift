@@ -37,12 +37,10 @@ struct KeyEventHandler: NSViewRepresentable {
     }
     
     func makeNSView(context: Context) -> NSView {
-//        print("makeNSView")
         let view = KeyHandlerView(receiveKeyEvent: self.receiveKeyEvent)
-        DispatchQueue.main.async { // wait till next event cycle
+        DispatchQueue.main.async {
             view.window?.makeFirstResponder(view)
         }
-        
         return view
     }
     
