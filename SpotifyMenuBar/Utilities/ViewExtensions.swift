@@ -66,3 +66,11 @@ extension View {
     }
 
 }
+
+extension Color {
+    
+    /// The defult color for the `shadow` `View` modifier:
+    /// `Color(.sRGBLinear, white: 0, opacity: 0.33)`.
+    static let defaultShadow = Color(.sRGBLinear, white: 0, opacity: 0.33)
+
+}

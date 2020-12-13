@@ -220,16 +220,16 @@ final class Spotify: ObservableObject {
         // When set to `true`, `LoginView` is dismissed, allowing the
         // user to interact with the rest of the app.
         self.isAuthorized = self.api.authorizationManager.isAuthorized()
-        
+
         do {
             // Encode the authorization information to data.
             let authManagerData = try JSONEncoder().encode(
                 self.api.authorizationManager
             )
-            
+
             // Save the data to the keychain.
             keychain[data: authorizationManagerKey] = authManagerData
-            
+
         } catch {
             print(
                 "couldn't encode authorizationManager for storage " +
@@ -250,18 +250,18 @@ final class Spotify: ObservableObject {
         withAnimation {
             self.isAuthorized = false
         }
-        
+
         do {
             /*
              Remove the authorization information from the keychain.
-             
+
              If you don't do this, then the authorization information
              that you just removed from memory by calling `deauthorize()`
              will be retrieved again from persistent storage after this
              app is quit and relaunched.
              */
             try keychain.remove(authorizationManagerKey)
-            
+
         } catch {
             print(
                 "couldn't remove authorization manager " +
