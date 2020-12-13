@@ -117,7 +117,7 @@ struct PlaylistsScrollView: View {
                     .padding(.trailing, -5)
                     
                     filterMenuView
-                        .padding(.trailing, 10)
+                        .padding(.trailing, 5)
                 }
                 .padding(.top, 10)
                 .padding(.bottom, -7)
@@ -139,6 +139,12 @@ struct PlaylistsScrollView: View {
                 Spacer()
                     .frame(height: 10)
             }
+            .background(
+                KeyEventHandler { event in
+                    self.receiveKeyEvent(event, scrollView: scrollView)
+                }
+                .touchBar(content: PlayPlaylistsTouchBarView.init)
+            )
             .alert(isPresented: $alertIsPresented) {
                 Alert(
                     title: Text(alertTitle),
@@ -149,9 +155,6 @@ struct PlaylistsScrollView: View {
 //                if !ProcessInfo.processInfo.isPreviewing {
                     scrollView.scrollTo(0, anchor: .top)
 //                }
-            }
-            .onKeyEvent { event in
-                self.receiveKeyEvent(event, scrollView: scrollView)
             }
             .onChange(of: searchText) { text in
                 scrollView.scrollTo(searchFieldId, anchor: .top)

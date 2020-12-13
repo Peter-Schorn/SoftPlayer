@@ -34,11 +34,20 @@ extension View {
     func onKeyEvent(
         perform action: @escaping (NSEvent) -> Void
     ) -> some View {
-        self.background(
-            KeyEventHandler(receiveKeyEvent: action)
-        )
+        self.background(KeyEventHandler(receiveKeyEvent: action))
     }
-    
+
+    func adaptiveShadow(
+        radius: CGFloat,
+        x: CGFloat = 0,
+        y: CGFloat = 0
+    ) -> some View {
+        
+        self.modifier(
+            AdaptiveShadow(radius: radius, x: x, y: y)
+        )
+        
+    }
 
     /**
      A gesture that recognizs a tap and a long press.
@@ -65,6 +74,25 @@ extension View {
         )
     }
 
+}
+
+struct AdaptiveShadow: ViewModifier {
+    
+    @Environment(\.colorScheme) var colorScheme
+    
+    let radius: CGFloat
+    let x: CGFloat
+    let y: CGFloat
+    
+    func body(content: Content) -> some View {
+        content.shadow(
+            color: colorScheme == .dark ? .black : .defaultShadow,
+            radius: radius,
+            x: x,
+            y: y
+        )
+    }
+    
 }
 
 extension Color {

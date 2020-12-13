@@ -5,7 +5,7 @@ import SpotifyWebAPI
 
 struct PlayerView: View {
 
-    static let animation = Animation.easeInOut(duration: 0.6)
+    static let animation = Animation.easeOut(duration: 0.6)
     
     @EnvironmentObject var spotify: Spotify
     @EnvironmentObject var playerManager: PlayerManager
@@ -14,7 +14,7 @@ struct PlayerView: View {
     @Namespace var namespace
     
     @State private var isShowingPlaylistsView = false
-    @State private var isShowingPlaylistsScrollView = false
+    @State private var isShowingMiniPlayerViewBackground = false
     
     @State private var isFirstResponder = false
     
@@ -35,7 +35,7 @@ struct PlayerView: View {
     }
     
     var playlistsViewIsSource: Bool {
-        !isShowingPlaylistsView
+        isShowingPlaylistsView
     }
     
     let albumImageId = "albumImage"
@@ -51,12 +51,45 @@ struct PlayerView: View {
     // MARK: - Begin Views -
     
     var body: some View {
-        Group {
+        ZStack(alignment: .top) {
             if isShowingPlaylistsView {
-                playlistsView
+                VStack(spacing: 0) {
+                    
+                    miniPlayerViewBackground
+                    
+                    PlaylistsScrollView(
+                        isShowingPlaylistsView: $isShowingPlaylistsView
+                    )
+                    
+                    
+                }
+                .padding(.leading, 6)
+                .padding(.trailing, 8)
+                .background(
+                    Rectangle().fill(BackgroundStyle())
+                )
+                // MARK: Playlists View Transition
+                .transition(.move(edge: .bottom))
+                .onExitCommand {
+                    print("playlistsView onExitCommand")
+                    self.dismissPlaylistsView(animated: true)
+                    
+                }
+                .onReceive(playerManager.popoverDidClose) {
+                    self.dismissPlaylistsView(animated: false)
+                }
+                
+                miniPlayerView
+                    .padding(.horizontal, 10)
+                    .padding(.top, 33)
+                    
             }
             else {
                 playerView
+                    .background(
+                        KeyEventHandler(receiveKeyEvent: receiveKeyEvent(_:))
+                            .touchBar(content: PlayPlaylistsTouchBarView.init)
+                    )
             }
         }
         .overlay(NotificationView())
@@ -70,10 +103,18 @@ struct PlayerView: View {
                 message: Text(alertMessage)
             )
         }
-        .background(
-            KeyEventHandler(receiveKeyEvent: receiveKeyEvent(_:))
-                .touchBar(content: PlayPlaylistsTouchBarView.init)
-        )
+        .onChange(of: isShowingPlaylistsView) { isShowing in
+            if isShowing {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    withAnimation(Self.animation) {
+                        self.isShowingMiniPlayerViewBackground = true
+                    }
+                }
+            }
+            else {
+                self.isShowingMiniPlayerViewBackground = false
+            }
+        }
         .onExitCommand {
             if isShowingPlaylistsView {
                 self.dismissPlaylistsView(animated: true)
@@ -83,7 +124,7 @@ struct PlayerView: View {
                 appDelegate.popover.performClose(nil)
             }
         }
-        
+
     }
     
     var playerView: some View {
@@ -152,6 +193,7 @@ struct PlayerView: View {
                             in: namespace,
                             isSource: playerViewIsSource
                         )
+                        .transition(.scale)
                         .padding(.top, 2)
                     PreviousTrackButton(size: .large)
                         // MARK: Matched Geometry Effect
@@ -160,6 +202,7 @@ struct PlayerView: View {
                             in: namespace,
                             isSource: playerViewIsSource
                         )
+                        .transition(.scale)
                     PlayPauseButton()
                         // MARK: Matched Geometry Effect
                         .matchedGeometryEffect(
@@ -167,6 +210,7 @@ struct PlayerView: View {
                             in: namespace,
                             isSource: playerViewIsSource
                         )
+                        .transition(.scale)
                         .frame(width: 38, height: 38)
                     NextTrackButton(size: .large)
                         // MARK: Matched Geometry Effect
@@ -175,6 +219,7 @@ struct PlayerView: View {
                             in: namespace,
                             isSource: playerViewIsSource
                         )
+                        .transition(.scale)
                     RepeatModeButton()
                         // MARK: Matched Geometry Effect
                         .matchedGeometryEffect(
@@ -182,6 +227,7 @@ struct PlayerView: View {
                             in: namespace,
                             isSource: playerViewIsSource
                         )
+                        .transition(.scale)
                         .padding(.top, 2)
 
                 }
@@ -192,6 +238,8 @@ struct PlayerView: View {
                     .frame(maxWidth: .infinity)
                     .padding(.top, 5)
 
+                Spacer()
+                
                 HStack {
                     Button(action: {
                         withAnimation(Self.animation) {
@@ -203,16 +251,17 @@ struct PlayerView: View {
                     .keyboardShortcut("p")
                     .help("Show playlists ⌘P")
                     
+                    Spacer()
+
                     AvailableDevicesButton()
                         .padding(.bottom, 2)
-                    
-                    Spacer()
 
                     // MARK: Settings
                     Button(action: appDelegate.openSettingsWindow, label: {
                         Image(systemName: "gearshape.fill")
                     })
                     .keyboardShortcut(",")
+                    .buttonStyle(PlainButtonStyle())
                     
                 }
                 .padding(.top, 5)
@@ -221,59 +270,6 @@ struct PlayerView: View {
             .padding(.horizontal, 10)
 
             Spacer()
-        }
-    }
-
-    var playlistsView: some View {
-        VStack(spacing: 0) {
-            VStack {
-                
-                Button(action: {
-                    self.dismissPlaylistsView(animated: true)
-                }, label: {
-                    Image(systemName: "chevron.down")
-                        .padding(-3)
-                })
-                .padding(.top, 5)
-                .keyboardShortcut("p")
-                
-                miniPlayerView
-                
-            }
-            .padding(.horizontal, 9)
-            .padding(.bottom, 9)
-            .background(
-                Rectangle()
-                    .fill(BackgroundStyle())
-                    .shadow(
-                        color: colorScheme == .dark ? .black : .defaultShadow,
-                        radius: 3,
-                        y: 2
-                    )
-            )
-            PlaylistsScrollView(
-                isShowingPlaylistsView: $isShowingPlaylistsView
-            )
-        }
-        .background(
-            Rectangle().fill(BackgroundStyle())
-        )
-        // MARK: Playlists View Transition
-        .transition(.move(edge: .bottom))
-//        .transition(
-//            .asymmetric(
-//                insertion: .move(edge: .bottom),
-//                removal: .opacity
-//            )
-//        )
-        .touchBar(content: PlayPlaylistsTouchBarView.init)
-        .onExitCommand {
-            print("playlistsView onExitCommand")
-            self.dismissPlaylistsView(animated: true)
-            
-        }
-        .onReceive(playerManager.popoverDidClose) {
-            self.dismissPlaylistsView(animated: false)
         }
     }
     
@@ -291,15 +287,10 @@ struct PlayerView: View {
                     anchor: .center,
                     isSource: playlistsViewIsSource
                 )
-//                .transaction { transaction in
-//                    transaction.disablesAnimations = true
-//                }
                 .aspectRatio(contentMode: .fit)
                 .frame(width: 70, height: 70)
-                .shadow(
-                    color: colorScheme == .dark ? .black : .defaultShadow,
-                    radius: 2
-                )
+                .adaptiveShadow(radius: 2)
+                .padding(.leading, 5)
                 
             VStack(spacing: 0) {
                 // MARK: Small Playing Title
@@ -342,6 +333,7 @@ struct PlayerView: View {
                             in: namespace,
                             isSource: playlistsViewIsSource
                         )
+                        .transition(.scale)
                     PreviousTrackButton(size: .small)
                         // MARK: Matched Geometry Effect
                         .matchedGeometryEffect(
@@ -349,6 +341,7 @@ struct PlayerView: View {
                             in: namespace,
                             isSource: playlistsViewIsSource
                         )
+                        .transition(.scale)
                     PlayPauseButton()
                         // MARK: Matched Geometry Effect
                         .matchedGeometryEffect(
@@ -356,6 +349,7 @@ struct PlayerView: View {
                             in: namespace,
                             isSource: playlistsViewIsSource
                         )
+                        .transition(.scale)
                         .frame(width: 20, height: 20)
                     NextTrackButton(size: .small)
                         // MARK: Matched Geometry Effect
@@ -364,6 +358,7 @@ struct PlayerView: View {
                             in: namespace,
                             isSource: playlistsViewIsSource
                         )
+                        .transition(.scale)
                     RepeatModeButton()
                         .scaleEffect(0.8)
                         // MARK: Matched Geometry Effect
@@ -372,6 +367,7 @@ struct PlayerView: View {
                             in: namespace,
                             isSource: playlistsViewIsSource
                         )
+                        .transition(.scale)
                 }
                 .padding(.vertical, 5)
             }
@@ -380,6 +376,30 @@ struct PlayerView: View {
         }
     }
 
+    var miniPlayerViewBackground: some View {
+        VStack {
+            Button(action: {
+                self.dismissPlaylistsView(animated: true)
+            }, label: {
+                Image(systemName: "chevron.down")
+                    .padding(-3)
+            })
+            .padding(.top, 5)
+            .keyboardShortcut("p")
+                .padding(.top, 1)
+            Spacer()
+                .frame(height: 85)
+        }
+        .frame(maxWidth: .infinity)
+        .background(
+            Rectangle()
+                .fill(BackgroundStyle())
+                .if(isShowingMiniPlayerViewBackground) {
+                    $0.adaptiveShadow(radius: 3, y: 2)
+                }
+        )
+    }
+    
     func dismissPlaylistsView(animated: Bool) {
         if animated {
             withAnimation(Self.animation) {
@@ -400,6 +420,10 @@ struct PlayerView: View {
                 self.isShowingPlaylistsView = true
             }
         }
+        else if event.characters(byApplyingModifiers: .command) == "," {
+            appDelegate.openSettingsWindow()
+        }
+        
     }
 
 }
