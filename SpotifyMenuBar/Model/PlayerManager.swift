@@ -73,22 +73,10 @@ class PlayerManager: ObservableObject {
 
     @Published var playlists: [Playlist<PlaylistsItemsReference>] = []
     
-    /// The most recently played playlists will appear first.
-    @Published var playlistsSortedByLastPlayedDate:
-            [Playlist<PlaylistsItemsReference>] = []
-    
-    /// The playlists that items were most recently added to will appear first.
-    @Published var playlistsSortedByLastAddedDate:
-            [Playlist<PlaylistsItemsReference>] = []
-    
     /// Sorted based on the last time they were played or an item was added to
     /// them, whichever was later.
-    @Published var playlistsSortedByLastedModifiedDate:
+    @Published var playlistsSortedByLastModifiedDate:
             [Playlist<PlaylistsItemsReference>] = []
-    
-    /// The playlists that are **owned** by the current user. These are the
-    /// playlists that tracks and episodes can be added to.
-    @Published var currentUserPlaylists: [Playlist<PlaylistsItemsReference>] = []
     
     var allowedActions: Set<PlaybackActions> {
         return self.currentlyPlayingContext?.allowedActions
@@ -127,36 +115,20 @@ class PlayerManager: ObservableObject {
             )
     }
 
+    private let playlistsLastModifiedDatesKey = "playlistsLastModifiedDates"
     
-    private let playlistsLastPlayedDatesKey = "playlistsLastPlayedDate"
-    private let playlistsLastAddedDatesKey = "playlistsLastAddedDate"
-    
-    /// The dates that the playlists were last played.
-    var playlistsLastPlayedDates: [String: Date] {
+    /// The dates that playlists were last played or items were
+    /// added to them.
+    var playlistsLastModifiedDates: [String: Date] {
         get {
             return UserDefaults.standard.dictionary(
-                forKey: playlistsLastPlayedDatesKey
+                forKey: playlistsLastModifiedDatesKey
             ) as? [String: Date] ?? [:]
         }
         set {
             UserDefaults.standard.setValue(
                 newValue,
-                forKey: playlistsLastPlayedDatesKey
-            )
-        }
-    }
-    
-    /// The dates that items were last added to the playlists.
-    var playlistsLastAddedDates: [String: Date] {
-        get {
-            return UserDefaults.standard.dictionary(
-                forKey: playlistsLastAddedDatesKey
-            ) as? [String: Date] ?? [:]
-        }
-        set {
-            UserDefaults.standard.setValue(
-                newValue,
-                forKey: playlistsLastAddedDatesKey
+                forKey: playlistsLastModifiedDatesKey
             )
         }
     }
@@ -195,7 +167,6 @@ class PlayerManager: ObservableObject {
     private var retrieveCurrentlyPlayingContextCancellable: AnyCancellable? = nil
     private var retrievePlaylistsCancellable: AnyCancellable? = nil
     private var retrieveCurrentUserCancellable: AnyCancellable? = nil
-    private var retrieveCurrentUserPlaylistsCancellable: AnyCancellable? = nil
     private var didUpdateCurrentlyPlayingContextCancellable: AnyCancellable? = nil
     private var openArtistOrShowCancellable: AnyCancellable? = nil
     
@@ -245,10 +216,14 @@ class PlayerManager: ObservableObject {
         self.spotify.api.authorizationManager.didDeauthorize
             .receive(on: RunLoop.main)
             .sink {
+                self.currentlyPlayingContext = nil
+                self.availableDevices = []
                 self.currentUser = nil
                 self.currentUserPublisher = nil
-                self.playlistsLastPlayedDates = [:]
-                self.playlistsLastAddedDates = [:]
+                self.playlistsLastModifiedDates = [:]
+                self.playlists = []
+                self.playlistsSortedByLastModifiedDate = []
+                self.removePlaylistImagesCache()
             }
             .store(in: &cancellables)
         
@@ -270,6 +245,21 @@ class PlayerManager: ObservableObject {
         self.shuffleIsOn = player.shuffling ?? false
         Loggers.shuffle.trace("self.shuffleIsOn = \(self.shuffleIsOn)")
         
+        self.updateSoundVolumeAndPlayerPosition()
+        
+        if self.currentTrack?.artworkUrl != self.previousArtworkURL {
+//            Loggers.playerManager.trace(
+//                """
+//                artworkURL changed from \(self.previousArtworkURL ?? "nil") \
+//                to \(self.currentTrack?.artworkUrl ?? "nil")
+//                """
+//            )
+            self.artworkURLDidChange.send()
+        }
+        self.previousArtworkURL = self.player.currentTrack?.artworkUrl
+    }
+    
+    func updateSoundVolumeAndPlayerPosition() {
         let newSoundVolume = CGFloat(self.player.soundVolume ?? 100)
         if abs(newSoundVolume - self.soundVolume) >= 2 {
             self.soundVolume = newSoundVolume
@@ -286,16 +276,6 @@ class PlayerManager: ObservableObject {
 //        Loggers.playerManager.trace(
 //            "player state updated to '\(self.currentTrack?.name ?? "nil")'"
 //        )
-        if self.currentTrack?.artworkUrl != self.previousArtworkURL {
-//            Loggers.playerManager.trace(
-//                """
-//                artworkURL changed from \(self.previousArtworkURL ?? "nil") \
-//                to \(self.currentTrack?.artworkUrl ?? "nil")
-//                """
-//            )
-            self.artworkURLDidChange.send()
-        }
-        self.previousArtworkURL = self.player.currentTrack?.artworkUrl
     }
     
     /// Loads the image from the artwork URL of the current track.
@@ -448,7 +428,7 @@ class PlayerManager: ObservableObject {
             offset: nil
         )
         
-        self.playlistsLastPlayedDates[playlist.uri] = Date()
+        self.playlistsLastModifiedDates[playlist.uri] = Date()
         
         return self.spotify.api
             .getAvailableDeviceThenPlay(playbackRequest)
@@ -486,65 +466,12 @@ class PlayerManager: ObservableObject {
         )
         .sink { currentUser, playlists in
             self.playlists = playlists
-            self.currentUserPlaylists = self.playlists.filter { playlist in
-                playlist.owner?.uri == currentUser.uri
-            }
             self.retrievePlaylistImages()
-            self.updatePlaylistsSortedByLastPlayedDate()
-            self.updatePlaylistsSortedByLastAddedDate()
+//            self.updatePlaylistsSortedByLastPlayedDate()
+//            self.updatePlaylistsSortedByLastAddedDate()
             self.updatePlaylistsSortedByLastModifiedDate()
         }
            
-    }
-    
-    /// Re-sorts the playlists by last played date.
-    func updatePlaylistsSortedByLastPlayedDate() {
-        Loggers.playerManager.notice(
-            "updatePlaylistsSortedByLastPlayedDate"
-        )
-        DispatchQueue.global().async {
-            let sortedPlaylists = self.playlists.enumerated().sorted {
-                lhs, rhs in
-                
-                // return true if lhs should be ordered before rhs
-
-                let lhsDate = self.playlistsLastPlayedDates[lhs.1.uri]
-                let rhsDate = self.playlistsLastPlayedDates[rhs.1.uri]
-                return self.areInDecreasingOrderByDateOrIncreasingOrderByIndex(
-                    lhs: (index: lhs.offset, date: lhsDate),
-                    rhs: (index: rhs.offset, date: rhsDate)
-                )
-            }
-            .map(\.1)
-            
-            DispatchQueue.main.async {
-                self.playlistsSortedByLastPlayedDate = sortedPlaylists
-            }
-        }
-    }
-
-    /// Re-sorts the playlists by the last date items were added to them.
-    func updatePlaylistsSortedByLastAddedDate() {
-        Loggers.playerManager.notice("updatePlaylistsSortedByLastAddedDate")
-        DispatchQueue.global().async {
-            let sortedPlaylists = self.currentUserPlaylists.enumerated().sorted {
-                lhs, rhs in
-                
-                // return true if lhs should be ordered before rhs
-
-                let lhsDate = self.playlistsLastAddedDates[lhs.1.uri]
-                let rhsDate = self.playlistsLastAddedDates[rhs.1.uri]
-                return self.areInDecreasingOrderByDateOrIncreasingOrderByIndex(
-                    lhs: (index: lhs.offset, date: lhsDate),
-                    rhs: (index: rhs.offset, date: rhsDate)
-                )
-            }
-            .map(\.1)
-            
-            DispatchQueue.main.async {
-                self.playlistsSortedByLastAddedDate = sortedPlaylists
-            }
-        }
     }
     
     /// Re-sorts the playlists by the last date they were played or items
@@ -559,28 +486,17 @@ class PlayerManager: ObservableObject {
                 
                 // return true if lhs should be ordered before rhs
 
-                let lhsLastPlayedDate = self.playlistsLastPlayedDates[lhs.1.uri]
-                let lhsLastAddedDate = self.playlistsLastAddedDates[lhs.1.uri]
-                let lhsLastModifiedDate = maxNilSmallest(
-                    lhsLastPlayedDate, lhsLastAddedDate
+                let lhsDate = self.playlistsLastModifiedDates[lhs.1.uri]
+                let rhsDate = self.playlistsLastModifiedDates[rhs.1.uri]
+                return self.areInDecreasingOrderByDateThenIncreasingOrderByIndex(
+                    lhs: (index: lhs.offset, date: lhsDate),
+                    rhs: (index: rhs.offset, date: rhsDate)
                 )
-                
-                let rhsLastPlayedDate = self.playlistsLastPlayedDates[rhs.1.uri]
-                let rhsLastAddedDate = self.playlistsLastAddedDates[rhs.1.uri]
-                let rhsLastModifiedDate = maxNilSmallest(
-                    rhsLastPlayedDate, rhsLastAddedDate
-                )
-                
-                return self.areInDecreasingOrderByDateOrIncreasingOrderByIndex(
-                    lhs: (index: lhs.offset, date: lhsLastModifiedDate),
-                    rhs: (index: rhs.offset, date: rhsLastModifiedDate)
-                )
-                
             }
             .map(\.1)
             
             DispatchQueue.main.async {
-                self.playlistsSortedByLastedModifiedDate = sortedPlaylists
+                self.playlistsSortedByLastModifiedDate = sortedPlaylists
             }
         }
     }
@@ -648,7 +564,7 @@ class PlayerManager: ObservableObject {
                                 imageData: imageData,
                                 identifier: try SpotifyIdentifier(uri: playlist)
                             )
-                            self.objectWillChange.send()
+                            
                             
                         } catch {
                             Loggers.images.error(
@@ -715,11 +631,25 @@ class PlayerManager: ObservableObject {
                 withIntermediateDirectories: true
             )
             try imageData.write(to: imageURL)
+            Loggers.images.trace("did save \(identifier.uri) to file")
+            self.objectWillChange.send()
 
         } catch {
             Loggers.playerManager.error("couldn't save image to file: \(error)")
         }
 
+    }
+    
+    func removePlaylistImagesCache() {
+        do {
+            if let folder = self.imagesFolder {
+                print("will delete folder: \(folder)")
+                try FileManager.default.removeItem(at: folder)
+            }
+            
+        } catch {
+            print("couldn't remove image cache: \(error)")
+        }
     }
     
     /// Open the currently playing track/episode in the browser.
@@ -838,7 +768,7 @@ private extension PlayerManager {
         return currentUserPublisher
     }
     
-    private func areInDecreasingOrderByDateOrIncreasingOrderByIndex(
+    private func areInDecreasingOrderByDateThenIncreasingOrderByIndex(
         lhs: (index: Int, date: Date?),
         rhs: (index: Int, date: Date?)
     ) -> Bool {

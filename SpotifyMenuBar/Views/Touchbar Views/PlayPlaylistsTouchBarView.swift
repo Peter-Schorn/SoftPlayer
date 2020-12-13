@@ -27,12 +27,12 @@ struct PlayPlaylistsTouchBarView: View {
 //            print("\(index + 1). '\(playlist)'")
 //        }
         
-        let endIndex = playerManager.playlistsSortedByLastPlayedDate.endIndex
+        let endIndex = playerManager.playlistsSortedByLastModifiedDate.endIndex
         let minIndex = self.offset * 4
         let maxIndex = min(minIndex + 4, endIndex)
         let indices = minIndex..<maxIndex
 //        print("offset: \(offset); indices: \(indices)")
-        return playerManager.playlistsSortedByLastPlayedDate[indices]
+        return playerManager.playlistsSortedByLastModifiedDate[indices]
     }
     
     var body: some View {
@@ -87,7 +87,7 @@ struct PlayPlaylistsTouchBarView: View {
     func nextNavigationButtonIsDisabled() -> Bool {
         
         let playlistsCount = self.playerManager
-                .playlistsSortedByLastPlayedDate.count
+                .playlistsSortedByLastModifiedDate.count
         
 //        print("\(offset * 4 + 1) >= \(playlistsCount + 4)")
         return (offset + 1) * 4 >= playlistsCount
