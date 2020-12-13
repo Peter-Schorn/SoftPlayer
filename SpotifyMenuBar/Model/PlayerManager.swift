@@ -111,6 +111,23 @@ class PlayerManager: ObservableObject {
         }
     }
     
+    var imagesFolder: URL? {
+        guard let applicationSupportFolder = FileManager.default.urls(
+            for: .applicationSupportDirectory,
+            in: .userDomainMask
+        ).first else {
+            Loggers.playerManager.error(
+                "couldn't get application support directory"
+            )
+            return nil
+        }
+        return applicationSupportFolder
+            .appendingPathComponent(
+                "images", isDirectory: true
+            )
+    }
+
+    
     private let playlistsLastPlayedDatesKey = "playlistsLastPlayedDate"
     private let playlistsLastAddedDatesKey = "playlistsLastAddedDate"
     
@@ -676,22 +693,9 @@ class PlayerManager: ObservableObject {
     
     /// Returns the folder in which the image is stored, not the full path.
     func imageFolderURL(for identifier: SpotifyIdentifier) -> URL? {
-        guard let applicationSupportFolder = FileManager.default.urls(
-            for: .applicationSupportDirectory,
-            in: .userDomainMask
-        ).first else {
-            Loggers.playerManager.error("couldn't get application support directory")
-            return nil
-        }
-        let categoryFolder = applicationSupportFolder
-            .appendingPathComponent(
-                "images", isDirectory: true
-            )
-            .appendingPathComponent(
-                identifier.idCategory.rawValue, isDirectory: true
-            )
-        return categoryFolder
-        
+        return imagesFolder?.appendingPathComponent(
+            identifier.idCategory.rawValue, isDirectory: true
+        )
     }
     
     func saveImageToFile(imageData: Data, identifier: SpotifyIdentifier) {

@@ -24,6 +24,10 @@ struct PlayerView: View {
     
     @State private var cancellables: Set<AnyCancellable> = []
 
+    var appDelegate: AppDelegate {
+        NSApplication.shared.delegate as! AppDelegate
+    }
+    
     // MARK: Geometry Effect Constants
     
     var playerViewIsSource: Bool {
@@ -76,7 +80,6 @@ struct PlayerView: View {
             }
             else {
                 print("not showing playlists view; dismissing popover")
-                let appDelegate = NSApplication.shared.delegate as! AppDelegate
                 appDelegate.popover.performClose(nil)
             }
         }
@@ -199,9 +202,18 @@ struct PlayerView: View {
                     })
                     .keyboardShortcut("p")
                     .help("Show playlists ⌘P")
-                    Spacer()
+                    
                     AvailableDevicesButton()
                         .padding(.bottom, 2)
+                    
+                    Spacer()
+
+                    // MARK: Settings
+                    Button(action: appDelegate.openSettingsWindow, label: {
+                        Image(systemName: "gearshape.fill")
+                    })
+                    .keyboardShortcut(",")
+                    
                 }
                 .padding(.top, 5)
 
