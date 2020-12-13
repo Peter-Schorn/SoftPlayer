@@ -71,7 +71,7 @@ struct TouchBarPlaylistButton: View {
             offset: nil
         )
         
-        self.playerManager.playlistsLastPlayedDates[playlist.uri] = Date()
+        self.playerManager.playlistsLastModifiedDates[playlist.uri] = Date()
         
         self.playPlaylistCancellable = self.spotify.api
             .getAvailableDeviceThenPlay(playbackRequest)

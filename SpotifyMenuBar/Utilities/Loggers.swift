@@ -13,10 +13,10 @@ enum Loggers {
         label: "AvailableDevicesView", level: .trace
     )
     static let playerManager = Logger(
-        label: "PlayerManager", level: .warning
+        label: "PlayerManager", level: .trace
     )
     static let images = Logger(
-        label: "Images", level: .error
+        label: "Images", level: .trace
     )
     static let syncContext = Logger(
         label: "SyncContext", level: .error
