@@ -5,7 +5,7 @@ import SpotifyWebAPI
 
 struct PlayerView: View {
 
-    static let animation = Animation.easeInOut(duration: 0.5)
+    static let animation = Animation.easeInOut(duration: 0.6)
     
     @EnvironmentObject var spotify: Spotify
     @EnvironmentObject var playerManager: PlayerManager
@@ -13,11 +13,8 @@ struct PlayerView: View {
     
     @Namespace var namespace
     
-    let albumImageId = "albumImage"
-    let playingTitleId = "playingTitle"
-    let playerControlsId = "playerControls"
-    
     @State private var isShowingPlaylistsView = false
+    @State private var isShowingPlaylistsScrollView = false
     
     @State private var isFirstResponder = false
     
@@ -27,6 +24,28 @@ struct PlayerView: View {
     
     @State private var cancellables: Set<AnyCancellable> = []
 
+    // MARK: Geometry Effect Constants
+    
+    var playerViewIsSource: Bool {
+        !isShowingPlaylistsView
+    }
+    
+    var playlistsViewIsSource: Bool {
+        !isShowingPlaylistsView
+    }
+    
+    let albumImageId = "albumImage"
+    let trackEpisodeNameId = "trackEpisodeTitle"
+    let albumArtisTitleId = "albumArtistTitle"
+
+    let shuffleButtonId = "shuffleButton"
+    let previousTrackButtonId = "previousTrack"
+    let playPauseButtonId = "playPauseButton"
+    let nextTrackButtonId = "nextTrack"
+    let repeatModeButtonId = "repeatModeButton"
+
+    // MARK: - Begin Views -
+    
     var body: some View {
         Group {
             if isShowingPlaylistsView {
@@ -69,26 +88,30 @@ struct PlayerView: View {
             // MARK: Large Album Image
             playerManager.artworkImage
                 .resizable()
-                .transition(.scale)
                 // MARK: Matched Geometry Effect
+                .transition(.scale)
                 .matchedGeometryEffect(
                     id: albumImageId,
                     in: namespace,
                     anchor: .center,
-                    isSource: false
+                    isSource: playerViewIsSource
                 )
                 .frame(
                     width: AppDelegate.popoverWidth,
                     height: AppDelegate.popoverWidth
                 )
-//                .transition(.scale)
-                
-//                .padding(.bottom, 5)
+                .padding(.bottom, 5)
 
             // MARK: Large Playing Title
             VStack(spacing: 5) {
                 Text(playerManager.currentTrack?.name ?? "")
                     .fontWeight(.semibold)
+                    // MARK: Matched Geometry Effect
+                    .matchedGeometryEffect(
+                        id: trackEpisodeNameId,
+                        in: namespace,
+                        isSource: playerViewIsSource
+                    )
                     .multilineTextAlignment(.center)
                     .lineLimit(2)
                     .onTapGesture(
@@ -96,18 +119,21 @@ struct PlayerView: View {
                     )
 
                 Text(playerManager.albumArtistTitle)
+                    // MARK: Matched Geometry Effect
+                    .matchedGeometryEffect(
+                        id: albumArtisTitleId,
+                        in: namespace,
+                        isSource: playerViewIsSource
+                    )
                     .lineLimit(1)
                     .foregroundColor(Color.primary.opacity(0.9))
                     .onTapGesture(
                         perform: playerManager.openArtistOrShowInBrowser
                     )
+                
             }
             .padding(.horizontal, 10)
             .frame(height: 60)
-            .transition(.scale)
-            .matchedGeometryEffect(
-                id: playingTitleId, in: namespace
-            )
 
             // MARK: Main Player Controls
             VStack(spacing: 0) {
@@ -117,12 +143,42 @@ struct PlayerView: View {
                 HStack(spacing: 15) {
 
                     ShuffleButton()
+                        // MARK: Matched Geometry Effect
+                        .matchedGeometryEffect(
+                            id: shuffleButtonId,
+                            in: namespace,
+                            isSource: playerViewIsSource
+                        )
                         .padding(.top, 2)
                     PreviousTrackButton(size: .large)
+                        // MARK: Matched Geometry Effect
+                        .matchedGeometryEffect(
+                            id: previousTrackButtonId,
+                            in: namespace,
+                            isSource: playerViewIsSource
+                        )
                     PlayPauseButton()
+                        // MARK: Matched Geometry Effect
+                        .matchedGeometryEffect(
+                            id: playPauseButtonId,
+                            in: namespace,
+                            isSource: playerViewIsSource
+                        )
                         .frame(width: 38, height: 38)
                     NextTrackButton(size: .large)
+                        // MARK: Matched Geometry Effect
+                        .matchedGeometryEffect(
+                            id: nextTrackButtonId,
+                            in: namespace,
+                            isSource: playerViewIsSource
+                        )
                     RepeatModeButton()
+                        // MARK: Matched Geometry Effect
+                        .matchedGeometryEffect(
+                            id: repeatModeButtonId,
+                            in: namespace,
+                            isSource: playerViewIsSource
+                        )
                         .padding(.top, 2)
 
                 }
@@ -150,9 +206,6 @@ struct PlayerView: View {
                 .padding(.top, 5)
 
             }
-            .matchedGeometryEffect(
-                id: playerControlsId, in: namespace
-            )
             .padding(.horizontal, 10)
 
             Spacer()
@@ -162,6 +215,7 @@ struct PlayerView: View {
     var playlistsView: some View {
         VStack(spacing: 0) {
             VStack {
+                
                 Button(action: {
                     self.dismissPlaylistsView(animated: true)
                 }, label: {
@@ -170,20 +224,20 @@ struct PlayerView: View {
                 })
                 .padding(.top, 5)
                 .keyboardShortcut("p")
+                
                 miniPlayerView
+                
             }
             .padding(.horizontal, 9)
             .padding(.bottom, 9)
             .background(
                 Rectangle()
                     .fill(BackgroundStyle())
-                    .if(colorScheme == .dark) {
-                        // make the shadow darker so it can be seen
-                        // better in dark mode.
-                        $0.shadow(color: .black, radius: 3, y: 2)
-                    } else: {
-                        $0.shadow(radius: 3, y: 2)
-                    }
+                    .shadow(
+                        color: colorScheme == .dark ? .black : .defaultShadow,
+                        radius: 3,
+                        y: 2
+                    )
             )
             PlaylistsScrollView(
                 isShowingPlaylistsView: $isShowingPlaylistsView
@@ -192,6 +246,14 @@ struct PlayerView: View {
         .background(
             Rectangle().fill(BackgroundStyle())
         )
+        // MARK: Playlists View Transition
+        .transition(.move(edge: .bottom))
+//        .transition(
+//            .asymmetric(
+//                insertion: .move(edge: .bottom),
+//                removal: .opacity
+//            )
+//        )
         .touchBar(content: PlayPlaylistsTouchBarView.init)
         .onExitCommand {
             print("playlistsView onExitCommand")
@@ -209,19 +271,23 @@ struct PlayerView: View {
             playerManager.artworkImage
                 .resizable()
                 .transition(.scale)
+                .cornerRadius(5)
+                // MARK: Matched Geometry Effect
                 .matchedGeometryEffect(
                     id: albumImageId,
                     in: namespace,
                     anchor: .center,
-                    isSource: true
+                    isSource: playlistsViewIsSource
                 )
+//                .transaction { transaction in
+//                    transaction.disablesAnimations = true
+//                }
                 .aspectRatio(contentMode: .fit)
                 .frame(width: 70, height: 70)
-                .cornerRadius(5)
-                .shadow(radius: 2)
-//                .transition(.scale)
-                // MARK: Matched Geometry Effect
-                
+                .shadow(
+                    color: colorScheme == .dark ? .black : .defaultShadow,
+                    radius: 2
+                )
                 
             VStack(spacing: 0) {
                 // MARK: Small Playing Title
@@ -229,6 +295,12 @@ struct PlayerView: View {
                     Text(playerManager.currentTrack?.name ?? "")
                         .fontWeight(.semibold)
                         .font(.callout)
+                        // MARK: Matched Geometry Effect
+                        .matchedGeometryEffect(
+                            id: trackEpisodeNameId,
+                            in: namespace,
+                            isSource: playlistsViewIsSource
+                        )
                         .lineLimit(1)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .onTapGesture(
@@ -236,30 +308,59 @@ struct PlayerView: View {
                         )
                     Text(playerManager.albumArtistTitle)
                         .font(.footnote)
+                        // MARK: Matched Geometry Effect
+                        .matchedGeometryEffect(
+                            id: albumArtisTitleId,
+                            in: namespace,
+                            isSource: playlistsViewIsSource
+                        )
                         .lineLimit(1)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .onTapGesture(
                             perform: playerManager.openArtistOrShowInBrowser
                         )
                 }
-                .transition(.scale)
-                .matchedGeometryEffect(
-                    id: playingTitleId, in: namespace
-                )
                 // MARK: Small Player Controls
                 HStack(spacing: 15) {
                     ShuffleButton()
                         .scaleEffect(0.8)
+                        // MARK: Matched Geometry Effect
+                        .matchedGeometryEffect(
+                            id: shuffleButtonId,
+                            in: namespace,
+                            isSource: playlistsViewIsSource
+                        )
                     PreviousTrackButton(size: .small)
+                        // MARK: Matched Geometry Effect
+                        .matchedGeometryEffect(
+                            id: previousTrackButtonId,
+                            in: namespace,
+                            isSource: playlistsViewIsSource
+                        )
                     PlayPauseButton()
+                        // MARK: Matched Geometry Effect
+                        .matchedGeometryEffect(
+                            id: playPauseButtonId,
+                            in: namespace,
+                            isSource: playlistsViewIsSource
+                        )
                         .frame(width: 20, height: 20)
                     NextTrackButton(size: .small)
+                        // MARK: Matched Geometry Effect
+                        .matchedGeometryEffect(
+                            id: nextTrackButtonId,
+                            in: namespace,
+                            isSource: playlistsViewIsSource
+                        )
                     RepeatModeButton()
                         .scaleEffect(0.8)
+                        // MARK: Matched Geometry Effect
+                        .matchedGeometryEffect(
+                            id: repeatModeButtonId,
+                            in: namespace,
+                            isSource: playlistsViewIsSource
+                        )
                 }
-                .matchedGeometryEffect(
-                    id: playerControlsId, in: namespace
-                )
                 .padding(.vertical, 5)
             }
             .padding(5)
