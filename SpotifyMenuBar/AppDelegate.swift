@@ -12,6 +12,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     
 //    var window: NSWindow!
     
+    var settingsWindow: NSWindow? = nil
+    
     var popover: NSPopover!
     var statusBarItem: NSStatusItem!
     
@@ -102,6 +104,32 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         
         spotify.redirectURLSubject.send(url)
         
+    }
+    
+    @objc func openSettingsWindow() {
+        if settingsWindow == nil {      // create once !!
+            let settingsView = SettingsView()
+                .environmentObject(spotify)
+                .environmentObject(playerManager)
+            settingsWindow = NSWindow(
+                contentRect: NSRect(x: 20, y: 20, width: 480, height: 300),
+                styleMask: [
+                    .titled,
+                    .closable,
+                    .miniaturizable,
+                    .resizable,
+                    .fullSizeContentView
+                ],
+                backing: .buffered,
+                defer: false
+            )
+            settingsWindow?.title = "Settings"
+            settingsWindow?.setFrameAutosaveName("Settings")
+            settingsWindow?.isReleasedWhenClosed = false
+            settingsWindow?.center()
+            settingsWindow?.contentView = NSHostingView(rootView: settingsView)
+        }
+        settingsWindow?.makeKeyAndOrderFront(nil)
     }
     
     // MARK: - Core Data stack
