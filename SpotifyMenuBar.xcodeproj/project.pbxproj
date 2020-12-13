@@ -17,6 +17,7 @@
 		4712E604257FB1A100A881D5 /* NotificationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4712E603257FB1A100A881D5 /* NotificationView.swift */; };
 		4712E607257FD19500A881D5 /* PlayPlaylistsTouchBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4712E606257FD19500A881D5 /* PlayPlaylistsTouchBarView.swift */; };
 		471BD46E258110C1006B0938 /* PopupButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 471BD46D258110C1006B0938 /* PopupButton.swift */; };
+		472A742A25859431008998C5 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 472A742925859431008998C5 /* SettingsView.swift */; };
 		47343A612582AC1700EF6750 /* ScrollViewOffset.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47343A602582AC1700EF6750 /* ScrollViewOffset.swift */; };
 		47343A642582C86600EF6750 /* PlaylistsScrollView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47343A632582C86600EF6750 /* PlaylistsScrollView.swift */; };
 		474C7C922570F713004A3DB5 /* AvailableDevicesButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 474C7C912570F713004A3DB5 /* AvailableDevicesButton.swift */; };
@@ -67,6 +68,7 @@
 		4712E603257FB1A100A881D5 /* NotificationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationView.swift; sourceTree = "<group>"; };
 		4712E606257FD19500A881D5 /* PlayPlaylistsTouchBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayPlaylistsTouchBarView.swift; sourceTree = "<group>"; };
 		471BD46D258110C1006B0938 /* PopupButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PopupButton.swift; sourceTree = "<group>"; };
+		472A742925859431008998C5 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		47343A602582AC1700EF6750 /* ScrollViewOffset.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScrollViewOffset.swift; sourceTree = "<group>"; };
 		47343A632582C86600EF6750 /* PlaylistsScrollView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaylistsScrollView.swift; sourceTree = "<group>"; };
 		474C7C912570F713004A3DB5 /* AvailableDevicesButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AvailableDevicesButton.swift; sourceTree = "<group>"; };
@@ -238,6 +240,7 @@
 				47832F492566474300AADEA3 /* RootView.swift */,
 				47FD3DF2256FA726000E2346 /* LoginView.swift */,
 				47FD3E02256FB031000E2346 /* PlayerView.swift */,
+				472A742925859431008998C5 /* SettingsView.swift */,
 				4789987725747F0F00866EE1 /* PlaybackPositionView.swift */,
 				47F6EC63257C96D7007079D2 /* SoundVolumeSlider.swift */,
 				4789987A25749FD500866EE1 /* CustomSliderView.swift */,
@@ -347,6 +350,7 @@
 				47F6EC51257C95D8007079D2 /* ShuffleButton.swift in Sources */,
 				47F6EC60257C96B7007079D2 /* NextTrackButton.swift in Sources */,
 				4712E601257FAD0C00A881D5 /* TouchBarIdentifiers.swift in Sources */,
+				472A742A25859431008998C5 /* SettingsView.swift in Sources */,
 				47832F4D2566474300AADEA3 /* SpotifyMenuBar.xcdatamodeld in Sources */,
 				47DC186C258261F100EF11BA /* PlaylistsView.swift in Sources */,
 				4712E607257FD19500A881D5 /* PlayPlaylistsTouchBarView.swift in Sources */,
