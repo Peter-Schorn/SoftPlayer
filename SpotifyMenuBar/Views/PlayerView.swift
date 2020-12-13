@@ -5,6 +5,8 @@ import SpotifyWebAPI
 
 struct PlayerView: View {
 
+    static var debugShowPlaylistsView = false
+    
     static let animation = Animation.easeOut(duration: 0.6)
     
     @EnvironmentObject var spotify: Spotify
@@ -52,7 +54,7 @@ struct PlayerView: View {
     
     var body: some View {
         ZStack(alignment: .top) {
-            if isShowingPlaylistsView {
+            if isShowingPlaylistsView || Self.debugShowPlaylistsView {
                 VStack(spacing: 0) {
                     
                     miniPlayerViewBackground
@@ -60,7 +62,6 @@ struct PlayerView: View {
                     PlaylistsScrollView(
                         isShowingPlaylistsView: $isShowingPlaylistsView
                     )
-                    
                     
                 }
                 .padding(.leading, 6)
@@ -71,9 +72,7 @@ struct PlayerView: View {
                 // MARK: Playlists View Transition
                 .transition(.move(edge: .bottom))
                 .onExitCommand {
-                    print("playlistsView onExitCommand")
                     self.dismissPlaylistsView(animated: true)
-                    
                 }
                 .onReceive(playerManager.popoverDidClose) {
                     self.dismissPlaylistsView(animated: false)

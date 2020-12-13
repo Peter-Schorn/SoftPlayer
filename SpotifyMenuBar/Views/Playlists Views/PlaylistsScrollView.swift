@@ -248,6 +248,9 @@ struct PlaylistsScrollView: View {
 
 struct PlaylistsScrollView_Previews: PreviewProvider {
     static var previews: some View {
-        PlaylistsView_Previews.previews
+        PlayerView_Previews.previews
+            .onAppear {
+                PlayerView.debugShowPlaylistsView = true
+            }
     }
 }
