@@ -38,6 +38,13 @@ struct PlaylistsCellView: View {
         return Image(.spotifyAlbumPlaceholder)
     }
     
+    var playlistOwnedByCurrentUser: Bool {
+        if let userId = self.playlist.owner?.id {
+            return self.playerManager.currentUser?.id == userId
+        }
+        return false
+    }
+    
     var body: some View {
         HStack {
             Button(action: {
@@ -58,7 +65,7 @@ struct PlaylistsCellView: View {
                 .contentShape(Rectangle())
             })
             .buttonStyle(PlainButtonStyle())
-            if playerManager.currentUserPlaylists.contains(playlist) {
+            if playlistOwnedByCurrentUser {
                 Button(action: {
                     self.addCurrentItemToPlaylist()
                 }, label: {
@@ -81,7 +88,7 @@ struct PlaylistsCellView: View {
             return
         }
         
-        self.playerManager.playlistsLastAddedDates[playlist.uri] = Date()
+        self.playerManager.playlistsLastModifiedDates[playlist.uri] = Date()
         
         let itemName = playerManager.currentTrack?.name ?? "unknown"
         print("adding \(itemName) to \(playlist.name)")

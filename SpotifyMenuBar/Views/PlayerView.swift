@@ -7,7 +7,7 @@ struct PlayerView: View {
 
     static var debugShowPlaylistsView = false
     
-    static let animation = Animation.easeOut(duration: 0.6)
+    static let animation = Animation.easeOut(duration: 0.5)
     
     @EnvironmentObject var spotify: Spotify
     @EnvironmentObject var playerManager: PlayerManager
@@ -105,7 +105,7 @@ struct PlayerView: View {
         .onChange(of: isShowingPlaylistsView) { isShowing in
             if isShowing {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                    withAnimation(Self.animation) {
+                    withAnimation(.linear(duration: 0.2)) {
                         self.isShowingMiniPlayerViewBackground = true
                     }
                 }
@@ -132,7 +132,6 @@ struct PlayerView: View {
             playerManager.artworkImage
                 .resizable()
                 // MARK: Matched Geometry Effect
-                .transition(.scale)
                 .matchedGeometryEffect(
                     id: albumImageId,
                     in: namespace,
@@ -178,7 +177,7 @@ struct PlayerView: View {
             .padding(.horizontal, 10)
             .frame(height: 60)
 
-            // MARK: Main Player Controls
+            // MARK: Large Player Controls
             VStack(spacing: 0) {
 
                 PlaybackPositionView()
@@ -241,8 +240,13 @@ struct PlayerView: View {
                 
                 HStack {
                     Button(action: {
-                        withAnimation(Self.animation) {
-                            self.isShowingPlaylistsView.toggle()
+                        if self.isShowingPlaylistsView {
+                            self.dismissPlaylistsView(animated: true)
+                        }
+                        else {
+                            withAnimation(Self.animation) {
+                                self.isShowingPlaylistsView = true
+                            }
                         }
                     }, label: {
                         Image(systemName: "music.note.list")
@@ -277,13 +281,11 @@ struct PlayerView: View {
             // MARK: Small Album Image
             playerManager.artworkImage
                 .resizable()
-                .transition(.scale)
                 .cornerRadius(5)
                 // MARK: Matched Geometry Effect
                 .matchedGeometryEffect(
                     id: albumImageId,
                     in: namespace,
-                    anchor: .center,
                     isSource: playlistsViewIsSource
                 )
                 .aspectRatio(contentMode: .fit)
@@ -404,12 +406,14 @@ struct PlayerView: View {
             withAnimation(Self.animation) {
                 self.isShowingPlaylistsView = false
             }
+            self.playerManager.updateSoundVolumeAndPlayerPosition()
+            self.playerManager.updatePlaylistsSortedByLastModifiedDate()
+            self.playerManager.retrieveAvailableDevices()
+            self.playerManager.retrievePlaylistImages()
         }
         else {
             self.isShowingPlaylistsView = false
         }
-        self.playerManager.updatePlaylistsSortedByLastModifiedDate()
-        self.playerManager.retrieveAvailableDevices()
     }
 
     func receiveKeyEvent(_ event: NSEvent) {

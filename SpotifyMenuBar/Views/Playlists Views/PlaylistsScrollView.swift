@@ -41,7 +41,7 @@ struct PlaylistsScrollView: View {
         
         if searchText.strip().isEmpty {
             return Array(
-                self.playerManager.playlistsSortedByLastedModifiedDate
+                self.playerManager.playlistsSortedByLastModifiedDate
                     .filter { playlist in
                         if onlyShowMyPlaylists, let userId = playlist.owner?.id,
                                 userId != currentUserId {
@@ -56,7 +56,7 @@ struct PlaylistsScrollView: View {
         let lowerCasedSearch = searchText.lowercased()
         let searchWords = lowerCasedSearch.words
         
-        let playlists = self.playerManager.playlistsSortedByLastedModifiedDate
+        let playlists = self.playerManager.playlistsSortedByLastModifiedDate
             .compactMap { playlist -> RatedPlaylist? in
                 
                 if onlyShowMyPlaylists, let userId = playlist.owner?.id,
@@ -123,21 +123,24 @@ struct PlaylistsScrollView: View {
                 .padding(.bottom, -7)
                 .id(searchFieldId)
                 
-                ForEach(
-                    self.filteredPlaylists,
-                    id: \.element.uri
-                ) { playlist in
-                    PlaylistsCellView(
-                        playlist: playlist.element,
-                        isSelected: selectedPlaylistURI == playlist.element.uri
-                    )
-                    .if(playlist.offset == 0) {
-                        $0.padding(.top, 10)
+                LazyVStack {
+                    ForEach(
+                        self.filteredPlaylists,
+                        id: \.element.uri
+                    ) { playlist in
+                        PlaylistsCellView(
+                            playlist: playlist.element,
+                            isSelected: selectedPlaylistURI == playlist.element.uri
+                        )
+                        .if(playlist.offset == 0) {
+                            $0.padding(.top, 10)
+                        }
+                        .id(playlist.offset)
                     }
-                    .id(playlist.offset)
+                    Spacer()
+                        .frame(height: 10)
+                    
                 }
-                Spacer()
-                    .frame(height: 10)
             }
             .background(
                 KeyEventHandler { event in
