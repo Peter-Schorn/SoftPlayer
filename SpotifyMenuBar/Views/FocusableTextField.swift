@@ -8,27 +8,31 @@ struct FocusableTextField: NSViewRepresentable {
     @Binding var isFirstResponder: Bool
 
     let onCommit: () -> Void
+    let receiveKeyEvent: (NSEvent) -> Bool
     
     init(
         text: Binding<String>,
         isFirstResponder: Binding<Bool>,
-        onCommit: @escaping () -> Void
+        onCommit: @escaping () -> Void,
+        receiveKeyEvent: @escaping (NSEvent) -> Bool
     ) {
         self._text = text
         self._isFirstResponder = isFirstResponder
         self.onCommit = onCommit
+        self.receiveKeyEvent = receiveKeyEvent
     }
     
-    func makeNSView(context: Context) -> NSSearchField {
-        let searchField = NSSearchField()
+    func makeNSView(context: Context) -> CustomNSSearchField {
+        let searchField = CustomNSSearchField()
         searchField.bezelStyle = .roundedBezel
         searchField.focusRingType = .none
         searchField.maximumNumberOfLines = 1
         searchField.delegate = context.coordinator
+        searchField.receiveKeyEvent = self.receiveKeyEvent
         return searchField
     }
     
-    func updateNSView(_ searchField: NSSearchField, context: Context) {
+    func updateNSView(_ searchField: CustomNSSearchField, context: Context) {
         
         searchField.stringValue = text
         
@@ -55,21 +59,42 @@ struct FocusableTextField: NSViewRepresentable {
         }
         
         func controlTextDidChange(_ notification: Notification) {
-            if let searchField = notification.object as? NSSearchField {
+            if let searchField = notification.object as? CustomNSSearchField {
                 parent.text = searchField.stringValue
             }
         }
         
         func controlTextDidEndEditing(_ notification: Notification) {
-            print("controlTextDidEndEditing: \(notification.userInfo as Any)")
+
+            guard notification.object is CustomNSSearchField else {
+                return
+            }
+//            print("controlTextDidEndEditing: \(notification.userInfo as Any)")
             
+            let textMovement = notification.userInfo?["NSTextMovement"] as? Int
             
-            if notification.object is NSSearchField,
-               (notification.userInfo?["NSTextMovement"] as? Int) == NSReturnTextMovement {
+            if textMovement == NSReturnTextMovement {
                 self.parent.onCommit()
+            }
+            else if [NSOtherTextMovement, NSCancelTextMovement]
+                        .contains(textMovement) {
+                self.parent.text = ""
             }
         }
         
-
     }
+}
+
+class CustomNSSearchField: NSSearchField {
+ 
+    var receiveKeyEvent: ((NSEvent) -> Bool)? = nil
+    
+    override func keyDown(with event: NSEvent) {
+        print("CustomNSSearchField: keyDown: \(event)")
+    }
+    
+    override func performKeyEquivalent(with event: NSEvent) -> Bool {
+       return receiveKeyEvent?(event) ?? false
+    }
+    
 }

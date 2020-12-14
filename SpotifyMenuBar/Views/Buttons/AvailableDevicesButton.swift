@@ -7,10 +7,6 @@ struct AvailableDevicesButton: View {
     
     @EnvironmentObject var spotify: Spotify
     @EnvironmentObject var playerManager: PlayerManager
-    
-    @State private var alertIsPresented = false
-    @State private var alertTitle = ""
-    @State private var alertMessage = ""
 
     @State private var transferPlaybackCancellable: AnyCancellable? = nil
     
@@ -41,12 +37,6 @@ struct AvailableDevicesButton: View {
         .help("Transfer playback to a different device")
         .scaleEffect(1.2)
         .frame(width: 33)
-        .alert(isPresented: $alertIsPresented, content: {
-            Alert(
-                title: Text(alertTitle),
-                message: Text(alertMessage)
-            )
-        })
         
     }
     
@@ -67,7 +57,7 @@ struct AvailableDevicesButton: View {
         
         Loggers.availableDevices.trace("tranferring playback to '\(device.name)'")
         self.transferPlaybackCancellable = self.spotify.api
-            .transferPlayback(to: id, play: true)
+            .transferPlayback(to: id + "invalid", play: true)
             .receive(on: RunLoop.main)
             .sink(receiveCompletion: { completion in
                 switch completion {
@@ -76,10 +66,12 @@ struct AvailableDevicesButton: View {
                             self.playerManager.retrieveAvailableDevices()
                         }
                     case .failure(let error):
-                        self.alertTitle = "Couldn't Transfer Playback " +
+                        let alertTitle = "Couldn't Transfer Playback " +
                             #"to "\#(device.name)""#
-                        self.alertMessage = error.localizedDescription
-                        self.alertIsPresented = true
+                        self.playerManager.presentNotification(
+                            title: alertTitle,
+                            message: error.localizedDescription
+                        )
                         Loggers.availableDevices.error(
                             "\(alertTitle): \(error)"
                         )

@@ -9,15 +9,7 @@ struct ShuffleButton: View {
     @EnvironmentObject var playerManager: PlayerManager
 
     var body: some View {
-        Button(action: {
-            self.playerManager.shuffleIsOn.toggle()
-            Loggers.shuffle.trace(
-                "will set shuffle to \(self.playerManager.shuffleIsOn)"
-            )
-            self.playerManager.player.setShuffling?(
-                self.playerManager.shuffleIsOn
-            )
-        }, label: {
+        Button(action: playerManager.toggleShuffle, label: {
             Image(systemName: "shuffle")
                 .font(.title2)
                 .foregroundColor(
@@ -26,6 +18,7 @@ struct ShuffleButton: View {
         })
         .buttonStyle(PlainButtonStyle())
         .disabled(!playerManager.allowedActions.contains(.toggleShuffle))
+        .help("Toggle shuffle ⌘S")
     }
     
 }
