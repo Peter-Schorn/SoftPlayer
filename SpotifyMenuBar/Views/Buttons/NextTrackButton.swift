@@ -17,31 +17,32 @@ struct NextTrackButton: View {
         
         if playerManager.currentTrack?.identifier?.idCategory == .episode {
             // MARK: Seek Forwards 15 Seconds
-            Button(action: seekForwards15Seconds, label: {
+            Button(action: playerManager.seekForwards15Seconds, label: {
                 Image(systemName: "goforward.15")
                     .font(size == .large ? .title : .body)
 
             })
             .buttonStyle(PlainButtonStyle())
+            .help("Seek forwards 15 seconds ⌘→")
         }
         else {
             // MARK: Next Track
             
             Image(systemName: "forward.end.fill")
                 .tapAndLongPressAndHoldGesture(
-                    onTap: { self.playerManager.player.nextTrack?() },
+                    onTap: self.playerManager.skipToNextTrack,
                     isLongPressing: $isLongPressing
                 )
                 .disabled(!playerManager.allowedActions.contains(.skipToNext))
                 .onChange(of: isLongPressing) { isLongPressing in
                     if isLongPressing {
-                        self.seekForwards15Seconds()
+                        self.playerManager.seekForwards15Seconds()
                         self.seekForwardsTimerCancellable = Timer.publish(
                             every: 0.75, on: .main, in: .common
                         )
                         .autoconnect()
                         .sink { _ in
-                            self.seekForwards15Seconds()
+                            self.playerManager.seekForwards15Seconds()
                         }
                         
                     }
@@ -50,23 +51,9 @@ struct NextTrackButton: View {
                         
                     }
                 }
+                .help("Skip to the next track ⌘→")
+
         }
-    }
-    
-    func seekForwards15Seconds() {
-        guard let currentPosition = self.playerManager.player.playerPosition else {
-            print("NextTrackButton: couldn't get player position")
-            return
-        }
-        let newPosition: Double
-        if let duration = self.playerManager.currentTrack?.duration {
-            newPosition = (currentPosition + 15)
-                .clamped(to: 0...Double(duration / 1000))
-        }
-        else {
-            newPosition = currentPosition + 15
-        }
-        self.playerManager.setPlayerPosition(to: CGFloat(newPosition))
     }
     
 }

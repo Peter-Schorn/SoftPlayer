@@ -22,10 +22,6 @@ struct LoginView: View {
 
     @EnvironmentObject var spotify: Spotify
 
-    @State private var alertIsPresented = false
-    @State private var alertTitle = ""
-    @State private var alertMessage = ""
-    
     @State private var requestTokensCancellable: AnyCancellable? = nil
     
     let backgroundGradient = LinearGradient(

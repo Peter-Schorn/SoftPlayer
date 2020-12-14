@@ -20,10 +20,6 @@ struct PlayerView: View {
     
     @State private var isFirstResponder = false
     
-    @State private var alertIsPresented = false
-    @State private var alertTitle = ""
-    @State private var alertMessage = ""
-    
     @State private var cancellables: Set<AnyCancellable> = []
 
     var appDelegate: AppDelegate {
@@ -62,12 +58,13 @@ struct PlayerView: View {
                     PlaylistsScrollView(
                         isShowingPlaylistsView: $isShowingPlaylistsView
                     )
+//                    .padding(.leading, 6)
+//                    .padding(.trailing, 8)
                     
                 }
-                .padding(.leading, 6)
-                .padding(.trailing, 8)
                 .background(
-                    Rectangle().fill(BackgroundStyle())
+                    Rectangle()
+                        .fill(BackgroundStyle())
                 )
                 // MARK: Playlists View Transition
                 .transition(.move(edge: .bottom))
@@ -79,7 +76,6 @@ struct PlayerView: View {
                 }
                 
                 miniPlayerView
-                    .padding(.horizontal, 10)
                     .padding(.top, 33)
                     
             }
@@ -96,12 +92,6 @@ struct PlayerView: View {
             width: AppDelegate.popoverWidth,
             height: AppDelegate.popoverHeight
         )
-        .alert(isPresented: $alertIsPresented) {
-            Alert(
-                title: Text(alertTitle),
-                message: Text(alertMessage)
-            )
-        }
         .onChange(of: isShowingPlaylistsView) { isShowing in
             if isShowing {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
@@ -142,7 +132,7 @@ struct PlayerView: View {
                     width: AppDelegate.popoverWidth,
                     height: AppDelegate.popoverWidth
                 )
-                .padding(.bottom, 5)
+            
 
             // MARK: Large Playing Title
             VStack(spacing: 5) {
@@ -291,7 +281,8 @@ struct PlayerView: View {
                 .aspectRatio(contentMode: .fit)
                 .frame(width: 70, height: 70)
                 .adaptiveShadow(radius: 2)
-                .padding(.leading, 5)
+                .padding(.leading, 7)
+                .padding(.trailing, 2)
                 
             VStack(spacing: 0) {
                 // MARK: Small Playing Title
@@ -399,6 +390,7 @@ struct PlayerView: View {
                     $0.adaptiveShadow(radius: 3, y: 2)
                 }
         )
+        
     }
     
     func dismissPlaylistsView(animated: Bool) {
@@ -418,13 +410,49 @@ struct PlayerView: View {
 
     func receiveKeyEvent(_ event: NSEvent) {
         print("PlayerView key event: \(event)")
-        if event.charactersIgnoringModifiers == "p" {
-            withAnimation(Self.animation) {
-                self.isShowingPlaylistsView = true
-            }
+//        print(event.modifierFlags)
+
+        
+        if event.keyCode == 123 {  // left arrow
+            self.playerManager.previousTrackOrSeekBackwards()
         }
-        else if event.characters(byApplyingModifiers: .command) == "," {
-            appDelegate.openSettingsWindow()
+        else if event.keyCode == 49 {  // space bar
+            self.playerManager.playPause()
+        }
+        else if event.keyCode == 124 {  // right arrow
+            self.playerManager.nextTrackOrSeekForwards()
+        }
+        else if event.keyCode == 126 {  // up arrow
+            let newSoundVolume = min(100, self.playerManager.soundVolume + 5)
+            self.playerManager.soundVolume = newSoundVolume
+            self.playerManager.player.setSoundVolume?(
+                Int(newSoundVolume)
+            )
+        }
+        else if event.keyCode == 125 {  // down arrow
+            let newSoundVolume = max(0, self.playerManager.soundVolume - 5)
+            self.playerManager.soundVolume = newSoundVolume
+            self.playerManager.player.setSoundVolume?(
+                Int(newSoundVolume)
+            )
+        }
+        else if let characters = event.charactersIgnoringModifiers {
+            switch characters {
+                case "p":
+                    withAnimation(Self.animation) {
+                        self.isShowingPlaylistsView = true
+                    }
+                case "k":
+                    self.playerManager.playPause()
+                case "r":
+                    self.playerManager.cycleRepeatMode()
+                case "s":
+                    self.playerManager.toggleShuffle()
+                case ",":
+                    self.appDelegate.openSettingsWindow()
+                default:
+                    break
+            }
         }
         
     }

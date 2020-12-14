@@ -42,7 +42,8 @@ extension SpotifyAPI where AuthorizationManager: SpotifyScopeAuthorizationManage
             else {
                 return SpotifyLocalError.other(
                     "no active or available devices",
-                    localizedDescription: "no devices available to play content on"
+                    localizedDescription: "There are no devices " +
+                                          "available to play content on"
                 )
                 .anyFailingPublisher()
             }

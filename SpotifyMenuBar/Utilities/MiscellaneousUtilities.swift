@@ -4,6 +4,10 @@ import RegularExpressions
 import Combine
 import SwiftUI
 
+enum Size {
+    case small, large
+}
+
 extension Publisher {
     
     func handleAuthenticationError(

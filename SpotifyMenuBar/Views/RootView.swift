@@ -9,10 +9,6 @@ struct RootView: View {
     
     @EnvironmentObject var spotify: Spotify
 
-    @State private var alertIsPresented = false
-    @State private var alertTitle = ""
-    @State private var alertMessage = ""
-    
     @State private var requestTokensCancellable: AnyCancellable? = nil
     
     var body: some View {
@@ -24,12 +20,6 @@ struct RootView: View {
             else {
                 LoginView()
             }
-        }
-        .alert(isPresented: $alertIsPresented) {
-            Alert(
-                title: Text(alertTitle),
-                message: Text(alertMessage)
-            )
         }
         .onReceive(
             spotify.redirectURLSubject,
@@ -62,26 +52,36 @@ struct RootView: View {
     ) {
         print("request tokens completion:", completion)
         spotify.isRetrievingTokens = false
+        let alert = NSAlert()
+        let alertTitle: String
+        let alertMessage: String
         switch completion {
             case .finished:
-                self.alertTitle =
+                alertTitle =
                         "Sucessfully connected to your Spotify account"
+                alertMessage = ""
+                alert.alertStyle = .informational
             case .failure(let error):
-                self.alertTitle =
+                alert.alertStyle = .warning
+                alertTitle =
                         "Could not Authorize with your Spotify account"
                 
                 if let authError = error as? SpotifyAuthorizationError,
                    authError.accessWasDenied {
-                    self.alertMessage =
+                    alertMessage =
                         "You denied the authorization request (:"
                 }
                 else {
-                    self.alertMessage = error.localizedDescription
+                    alertMessage = error.localizedDescription
                 }
         }
-        print("\n\nself.alertIsPresented = true\n\n")
-        self.alertIsPresented = true
+
+        alert.informativeText = alertTitle
+        alert.messageText = alertMessage
+        
+        alert.runModal()
     }
+    
     
 }
 

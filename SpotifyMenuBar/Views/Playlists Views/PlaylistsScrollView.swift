@@ -25,10 +25,6 @@ struct PlaylistsScrollView: View {
     @State private var selectedPlaylistURI: String? = nil
     @State private var searchFieldIsFocused = false
     
-    @State private var alertIsPresented = false
-    @State private var alertTitle = ""
-    @State private var alertMessage = ""
-    
     @State private var playPlaylistCancellable: AnyCancellable? = nil
     
     let highlightAnimation = Animation.linear(duration: 0.1)
@@ -111,9 +107,11 @@ struct PlaylistsScrollView: View {
                     FocusableTextField(
                         text: $searchText,
                         isFirstResponder: $searchFieldIsFocused,
-                        onCommit: onSearchFieldCommit
+                        onCommit: searchFieldDidCommit,
+                        receiveKeyEvent: receiveSearchFieldKeyEvent
                     )
-                    .padding(.leading, 8)
+                    .touchBar(content: PlayPlaylistsTouchBarView.init)
+                    .padding(.leading, 6)
                     .padding(.trailing, -5)
                     
                     filterMenuView
@@ -124,6 +122,7 @@ struct PlaylistsScrollView: View {
                 .id(searchFieldId)
                 
                 LazyVStack {
+                    
                     ForEach(
                         self.filteredPlaylists,
                         id: \.element.uri
@@ -137,23 +136,19 @@ struct PlaylistsScrollView: View {
                         }
                         .id(playlist.offset)
                     }
-                    Spacer()
-                        .frame(height: 10)
                     
                 }
+                
+                Spacer()
+                    .frame(height: 8)
+                
             }
             .background(
                 KeyEventHandler { event in
-                    self.receiveKeyEvent(event, scrollView: scrollView)
+                    _ = self.receiveKeyEvent(event, scrollView: scrollView)
                 }
                 .touchBar(content: PlayPlaylistsTouchBarView.init)
             )
-            .alert(isPresented: $alertIsPresented) {
-                Alert(
-                    title: Text(alertTitle),
-                    message: Text(alertMessage)
-                )
-            }
             .onAppear {
 //                if !ProcessInfo.processInfo.isPreviewing {
                     scrollView.scrollTo(0, anchor: .top)
@@ -161,9 +156,6 @@ struct PlaylistsScrollView: View {
             }
             .onChange(of: searchText) { text in
                 scrollView.scrollTo(searchFieldId, anchor: .top)
-            }
-            .onReceive(playerManager.keyEventSubject) { event in
-                self.receiveKeyEvent(event, scrollView: scrollView)
             }
             
         }
@@ -179,7 +171,7 @@ struct PlaylistsScrollView: View {
                     if onlyShowMyPlaylists {
                         Image(systemName: "checkmark")
                     }
-                    Text("Only Show My Playlists")
+                    Text("Only Show My Playlists ⌘M")
                 }
             })
         } label: {
@@ -189,13 +181,77 @@ struct PlaylistsScrollView: View {
         .help("Filters")
         .frame(width: 30)
     }
+
+    func receiveSearchFieldKeyEvent(_ event: NSEvent) -> Bool {
+        print("receiveSearchFieldKeyEvent: \(event)")
+        return receiveKeyEvent(event, scrollView: nil)
+    }
     
-    func receiveKeyEvent(_ event: NSEvent, scrollView: ScrollViewProxy) {
+    /// Returns `true` if the key event was handled; else, `false`.
+    func receiveKeyEvent(_ event: NSEvent, scrollView: ScrollViewProxy?) -> Bool {
+
+        print("PlaylistsScrollView key event: \(event)")
+
+        let characters = event.charactersIgnoringModifiers
         
-        if [76, 36].contains(event.keyCode) {
-            self.onSearchFieldCommit()
+        if event.modifierFlags.contains(.command) {
+            if event.keyCode == 123 {
+                self.playerManager.previousTrackOrSeekBackwards()
+                return true
+            }
+            else if event.keyCode == 49 {
+                self.playerManager.playPause()
+                return true
+            }
+            else if event.keyCode == 124 {
+                self.playerManager.nextTrackOrSeekForwards()
+                return true
+            }
+            else if event.keyCode == 126 {  // up arrow
+                let newSoundVolume = Int(
+                    max(0, self.playerManager.soundVolume - 10)
+                )
+                self.playerManager.player.setSoundVolume?(
+                    newSoundVolume
+                )
+            }
+            else if event.keyCode == 125 {  // down arrow
+                let newSoundVolume = Int(
+                    min(100, self.playerManager.soundVolume + 10)
+                )
+                self.playerManager.player.setSoundVolume?(
+                    newSoundVolume
+                )
+            }
+            else if let characters = characters {
+                switch characters {
+                    case "k":
+                        self.playerManager.playPause()
+                    case "r":
+                        self.playerManager.cycleRepeatMode()
+                    case "s":
+                        self.playerManager.toggleShuffle()
+                    case "m":
+                        self.onlyShowMyPlaylists.toggle()
+                    case ",":
+                        let appDelegate = NSApplication.shared.delegate
+                            as! AppDelegate
+                        appDelegate.openSettingsWindow()
+                    default:
+                        return false
+                }
+                return true
+            }
         }
-        else if let character = event.charactersIgnoringModifiers {
+        // return or enter key
+        else if [76, 36].contains(event.keyCode) {
+            self.searchFieldDidCommit()
+            return true
+        }
+        else if let scrollView = scrollView,
+                event.specialKey == nil,
+                let character = characters {
+            print("charactersIgnoringModifiers: '\(character)'")
             print("PlaylistsScrollView receiveKeyEvent: '\(character)'")
             print(event)
 
@@ -203,10 +259,12 @@ struct PlaylistsScrollView: View {
             self.searchText += character
             print("scrolling to search field")
             scrollView.scrollTo(searchFieldId, anchor: .top)
+            return true
         }
+        return false
     }
-    
-    func onSearchFieldCommit() {
+
+    func searchFieldDidCommit() {
         print("onSearchFieldCommit")
         guard isShowingPlaylistsView else {
             print("skipping because not presented")
@@ -218,7 +276,7 @@ struct PlaylistsScrollView: View {
             }
             print("playing playlist \(firstPlaylist.name)")
             self.playPlaylist(firstPlaylist)
-            
+
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
                 withAnimation(highlightAnimation) {
                     self.selectedPlaylistURI = nil
@@ -231,17 +289,18 @@ struct PlaylistsScrollView: View {
             }
         }
     }
-    
+
     func playPlaylist(_ playlist: Playlist<PlaylistsItemsReference>) {
         self.playPlaylistCancellable = self.playerManager
             .playPlaylist(playlist)
             .sink(receiveCompletion: { completion in
                 if case .failure(let error) = completion {
-                    self.alertTitle =
-                        #"Couldn't play "\#(playlist.name)""#
-                    self.alertMessage = error.localizedDescription
-                    self.alertIsPresented = true
-                    print("\(alertTitle): \(error)")
+                    let alertTitle = #"Couldn't play "\#(playlist.name)""#
+                    self.playerManager.presentNotification(
+                        title: alertTitle,
+                        message: error.localizedDescription
+                    )
+                    print("PlaylistsScrollView: \(alertTitle): \(error)")
                 }
             })
 

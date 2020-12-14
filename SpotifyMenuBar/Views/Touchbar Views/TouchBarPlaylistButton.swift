@@ -16,10 +16,6 @@ struct TouchBarPlaylistButton: View {
     
     @State private var isMakingRequestToPlayPlaylist = false
     
-    @State private var alertIsPresented = false
-    @State private var alertTitle = ""
-    @State private var alertMessage = ""
-    
     @State private var cancellables: Set<AnyCancellable> = []
     @State private var playPlaylistCancellable: AnyCancellable? = nil
     
@@ -53,12 +49,6 @@ struct TouchBarPlaylistButton: View {
                 )
         })
         .buttonStyle(PlainButtonStyle())
-        .alert(isPresented: $alertIsPresented) {
-            Alert(
-                title: Text(alertTitle),
-                message: Text(alertMessage)
-            )
-        }
 
     }
     
@@ -81,11 +71,13 @@ struct TouchBarPlaylistButton: View {
                 receiveCompletion: { completion in
                     self.isMakingRequestToPlayPlaylist = false
                     if case .failure(let error) = completion {
-                        self.alertTitle =
+                        let alertTitle =
                             #"Couldn't play "\#(playlist.name)""#
-                        self.alertMessage = error.localizedDescription
-                        self.alertIsPresented = true
-                        print("\(alertTitle): \(error)")
+                        self.playerManager.presentNotification(
+                            title: alertTitle,
+                            message: error.localizedDescription
+                        )
+                        print("TouchBarPlaylistButton: \(alertTitle): \(error)")
                     }
                 },
                 receiveValue: { }
