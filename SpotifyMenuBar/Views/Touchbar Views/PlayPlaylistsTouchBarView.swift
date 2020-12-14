@@ -12,10 +12,6 @@ struct PlayPlaylistsTouchBarView: View {
     
     @State private var isPlayingPlaylist = false
     
-    @State private var alertIsPresented = false
-    @State private var alertTitle = ""
-    @State private var alertMessage = ""
-    
     @State private var cancellables: Set<AnyCancellable> = []
     
     var playlists: ArraySlice<Playlist<PlaylistsItemsReference>> {
@@ -48,12 +44,6 @@ struct PlayPlaylistsTouchBarView: View {
             .frame(width: 560, alignment: .leading)
             
             navigationButtons
-        }
-        .alert(isPresented: $alertIsPresented) {
-            Alert(
-                title: Text(alertTitle),
-                message: Text(alertMessage)
-            )
         }
         .offset(y: 2)
         .onDisappear {
@@ -89,7 +79,7 @@ struct PlayPlaylistsTouchBarView: View {
         let playlistsCount = self.playerManager
                 .playlistsSortedByLastModifiedDate.count
         
-//        print("\(offset * 4 + 1) >= \(playlistsCount + 4)")
+//        print("\((offset + 1) * 4) >= \(playlistsCount)")
         return (offset + 1) * 4 >= playlistsCount
     }
     

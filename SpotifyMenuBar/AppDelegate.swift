@@ -27,9 +27,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         
         self.spotify = Spotify()
         
-        // MARK: DEBUG
-//        self.spotify.api.authorizationManager.deauthorize()
-        
         self.playerManager = PlayerManager(spotify: spotify)
         
         SpotifyAPILogHandler.bootstrap()
@@ -107,12 +104,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
     
     @objc func openSettingsWindow() {
-        if settingsWindow == nil {      // create once !!
+        if settingsWindow == nil {
             let settingsView = SettingsView()
                 .environmentObject(spotify)
                 .environmentObject(playerManager)
+                .frame(width: 400, height: 200)
             settingsWindow = NSWindow(
-                contentRect: NSRect(x: 20, y: 20, width: 480, height: 300),
+                contentRect: NSRect(x: 0, y: 0, width: 400, height: 200),
                 styleMask: [
                     .titled,
                     .closable,

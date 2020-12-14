@@ -10,31 +10,33 @@ struct SettingsView: View {
     var body: some View {
         Form {
             Button(
-                "Remove Playlist Images Cache",
-                action: removePlaylistImagesCache
+                "Show Images Cache Folder",
+                action: showImagesCacheFolder
             )
+            Text(
+                "You can safely remove files from " +
+                "this folder to free up space"
+            )
+            .font(.footnote)
+            .foregroundColor(.secondary)
             Button(
                 "Logout from Spotify",
                 action: spotify.api.authorizationManager.deauthorize
             )
         }
         .padding(50)
+        .background(
+            FocusView(isFirstResponder: .constant(true))
+                .touchBar(content: PlayPlaylistsTouchBarView.init)
+        )
     }
     
-    func removePlaylistImagesCache() {
-        do {
-            if let folder = playerManager.imagesFolder {
-                print("will delete folder: \(folder)")
-                try FileManager.default.removeItem(at: folder)
-            }
-            
-        } catch {
-            print("couldn't remove image cache: \(error)")
+    func showImagesCacheFolder() {
+        if let imagesFolder = playerManager.imagesFolder {
+            NSWorkspace.shared.activateFileViewerSelecting([imagesFolder])
         }
     }
     
-    
-
 }
 
 struct SettingsView_Previews: PreviewProvider {

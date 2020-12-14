@@ -3,21 +3,34 @@ import SwiftUI
 
 struct NotificationView: View {
     
-    fileprivate static var debugIsShowingNotification = false
-
+    fileprivate static var debugIsPresented = false
+    
     @EnvironmentObject var playerManager: PlayerManager
+    
+    @State private var isPresented = false
+    @State private var title = ""
+    @State private var message = ""
 
-    @State private var isShowingNotification = false
-    @State fileprivate var notificationMessage = ""
-//        "Evolution is the unifying theory of the life sciences"
+    @State private var messageId = UUID()
+
+    @State private var cancelButtonIsShowing = false
 
     var body: some View {
+        
         VStack {
-            if isShowingNotification || Self.debugIsShowingNotification {
-                Text(notificationMessage)
-                    .font(.callout)
+            if isPresented || Self.debugIsPresented {
+                ZStack(alignment: .topLeading) {
+                    VStack {
+                        Text(title)
+                            .fontWeight(.medium)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .padding(.bottom, 5)
+                        if !message.isEmpty {
+                            Text(message)
+                        }
+                    }
                     .frame(maxWidth: .infinity)
-                    .padding(5)
+                    .padding(7)
                     .background(
                         VisualEffectView(
                             material: .popover,
@@ -25,26 +38,51 @@ struct NotificationView: View {
                         )
                     )
                     .cornerRadius(5)
-                    .padding(.vertical, 5)
-                    .padding(.horizontal, 8)
+                    .padding(10)
                     .shadow(radius: 5)
-                    .transition(.move(edge: .top))
+                    
+                    CancelButton(action: {
+                        withAnimation {
+                            self.isPresented = false
+                        }
+                    })
+                    .padding(5)
+                    .contentShape(Rectangle())
+                    .onHover { isHovering in
+                        withAnimation(.linear(duration: 0.2)) {
+                            self.cancelButtonIsShowing = isHovering
+                        }
+                    }
+                    .opacity(cancelButtonIsShowing ? 1 : 0)
+                    
+                }
+                .transition(.move(edge: .top))
+                
+                Spacer()
             }
-            Spacer()
         }
-        .onReceive(playerManager.alertSubject) { message in
-            self.notificationMessage = message
-            withAnimation() {
-                self.isShowingNotification = true
+        .onReceive(playerManager.notificationSubjet) { title, message in
+    
+            let id = UUID()
+            self.messageId = id
+
+            withAnimation {
+                self.title = title
+                self.message = message
+                self.isPresented = true
             }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                withAnimation() {
-                    self.isShowingNotification = false
+
+            let delay: Double = message.isEmpty ? 2 : 3
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+                if self.messageId == id {
+                    withAnimation() {
+                        self.isPresented = false
+                    }
                 }
             }
-            
-        }
 
+        }
+        
     }
 }
 
@@ -56,7 +94,7 @@ struct NotificationView_Previews: PreviewProvider {
     }
     
     static func onAppear() {
-        NotificationView.debugIsShowingNotification = true
+        NotificationView.debugIsPresented = true
     }
-
+    
 }

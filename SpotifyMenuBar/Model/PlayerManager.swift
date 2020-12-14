@@ -133,12 +133,11 @@ class PlayerManager: ObservableObject {
         }
     }
     
+    // MARK: Notification
+    
+    let notificationSubjet = PassthroughSubject<(title: String, message: String), Never>()
+    
     // MARK: Publishers
-    
-    /// `PlayerView` displays an alert when this subject emits.
-    let alertSubject = PassthroughSubject<String, Never>()
-    
-    let keyEventSubject = PassthroughSubject<NSEvent, Never>()
     
     let artworkURLDidChange = PassthroughSubject<Void, Never>()
     
@@ -169,6 +168,8 @@ class PlayerManager: ObservableObject {
     private var retrieveCurrentUserCancellable: AnyCancellable? = nil
     private var didUpdateCurrentlyPlayingContextCancellable: AnyCancellable? = nil
     private var openArtistOrShowCancellable: AnyCancellable? = nil
+    private var cycleRepeatModeCancellable: AnyCancellable? = nil
+
     
     init(spotify: Spotify) {
         
@@ -416,6 +417,109 @@ class PlayerManager: ObservableObject {
         }
         
     }
+    
+    // MARK: Player Controls
+    
+    func cycleRepeatMode() {
+        self.repeatMode.cycle()
+        self.cycleRepeatModeCancellable = self.spotify.api
+            .setRepeatMode(to: self.repeatMode)
+            .receive(on: RunLoop.main)
+            .sink(receiveCompletion: { completion in
+                let repeatModeString = self.repeatMode.rawValue
+                switch completion {
+                    case .failure(let error):
+                        let alertTitle =
+                            "Couldn't set repeat mode to \(repeatModeString)"
+                        self.presentNotification(
+                            title: alertTitle,
+                            message: error.localizedDescription
+                        )
+                        Loggers.repeatMode.error(
+                            "RepeatButton: \(alertTitle): \(error)"
+                        )
+                    case .finished:
+                        Loggers.repeatMode.trace(
+                            "cycleRepeatMode completion: \(repeatModeString)"
+                        )
+                }
+                
+            })
+    }
+    
+    func toggleShuffle() {
+        
+        self.shuffleIsOn.toggle()
+        Loggers.shuffle.trace(
+            "will set shuffle to \(self.shuffleIsOn)"
+        )
+        self.player.setShuffling?(
+            self.shuffleIsOn
+        )
+    }
+    
+    /// If a track is playing, skips to the previous track;
+    /// if an episode is playing, seeks backwards 15 seconds.
+    func previousTrackOrSeekBackwards() {
+        if self.currentTrack?.identifier?.idCategory == .episode {
+            self.seekBackwards15Seconds()
+        }
+        else {
+            self.skipToPreviousTrack()
+        }
+    }
+
+    /// If a track is playing, skips to the next track;
+    /// if an episode is playing, seeks forwards 15 seconds.
+    func nextTrackOrSeekForwards() {
+        if self.currentTrack?.identifier?.idCategory == .episode {
+            self.seekForwards15Seconds()
+        }
+        else {
+            self.skipToNextTrack()
+        }
+    }
+    
+    func skipToPreviousTrack() {
+        self.player.previousTrack?()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+            self.updatePlayerState()
+        }
+    }
+    
+    func seekBackwards15Seconds() {
+        guard let currentPosition = self.player.playerPosition else {
+            print("couldn't get player position")
+            return
+        }
+        let newPosition = max(0, currentPosition - 15)
+        self.setPlayerPosition(to: CGFloat(newPosition))
+    }
+    
+    func playPause() {
+        self.player.playpause?()
+    }
+
+    func skipToNextTrack() {
+        self.player.nextTrack?()
+    }
+    
+    func seekForwards15Seconds() {
+        guard let currentPosition = self.player.playerPosition else {
+            print("couldn't get player position")
+            return
+        }
+        let newPosition: Double
+        if let duration = self.currentTrack?.duration {
+            newPosition = (currentPosition + 15)
+                .clamped(to: 0...Double(duration / 1000))
+        }
+        else {
+            newPosition = currentPosition + 15
+        }
+        self.setPlayerPosition(to: CGFloat(newPosition))
+    }
+
     
     // MARK: Playlists
     
@@ -682,6 +786,14 @@ class PlayerManager: ObservableObject {
                 }
             )
             
+    }
+
+    // MARK: Notification
+    
+    func presentNotification(title: String, message: String) {
+        self.notificationSubjet.send(
+            (title: title, message: message)
+        )
     }
 
 }

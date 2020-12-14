@@ -4,16 +4,14 @@ import SpotifyWebAPI
 
 struct PlaylistsCellView: View {
     
+    @Environment(\.colorScheme) var colorScheme
+    
     @EnvironmentObject var playerManager: PlayerManager
     @EnvironmentObject var spotify: Spotify
 
     let playlist: Playlist<PlaylistsItemsReference>
 
     let isSelected: Bool
-    
-    @State private var alertIsPresented = false
-    @State private var alertTitle = ""
-    @State private var alertMessage = ""
     
     @State private var playPlaylistCancellable: AnyCancellable? = nil
     @State private var cancellables: Set<AnyCancellable> = []
@@ -47,6 +45,7 @@ struct PlaylistsCellView: View {
     
     var body: some View {
         HStack {
+            
             Button(action: {
                 self.playPlaylist()
             }, label: {
@@ -65,32 +64,44 @@ struct PlaylistsCellView: View {
                 .contentShape(Rectangle())
             })
             .buttonStyle(PlainButtonStyle())
+            
             if playlistOwnedByCurrentUser {
                 Button(action: {
                     self.addCurrentItemToPlaylist()
                 }, label: {
                     Image(systemName: "text.badge.plus")
                 })
+                .buttonStyle(PlainButtonStyle())
                 .help(addToPlaylistTooltip)
             }
+            
         }
         .disabled(isSelected)
-        .padding(.horizontal, 10)
+        .padding(.leading, 8)
+        .padding(.trailing, 15)
+//        .padding(.trailing, 5)
+        
     }
     
     /// Adds the currently playing track/episode to a playlist.
     func addCurrentItemToPlaylist() {
         
-        guard let currentItemURI = playerManager.currentTrack?.id?() else {
+        guard let currentItemURI = playerManager.currentTrack?.id?(),
+                !currentItemURI.isEmpty else {
             print(
                 "PlaylistsView: no URI for the currently playing item"
+            )
+            self.playerManager.presentNotification(
+                title: "Couldn't retrieve the currently playing " +
+                       "track or episode",
+                message: ""
             )
             return
         }
         
         self.playerManager.playlistsLastModifiedDates[playlist.uri] = Date()
         
-        let itemName = playerManager.currentTrack?.name ?? "unknown"
+        let itemName = playerManager.currentTrack?.name ?? "nil"
         print("adding \(itemName) to \(playlist.name)")
         
         self.spotify.api.addToPlaylist(
@@ -101,15 +112,20 @@ struct PlaylistsCellView: View {
             receiveCompletion: { completion in
                 switch completion {
                     case .finished:
-                        let message = #"Added "\#(itemName)" "# +
+                        let messageTitle = #"Added "\#(itemName)" "# +
                             #"to "\#(playlist.name)""#
-                        self.playerManager.alertSubject.send(message)
+                        self.playerManager.presentNotification(
+                            title: messageTitle,
+                            message: ""
+                        )
                     case .failure(let error):
-                        self.alertTitle = #"Couldn't add "\#(itemName)" "# +
+                        let alertTitle = #"Couldn't add "\#(itemName)" "# +
                             #"to "\#(playlist.name)""#
-                        self.alertMessage = error.localizedDescription
-                        self.alertIsPresented = true
-                        print("\(alertTitle): \(error)")
+                        self.playerManager.presentNotification(
+                            title: alertTitle,
+                            message: error.localizedDescription
+                        )
+                        print("PlaylistsCellView: \(alertTitle): \(error)")
                 }
             },
             receiveValue: { _ in }
@@ -124,11 +140,12 @@ struct PlaylistsCellView: View {
             .playPlaylist(playlist)
             .sink(receiveCompletion: { completion in
                 if case .failure(let error) = completion {
-                    self.alertTitle =
-                        #"Couldn't play "\#(playlist.name)""#
-                    self.alertMessage = error.localizedDescription
-                    self.alertIsPresented = true
-                    print("\(alertTitle): \(error)")
+                    let alertTitle = #"Couldn't play "\#(playlist.name)""#
+                    self.playerManager.presentNotification(
+                        title: alertTitle,
+                        message: error.localizedDescription
+                    )
+                    print("PlaylistsCellView: \(alertTitle): \(error)")
                 }
             })
         
