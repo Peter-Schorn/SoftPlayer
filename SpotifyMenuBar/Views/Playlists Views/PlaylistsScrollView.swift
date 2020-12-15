@@ -158,10 +158,7 @@ struct PlaylistsScrollView: View {
                 .touchBar(content: PlayPlaylistsTouchBarView.init)
             )
             .onAppear {
-//                if !ProcessInfo.processInfo.isPreviewing {
-                    scrollView.scrollTo(0, anchor: .top)
-//                    self.onlyShowMyPlaylists = self.playerManager.onlyShowMyPlaylists
-//                }
+                scrollView.scrollTo(0, anchor: .top)
             }
             .onChange(of: searchText) { text in
                 scrollView.scrollTo(searchFieldId, anchor: .top)
