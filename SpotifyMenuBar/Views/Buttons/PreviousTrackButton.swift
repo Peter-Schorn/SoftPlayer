@@ -1,6 +1,7 @@
 import SwiftUI
 import Combine
 import SpotifyWebAPI
+import KeyboardShortcuts
 
 struct PreviousTrackButton: View {
     
@@ -13,6 +14,13 @@ struct PreviousTrackButton: View {
     
     let size: Size
     
+    var shortcutName: String {
+        if let name = KeyboardShortcuts.getShortcut(for: .previousTrack) {
+            return " \(name)"
+        }
+        return ""
+    }
+
     var body: some View {
         
         // MARK: Seek Backwards 15 Seconds
@@ -22,7 +30,7 @@ struct PreviousTrackButton: View {
                     .font(size == .large ? .title : .body)
             })
             .buttonStyle(PlainButtonStyle())
-            .help("Seek backwords 15 seconds ⌘←")
+            .help("Seek backwords 15 seconds\(shortcutName)")
         }
         else {
             Image(systemName: "backward.end.fill")
@@ -47,7 +55,7 @@ struct PreviousTrackButton: View {
                         self.seekBackwardsTimerCancellable?.cancel()
                     }
                 }
-                .help("Skip to the previous track ⌘←")
+                .help("Skip to the previous track\(shortcutName)")
 
         }
     }

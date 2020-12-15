@@ -1,6 +1,7 @@
 import SwiftUI
 import Combine
 import SpotifyWebAPI
+import KeyboardShortcuts
 
 struct NextTrackButton: View {
     
@@ -13,6 +14,13 @@ struct NextTrackButton: View {
     
     let size: Size
     
+    var shortcutName: String {
+        if let name = KeyboardShortcuts.getShortcut(for: .nextTrack) {
+            return " \(name)"
+        }
+        return ""
+    }
+    
     var body: some View {
         
         if playerManager.currentTrack?.identifier?.idCategory == .episode {
@@ -23,7 +31,7 @@ struct NextTrackButton: View {
 
             })
             .buttonStyle(PlainButtonStyle())
-            .help("Seek forwards 15 seconds ⌘→")
+            .help("Seek forwards 15 seconds\(shortcutName)")
         }
         else {
             // MARK: Next Track
@@ -51,7 +59,7 @@ struct NextTrackButton: View {
                         
                     }
                 }
-                .help("Skip to the next track ⌘→")
+                .help("Skip to the next track\(shortcutName)")
 
         }
     }

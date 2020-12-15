@@ -32,9 +32,7 @@ struct PlayPlaylistsTouchBarView: View {
     }
     
     var body: some View {
-        
         HStack {
-            
             HStack {
                 ForEach(
                     playlists, id: \.uri,
@@ -42,8 +40,9 @@ struct PlayPlaylistsTouchBarView: View {
                 )
             }
             .frame(width: 560, alignment: .leading)
-            
-            navigationButtons
+            if !playlists.isEmpty {
+                navigationButtons
+            }
         }
         .offset(y: 2)
         .onDisappear {

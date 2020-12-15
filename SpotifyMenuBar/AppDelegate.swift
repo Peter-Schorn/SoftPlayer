@@ -3,6 +3,7 @@ import AppKit
 import SwiftUI
 import Combine
 import SpotifyWebAPI
+import KeyboardShortcuts
 
 @NSApplicationMain
 class AppDelegate: NSObject, NSApplicationDelegate {
@@ -25,11 +26,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         
 //        NSApplication.shared.isAutomaticCustomizeTouchBarMenuItemEnabled = true
         
+        self.initializeKeyboardShortcutNames()
+        
+        SpotifyAPILogHandler.bootstrap()
+
         self.spotify = Spotify()
         
         self.playerManager = PlayerManager(spotify: spotify)
         
-        SpotifyAPILogHandler.bootstrap()
         
         let rootView = RootView()
             .environment(\.managedObjectContext, persistentContainer.viewContext)
@@ -104,13 +108,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
     
     @objc func openSettingsWindow() {
-        if settingsWindow == nil {
+        if self.settingsWindow == nil {
             let settingsView = SettingsView()
                 .environmentObject(spotify)
                 .environmentObject(playerManager)
-                .frame(width: 400, height: 200)
-            settingsWindow = NSWindow(
-                contentRect: NSRect(x: 0, y: 0, width: 400, height: 200),
+            self.settingsWindow = NSWindow(
+                contentRect: NSRect(x: 0, y: 0, width: 400, height: 400),
                 styleMask: [
                     .titled,
                     .closable,
@@ -121,13 +124,32 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 backing: .buffered,
                 defer: false
             )
-            settingsWindow?.title = "Settings"
-            settingsWindow?.setFrameAutosaveName("Settings")
-            settingsWindow?.isReleasedWhenClosed = false
-            settingsWindow?.center()
-            settingsWindow?.contentView = NSHostingView(rootView: settingsView)
+            self.settingsWindow?.title = "Settings"
+            self.settingsWindow?.setFrameAutosaveName("Settings")
+            self.settingsWindow?.isReleasedWhenClosed = true
+            self.settingsWindow?.center()
+            self.settingsWindow?.contentView = NSHostingView(rootView: settingsView)
+            
         }
-        settingsWindow?.makeKeyAndOrderFront(nil)
+        assert(self.settingsWindow != nil)
+        self.settingsWindow?.makeKeyAndOrderFront(nil)
+    }
+    
+    /// Global variables are lazily initialized, but this program relies
+    /// on the keyboard shortcut names being initialized immediately.
+    func initializeKeyboardShortcutNames() {
+        typealias Name = KeyboardShortcuts.Name
+        var sink = ""
+        print(Name.showPlaylists, to: &sink)
+        print(Name.previousTrack, to: &sink)
+        print(Name.playPause, to: &sink)
+        print(Name.nextTrack, to: &sink)
+        print(Name.repeatMode, to: &sink)
+        print(Name.shuffle, to: &sink)
+        print(Name.volumeDown, to: &sink)
+        print(Name.volumeUp, to: &sink)
+        print(Name.onlyShowMyPlaylists, to: &sink)
+        print(Name.settings, to: &sink)
     }
     
     // MARK: - Core Data stack

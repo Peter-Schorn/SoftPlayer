@@ -29,7 +29,7 @@ struct FocusView: NSViewRepresentable {
         }
         else {
             print("FocusView: resignFirstResponder")
-            nsView.resignFirstResponder()
+            nsView.window?.makeFirstResponder(nil)
         }
     }
     

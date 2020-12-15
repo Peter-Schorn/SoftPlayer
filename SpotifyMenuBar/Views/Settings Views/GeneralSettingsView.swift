@@ -2,7 +2,7 @@ import SwiftUI
 import Combine
 import SpotifyWebAPI
 
-struct SettingsView: View {
+struct GeneralSettingsView: View {
     
     @EnvironmentObject var spotify: Spotify
     @EnvironmentObject var playerManager: PlayerManager
@@ -24,11 +24,11 @@ struct SettingsView: View {
                 action: spotify.api.authorizationManager.deauthorize
             )
         }
-        .padding(50)
-        .background(
-            FocusView(isFirstResponder: .constant(true))
-                .touchBar(content: PlayPlaylistsTouchBarView.init)
-        )
+        .padding(20)
+//        .background(
+//            FocusView(isFirstResponder: .constant(true))
+//                .touchBar(content: PlayPlaylistsTouchBarView.init)
+//        )
     }
     
     func showImagesCacheFolder() {
@@ -39,8 +39,8 @@ struct SettingsView: View {
     
 }
 
-struct SettingsView_Previews: PreviewProvider {
-    static var previews: some View {
-        SettingsView()
-    }
-}
+//struct GeneralSettingsView_Previews: PreviewProvider {
+//    static var previews: some View {
+//        GeneralSettingsView()
+//    }
+//}

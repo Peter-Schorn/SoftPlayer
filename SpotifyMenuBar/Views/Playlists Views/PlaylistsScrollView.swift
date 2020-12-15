@@ -4,6 +4,7 @@ import SwiftUI
 import SpotifyWebAPI
 import RegularExpressions
 import Logging
+import KeyboardShortcuts
 
 struct PlaylistsScrollView: View {
     
@@ -28,6 +29,13 @@ struct PlaylistsScrollView: View {
     let highlightAnimation = Animation.linear(duration: 0.1)
     let searchFieldId = "search field"
     
+    var onlyShowMyPlaylistsShortcut: String {
+        if let name = KeyboardShortcuts.getShortcut(for: .onlyShowMyPlaylists) {
+            return " \(name)"
+        }
+        return ""
+    }
+
     var filteredPlaylists:
         [(offset: Int, element: Playlist<PlaylistsItemsReference>)] {
         
@@ -172,7 +180,7 @@ struct PlaylistsScrollView: View {
                     if onlyShowMyPlaylists {
                         Image(systemName: "checkmark")
                     }
-                    Text("Only Show My Playlists ⌘M")
+                    Text("Only Show My Playlists\(onlyShowMyPlaylistsShortcut)")
                 }
             })
         } label: {
