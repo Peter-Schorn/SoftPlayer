@@ -31,12 +31,6 @@ extension View {
         }
     }
     
-    func onKeyEvent(
-        perform action: @escaping (NSEvent) -> Void
-    ) -> some View {
-        self.background(KeyEventHandler(receiveKeyEvent: action))
-    }
-
     func adaptiveShadow(
         radius: CGFloat,
         x: CGFloat = 0,

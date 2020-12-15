@@ -5,7 +5,7 @@ import SpotifyWebAPI
 
 struct PlayerView: View {
 
-    static var debugShowPlaylistsView = false
+    static var debugIsShowingPlaylistsView = false
     
     static let animation = Animation.easeOut(duration: 0.5)
     
@@ -15,7 +15,6 @@ struct PlayerView: View {
     
     @Namespace var namespace
     
-    @State private var isShowingPlaylistsView = false
     @State private var isShowingMiniPlayerViewBackground = false
     
     @State private var isFirstResponder = false
@@ -29,11 +28,11 @@ struct PlayerView: View {
     // MARK: Geometry Effect Constants
     
     var playerViewIsSource: Bool {
-        !isShowingPlaylistsView
+        !playerManager.isShowingPlaylistsView
     }
     
     var playlistsViewIsSource: Bool {
-        isShowingPlaylistsView
+        playerManager.isShowingPlaylistsView
     }
     
     let albumImageId = "albumImage"
@@ -50,16 +49,13 @@ struct PlayerView: View {
     
     var body: some View {
         ZStack(alignment: .top) {
-            if isShowingPlaylistsView || Self.debugShowPlaylistsView {
+            if playerManager.isShowingPlaylistsView
+                    || Self.debugIsShowingPlaylistsView {
                 VStack(spacing: 0) {
                     
                     miniPlayerViewBackground
                     
-                    PlaylistsScrollView(
-                        isShowingPlaylistsView: $isShowingPlaylistsView
-                    )
-//                    .padding(.leading, 6)
-//                    .padding(.trailing, 8)
+                    PlaylistsScrollView()
                     
                 }
                 .background(
@@ -69,10 +65,10 @@ struct PlayerView: View {
                 // MARK: Playlists View Transition
                 .transition(.move(edge: .bottom))
                 .onExitCommand {
-                    self.dismissPlaylistsView(animated: true)
+                    self.playerManager.dismissPlaylistsView(animated: true)
                 }
                 .onReceive(playerManager.popoverDidClose) {
-                    self.dismissPlaylistsView(animated: false)
+                    self.playerManager.dismissPlaylistsView(animated: false)
                 }
                 
                 miniPlayerView
@@ -81,10 +77,6 @@ struct PlayerView: View {
             }
             else {
                 playerView
-                    .background(
-                        KeyEventHandler(receiveKeyEvent: receiveKeyEvent(_:))
-                            .touchBar(content: PlayPlaylistsTouchBarView.init)
-                    )
             }
         }
         .overlay(NotificationView())
@@ -92,7 +84,7 @@ struct PlayerView: View {
             width: AppDelegate.popoverWidth,
             height: AppDelegate.popoverHeight
         )
-        .onChange(of: isShowingPlaylistsView) { isShowing in
+        .onChange(of: playerManager.isShowingPlaylistsView) { isShowing in
             if isShowing {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                     withAnimation(.linear(duration: 0.2)) {
@@ -105,8 +97,8 @@ struct PlayerView: View {
             }
         }
         .onExitCommand {
-            if isShowingPlaylistsView {
-                self.dismissPlaylistsView(animated: true)
+            if self.playerManager.isShowingPlaylistsView {
+                self.playerManager.dismissPlaylistsView(animated: true)
             }
             else {
                 print("not showing playlists view; dismissing popover")
@@ -229,13 +221,14 @@ struct PlayerView: View {
                 Spacer()
                 
                 HStack {
+                    // MARK: Show PlaylistsView Button
                     Button(action: {
-                        if self.isShowingPlaylistsView {
-                            self.dismissPlaylistsView(animated: true)
+                        if self.playerManager.isShowingPlaylistsView {
+                            self.playerManager.dismissPlaylistsView(animated: true)
                         }
                         else {
                             withAnimation(Self.animation) {
-                                self.isShowingPlaylistsView = true
+                                self.playerManager.isShowingPlaylistsView = true
                             }
                         }
                     }, label: {
@@ -249,7 +242,7 @@ struct PlayerView: View {
                     AvailableDevicesButton()
                         .padding(.bottom, 2)
 
-                    // MARK: Settings
+                    // MARK: Show SettingsView Button
                     Button(action: appDelegate.openSettingsWindow, label: {
                         Image(systemName: "gearshape.fill")
                     })
@@ -264,6 +257,15 @@ struct PlayerView: View {
 
             Spacer()
         }
+        .background(
+            KeyEventHandler { event in
+                return self.playerManager.receiveKeyEvent(
+                    event,
+                    requireModifierKey: false
+                )
+            }
+            .touchBar(content: PlayPlaylistsTouchBarView.init)
+        )
     }
     
     var miniPlayerView: some View {
@@ -371,7 +373,7 @@ struct PlayerView: View {
     var miniPlayerViewBackground: some View {
         VStack {
             Button(action: {
-                self.dismissPlaylistsView(animated: true)
+                self.playerManager.dismissPlaylistsView(animated: true)
             }, label: {
                 Image(systemName: "chevron.down")
                     .padding(-3)
@@ -393,70 +395,6 @@ struct PlayerView: View {
         
     }
     
-    func dismissPlaylistsView(animated: Bool) {
-        if animated {
-            withAnimation(Self.animation) {
-                self.isShowingPlaylistsView = false
-            }
-            self.playerManager.updateSoundVolumeAndPlayerPosition()
-            self.playerManager.updatePlaylistsSortedByLastModifiedDate()
-            self.playerManager.retrieveAvailableDevices()
-            self.playerManager.retrievePlaylistImages()
-        }
-        else {
-            self.isShowingPlaylistsView = false
-        }
-    }
-
-    func receiveKeyEvent(_ event: NSEvent) {
-        print("PlayerView key event: \(event)")
-//        print(event.modifierFlags)
-
-        
-        if event.keyCode == 123 {  // left arrow
-            self.playerManager.previousTrackOrSeekBackwards()
-        }
-        else if event.keyCode == 49 {  // space bar
-            self.playerManager.playPause()
-        }
-        else if event.keyCode == 124 {  // right arrow
-            self.playerManager.nextTrackOrSeekForwards()
-        }
-        else if event.keyCode == 126 {  // up arrow
-            let newSoundVolume = min(100, self.playerManager.soundVolume + 5)
-            self.playerManager.soundVolume = newSoundVolume
-            self.playerManager.player.setSoundVolume?(
-                Int(newSoundVolume)
-            )
-        }
-        else if event.keyCode == 125 {  // down arrow
-            let newSoundVolume = max(0, self.playerManager.soundVolume - 5)
-            self.playerManager.soundVolume = newSoundVolume
-            self.playerManager.player.setSoundVolume?(
-                Int(newSoundVolume)
-            )
-        }
-        else if let characters = event.charactersIgnoringModifiers {
-            switch characters {
-                case "p":
-                    withAnimation(Self.animation) {
-                        self.isShowingPlaylistsView = true
-                    }
-                case "k":
-                    self.playerManager.playPause()
-                case "r":
-                    self.playerManager.cycleRepeatMode()
-                case "s":
-                    self.playerManager.toggleShuffle()
-                case ",":
-                    self.appDelegate.openSettingsWindow()
-                default:
-                    break
-            }
-        }
-        
-    }
-
 }
 
 struct PlayerView_Previews: PreviewProvider {
