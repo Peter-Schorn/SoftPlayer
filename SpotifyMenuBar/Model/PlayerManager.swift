@@ -879,7 +879,7 @@ class PlayerManager: ObservableObject {
         guard let shortcutName = KeyboardShortcuts.getName(for: shortcut) else {
             let allNames = KeyboardShortcuts.Name.allNames.map(\.rawValue)
             Loggers.keyEvent.notice(
-                "couldn't get name for shortcut; all names: \(allNames)"
+                "couldn't get name for shortcut \(shortcut); all names: \(allNames)"
             )
             return false
         }
@@ -927,9 +927,11 @@ class PlayerManager: ObservableObject {
                     "onlyShowMyPlaylists = \(self.onlyShowMyPlaylists)"
                 )
             case .settings:
-                let appDelegate = NSApplication.shared.delegate
-                    as! AppDelegate
-                appDelegate.openSettingsWindow()
+                NSApp.sendAction(
+                    #selector(AppDelegate.openSettingsWindow),
+                    to: nil,
+                    from: nil
+                )
             default:
                 return false
         }

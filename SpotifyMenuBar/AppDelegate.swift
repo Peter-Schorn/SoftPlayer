@@ -103,7 +103,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         
     }
     
-    func openSettingsWindow() {
+    @objc func openSettingsWindow() {
         if self.settingsWindow == nil {
             let settingsView = SettingsView()
                 .environmentObject(spotify)
@@ -120,12 +120,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 backing: .buffered,
                 defer: false
             )
-            self.settingsWindow?.title = "Settings"
-            self.settingsWindow?.setFrameAutosaveName("Settings")
-            self.settingsWindow?.isReleasedWhenClosed = true
             self.settingsWindow?.center()
+            self.settingsWindow?.setFrameAutosaveName("Settings")
+            self.settingsWindow?.title = "Settings"
+            self.settingsWindow?.isReleasedWhenClosed = false
             self.settingsWindow?.contentView = NSHostingView(rootView: settingsView)
-            self.settingsWindow?.makeFirstResponder(nil)
             
         }
         assert(self.settingsWindow != nil)
