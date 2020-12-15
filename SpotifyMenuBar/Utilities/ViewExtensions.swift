@@ -51,21 +51,27 @@ extension View {
        - isLongPressing: Updated based on whether the user is currently
              long-pressing on a view.
      */
-    func tapAndLongPressAndHoldGesture(
-        onTap: @escaping () -> Void, isLongPressing: GestureState<Bool>
+    @ViewBuilder func tapAndLongPressAndHoldGesture(
+        isEnabled: Bool,
+        onTap: @escaping () -> Void,
+        isLongPressing: GestureState<Bool>
     ) -> some View {
-        return self.gesture(
-            TapGesture()
-                .onEnded { _ in onTap() }
-                .exclusively(before: LongPressGesture(minimumDuration: 0.5)
+        if isEnabled {
+            self.gesture(
+                TapGesture()
+                    .onEnded { _ in onTap() }
+                    .exclusively(before: LongPressGesture(minimumDuration: 0.5)
                     .sequenced(before: LongPressGesture(minimumDuration: .infinity))
                     .updating(isLongPressing) { value, state, transaction in
                         if case .second(true, nil) = value {
                             state = true
                         }
-                    }
-                )
-        )
+                    })
+            )
+        }
+        else {
+            self
+        }
     }
 
 }

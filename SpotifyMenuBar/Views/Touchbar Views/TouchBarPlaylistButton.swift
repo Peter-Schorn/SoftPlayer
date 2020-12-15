@@ -77,7 +77,9 @@ struct TouchBarPlaylistButton: View {
                             title: alertTitle,
                             message: error.localizedDescription
                         )
-                        print("TouchBarPlaylistButton: \(alertTitle): \(error)")
+                        Loggers.touchBarView.trace(
+                            "TouchBarPlaylistButton: \(alertTitle): \(error)"
+                        )
                     }
                 },
                 receiveValue: { }

@@ -6,10 +6,9 @@ struct PlaybackPositionView: View {
     
     @EnvironmentObject var playerManager: PlayerManager
     
-    @State private var isDragging = false
-    
     let timerInterval: Double
     let timer: Publishers.Autoconnect<Timer.TimerPublisher>
+    let noPositionPlaceholder = "- : -"
     
     var duration: CGFloat {
         return CGFloat((playerManager.currentTrack?.duration ?? 1) / 1000)
@@ -25,7 +24,7 @@ struct PlaybackPositionView: View {
         VStack(spacing: -5) {
             CustomSliderView(
                 value: $playerManager.playerPosition,
-                isDragging: $isDragging,
+                isDragging: $playerManager.playbackPositionViewIsDragging,
                 range: 0...duration,
                 knobDiameter: 10,
                 knobScaleEffectMagnitude: 1.3,
@@ -44,8 +43,8 @@ struct PlaybackPositionView: View {
             .padding(.horizontal, 5)
         }
         .onReceive(timer) { _ in
-            if self.isDragging ||
-                    playerManager.player.playerState != .playing {
+            if self.playerManager.playbackPositionViewIsDragging ||
+                    self.playerManager.player.playerState != .playing {
                 return
             }
             if playerManager.playerPosition + CGFloat(timerInterval) >= duration {
@@ -59,41 +58,32 @@ struct PlaybackPositionView: View {
     }
     
     var formattedPlaybackPosition: String {
-        if playerManager.player.playerPosition == nil {
-            return "- : -"
+        if self.playerManager.player.playerPosition == nil {
+            return self.noPositionPlaceholder
         }
-        let timeString: String?
-        if playerManager.playerPosition >= 3600 {
-            timeString = DateComponentsFormatter.playbackTimeWithHours
-                .string(from: Double(playerManager.playerPosition))
-        }
-        else {
-            timeString = DateComponentsFormatter.playbackTime
-                .string(from: Double(playerManager.playerPosition))
-        }
-        return timeString ?? ""
+        let formatter: DateComponentsFormatter = duration >= 3600 ?
+                .playbackTimeWithHours : .playbackTime
+        return formatter.string(from: Double(self.playerManager.playerPosition))
+                ?? self.noPositionPlaceholder
     }
     
     var formattedDuration: String {
-        if playerManager.currentTrack?.duration == nil {
-            return "- : -"
+        if self.playerManager.currentTrack?.duration == nil {
+            return self.noPositionPlaceholder
         }
-        let timeString: String?
-        if duration >= 3600 {
-            timeString = DateComponentsFormatter.playbackTimeWithHours
-                .string(from: Double(duration))
-        }
-        else {
-            timeString = DateComponentsFormatter.playbackTime
-                .string(from: Double(duration))
-        }
-        return timeString ?? ""
+        let formatter: DateComponentsFormatter = duration >= 3600 ?
+                .playbackTimeWithHours : .playbackTime
+        return formatter.string(from: Double(duration))
+                ?? self.noPositionPlaceholder
+        
     }
     
     func updatePlaybackPosition() {
-        print(
-            "updating playback position to " +
-            "\(self.playerManager.playerPosition)"
+        Loggers.soundVolumeAndPlayerPosition.trace(
+            """
+            updating playback position to \
+            \(self.playerManager.playerPosition)
+            """
         )
         self.playerManager.player.setPlayerPosition?(
             Double(self.playerManager.playerPosition)

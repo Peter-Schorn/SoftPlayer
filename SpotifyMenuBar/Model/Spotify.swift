@@ -220,7 +220,7 @@ final class Spotify: ObservableObject {
         // When set to `true`, `LoginView` is dismissed, allowing the
         // user to interact with the rest of the app.
         self.isAuthorized = self.api.authorizationManager.isAuthorized()
-
+        
         do {
             // Encode the authorization information to data.
             let authManagerData = try JSONEncoder().encode(
