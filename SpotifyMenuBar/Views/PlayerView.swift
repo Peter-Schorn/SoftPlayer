@@ -222,7 +222,7 @@ struct PlayerView: View {
                 .font(.largeTitle)
 
                 SoundVolumeSlider()
-                    .frame(height: 30)
+                    .frame(height: 20)
                     .frame(maxWidth: .infinity)
                     .padding(.top, 5)
 
@@ -275,6 +275,7 @@ struct PlayerView: View {
             }
             .touchBar(content: PlayPlaylistsTouchBarView.init)
         )
+//        .border(Color.green, width: 5)
     }
     
     var miniPlayerView: some View {
