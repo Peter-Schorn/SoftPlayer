@@ -2,6 +2,7 @@ import Foundation
 import Combine
 import SwiftUI
 import SpotifyWebAPI
+import KeyboardShortcuts
 
 struct PlayerView: View {
 
@@ -25,6 +26,14 @@ struct PlayerView: View {
         NSApplication.shared.delegate as! AppDelegate
     }
     
+    var showPlaylistsTooltip: String {
+        var tooltip = "Show playlists"
+        if let name = KeyboardShortcuts.getShortcut(for: .showPlaylists) {
+            tooltip += " \(name)"
+        }
+        return tooltip
+    }
+
     // MARK: Geometry Effect Constants
     
     var playerViewIsSource: Bool {
@@ -235,7 +244,7 @@ struct PlayerView: View {
                         Image(systemName: "music.note.list")
                     })
                     .keyboardShortcut("p")
-                    .help("Show playlists ⌘P")
+                    .help(showPlaylistsTooltip)
                     
                     Spacer()
 
@@ -248,6 +257,7 @@ struct PlayerView: View {
                     })
                     .keyboardShortcut(",")
                     .buttonStyle(PlainButtonStyle())
+                    .help("Show settings ⌘,")
                     
                 }
                 .padding(.top, 5)

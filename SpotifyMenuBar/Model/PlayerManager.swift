@@ -4,6 +4,7 @@ import Combine
 import ScriptingBridge
 import Logging
 import SpotifyWebAPI
+import KeyboardShortcuts
 
 class PlayerManager: ObservableObject {
 
@@ -807,78 +808,78 @@ class PlayerManager: ObservableObject {
         _ event: NSEvent,
         requireModifierKey: Bool
     ) -> Bool {
-
-        Loggers.keyEvent.trace("PlayerManager: \(event)")
         
-        if requireModifierKey && !event.modifierFlags.contains(.command) {
-            return false
-        }
-        
-        if event.keyCode == 123 {  // left arrow
-            self.previousTrackOrSeekBackwards()
-            return true
-        }
-        else if event.keyCode == 49 {  // space bar
+        // 49 == space
+        if !requireModifierKey && event.keyCode == 49 {
             self.playPause()
             return true
         }
-        else if event.keyCode == 124 {  // right arrow
-            self.nextTrackOrSeekForwards()
-            return true
-        }
-        else if event.keyCode == 126 {  // up arrow
-            Loggers.keyEvent.trace("increase sound volume")
-            let newSoundVolume = (self.soundVolume + 5)
-                .clamped(to: 0...100)
-            self.soundVolume = newSoundVolume
-            self.player.setSoundVolume?(
-                Int(newSoundVolume)
-            )
-            return true
-        }
-        else if event.keyCode == 125 {  // down arrow
-            Loggers.keyEvent.trace("decrease sound volume")
-            let newSoundVolume = (self.soundVolume - 5)
-                .clamped(to: 0...100)
-            self.soundVolume = newSoundVolume
-            self.player.setSoundVolume?(
-                Int(newSoundVolume)
-            )
-            return true
-        }
-        else if let characters = event.charactersIgnoringModifiers {
-            switch characters {
-                case "p":
-                    if self.isShowingPlaylistsView {
-                        self.dismissPlaylistsView(animated: true)
-                    }
-                    else {
-                        withAnimation(PlayerView.animation) {
-                            self.isShowingPlaylistsView = true
-                        }
-                    }
-                case "k":
-                    self.playPause()
-                case "r":
-                    self.cycleRepeatMode()
-                case "s":
-                    self.toggleShuffle()
-                case "m":
-                    self.onlyShowMyPlaylists.toggle()
-                    Loggers.keyEvent.notice(
-                        "onlyShowMyPlaylists = \(self.onlyShowMyPlaylists)"
-                    )
-                case ",":
-                    let appDelegate = NSApplication.shared.delegate
-                        as! AppDelegate
-                    appDelegate.openSettingsWindow()
-                default:
-                    return false
-            }
-            return true
+
+        Loggers.keyEvent.trace("PlayerManager: \(event)")
+
+        guard let shortcut = KeyboardShortcuts.Shortcut(event: event) else {
+            Loggers.keyEvent.notice("couldn't get shortcut for event")
+            return false
         }
         
-        return false
+        guard let shortcutName = KeyboardShortcuts.getName(for: shortcut) else {
+            let allNames = KeyboardShortcuts.Name.allNames.map(\.rawValue)
+            Loggers.keyEvent.notice(
+                "couldn't get name for shortcut; all names: \(allNames)"
+            )
+            return false
+        }
+        
+        Loggers.keyEvent.trace("shortcutName: \(shortcutName)")
+        switch shortcutName {
+            case .previousTrack:
+                self.previousTrackOrSeekBackwards()
+            case .playPause:
+                self.playPause()
+            case .nextTrack:
+                self.nextTrackOrSeekForwards()
+            case .volumeUp:
+                Loggers.keyEvent.trace("increase sound volume")
+                let newSoundVolume = (self.soundVolume + 5)
+                    .clamped(to: 0...100)
+                self.soundVolume = newSoundVolume
+                self.player.setSoundVolume?(
+                    Int(newSoundVolume)
+                )
+            case .volumeDown:
+                Loggers.keyEvent.trace("decrease sound volume")
+                let newSoundVolume = (self.soundVolume - 5)
+                    .clamped(to: 0...100)
+                self.soundVolume = newSoundVolume
+                self.player.setSoundVolume?(
+                    Int(newSoundVolume)
+                )
+            case .showPlaylists:
+                if self.isShowingPlaylistsView {
+                    self.dismissPlaylistsView(animated: true)
+                }
+                else {
+                    withAnimation(PlayerView.animation) {
+                        self.isShowingPlaylistsView = true
+                    }
+                }
+            case .repeatMode:
+                self.cycleRepeatMode()
+            case .shuffle:
+                self.toggleShuffle()
+            case .onlyShowMyPlaylists:
+                self.onlyShowMyPlaylists.toggle()
+                Loggers.keyEvent.notice(
+                    "onlyShowMyPlaylists = \(self.onlyShowMyPlaylists)"
+                )
+            case .settings:
+                let appDelegate = NSApplication.shared.delegate
+                    as! AppDelegate
+                appDelegate.openSettingsWindow()
+            default:
+                return false
+        }
+        return true
     }
 
     func dismissPlaylistsView(animated: Bool) {

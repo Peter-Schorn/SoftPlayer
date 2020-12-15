@@ -2,11 +2,20 @@ import SwiftUI
 import Combine
 import SpotifyWebAPI
 import Logging
+import KeyboardShortcuts
 
 struct ShuffleButton: View {
     
     @EnvironmentObject var spotify: Spotify
     @EnvironmentObject var playerManager: PlayerManager
+
+    var tooltip: String {
+        var tooltip = "Toggle shuffle"
+        if let name = KeyboardShortcuts.getShortcut(for: .shuffle) {
+            tooltip += " \(name)"
+        }
+        return tooltip
+    }
 
     var body: some View {
         Button(action: playerManager.toggleShuffle, label: {
@@ -18,7 +27,7 @@ struct ShuffleButton: View {
         })
         .buttonStyle(PlainButtonStyle())
         .disabled(!playerManager.allowedActions.contains(.toggleShuffle))
-        .help("Toggle shuffle ⌘S")
+        .help(tooltip)
     }
     
 }
