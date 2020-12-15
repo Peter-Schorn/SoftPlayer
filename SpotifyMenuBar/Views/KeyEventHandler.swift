@@ -27,7 +27,7 @@ struct KeyEventHandler: NSViewRepresentable {
 //            print("keyDown: \(event.charactersIgnoringModifiers ?? "")")
             
             // key code 53 = escape key
-            if event.charactersIgnoringModifiers != nil, event.keyCode != 53 {
+            if event.keyCode != 53 {
                 if !self.receiveKeyEvent(event) {
                     super.keyDown(with: event)
                 }

@@ -52,7 +52,6 @@ struct CustomSliderView: View {
                     // MARK: Trailing Rectangle
                     Capsule()
                         .fill(Color.primary.opacity(0.25))
-//                        .fill(Color.sliderTrailingRectangle)
                         .frame(height: sliderHeight)
                 }
                 HStack(spacing: 0) {

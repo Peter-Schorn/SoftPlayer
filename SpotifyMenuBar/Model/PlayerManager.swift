@@ -13,6 +13,7 @@ class PlayerManager: ObservableObject {
     @AppStorage("onlyShowMyPlaylists") var onlyShowMyPlaylists = false
     
     @Published var isShowingPlaylistsView = false
+    @Published var playbackPositionViewIsDragging = false
     
     // MARK: Player State
     
@@ -174,7 +175,7 @@ class PlayerManager: ObservableObject {
     private var didUpdateCurrentlyPlayingContextCancellable: AnyCancellable? = nil
     private var openArtistOrShowCancellable: AnyCancellable? = nil
     private var cycleRepeatModeCancellable: AnyCancellable? = nil
-
+    private var updateSoundVolumeAndPlayerPositionCancellable: AnyCancellable? = nil
     
     init(spotify: Spotify) {
         
@@ -197,13 +198,25 @@ class PlayerManager: ObservableObject {
             .store(in: &cancellables)
         
         self.popoverWillShow.sink {
+            
             if self.spotify.isAuthorized {
                 self.updatePlayerState()
+            }
+            self.updateSoundVolumeAndPlayerPositionCancellable = Timer.publish(
+                every: 2, on: .main, in: .common
+            )
+            .autoconnect()
+            .sink { _ in
+                if !self.isShowingPlaylistsView && self.spotify.isAuthorized {
+                    Loggers.soundVolumeAndPlayerPosition.trace("timer fired")
+                    self.updateSoundVolumeAndPlayerPosition()
+                }
             }
         }
         .store(in: &cancellables)
         
         self.popoverDidClose.sink {
+            self.updateSoundVolumeAndPlayerPositionCancellable = nil
             Loggers.playerManager.trace("popoverDidDismiss")
             if self.spotify.isAuthorized {
                 self.retrievePlaylists()
@@ -212,6 +225,9 @@ class PlayerManager: ObservableObject {
         .store(in: &cancellables)
         
         self.spotify.$isAuthorized.sink { isAuthorized in
+            Loggers.playerManager.notice(
+                "spotify.$isAuthorized.sink: \(isAuthorized)"
+            )
             if isAuthorized {
                 self.updatePlayerState()
                 self.retrievePlaylists()
@@ -232,24 +248,22 @@ class PlayerManager: ObservableObject {
                 self.removePlaylistImagesCache()
             }
             .store(in: &cancellables)
-        
-        if self.spotify.isAuthorized {
-            self.updatePlayerState()
-        }
-        
-//        self.spotify.api.authorizationManager.deauthorize()
 
     }
     
     // MARK: Playback State
     
     func updatePlayerState() {
+        
         Loggers.playerManager.trace("will update player state")
         self.retrieveCurrentlyPlayingContext()
         self.retrieveAvailableDevices()
         self.currentTrack = self.player.currentTrack
         self.shuffleIsOn = player.shuffling ?? false
         Loggers.shuffle.trace("self.shuffleIsOn = \(self.shuffleIsOn)")
+//        Loggers.playerManager.trace(
+//            "player state updated to '\(self.currentTrack?.name ?? "nil")'"
+//        )
         
         self.updateSoundVolumeAndPlayerPosition()
         
@@ -266,22 +280,33 @@ class PlayerManager: ObservableObject {
     }
     
     func updateSoundVolumeAndPlayerPosition() {
+        Loggers.soundVolumeAndPlayerPosition.trace("")
         let newSoundVolume = CGFloat(self.player.soundVolume ?? 100)
         if abs(newSoundVolume - self.soundVolume) >= 2 {
+            Loggers.soundVolumeAndPlayerPosition.trace(
+                """
+                changed sound volume from \(soundVolume) to \
+                \(newSoundVolume)"
+                """
+            )
             self.soundVolume = newSoundVolume
-//            Loggers.playerManager.trace(
-//                "sound volume: \(soundVolume) to \(newSoundVolume)"
-//            )
         }
-        if let playerPosition = self.player.playerPosition {
-//            Loggers.playerManager.trace(
-//                "new player position: \(playerPosition)"
-//            )
-            self.playerPosition = CGFloat(playerPosition)
+        if let playerPosition = self.player.playerPosition,
+                !self.playbackPositionViewIsDragging {
+            let cgPlayerPosition = CGFloat(playerPosition)
+            if abs(cgPlayerPosition - self.playerPosition) > 1 {
+                
+                Loggers.soundVolumeAndPlayerPosition.trace(
+                    """
+                    changed play position from \(playerPosition) to \
+                    \(cgPlayerPosition)"
+                    """
+                )
+                self.playerPosition = cgPlayerPosition
+            }
+            
         }
-//        Loggers.playerManager.trace(
-//            "player state updated to '\(self.currentTrack?.name ?? "nil")'"
-//        )
+
     }
     
     /// Loads the image from the artwork URL of the current track.
@@ -487,6 +512,7 @@ class PlayerManager: ObservableObject {
     
     func skipToPreviousTrack() {
         self.player.previousTrack?()
+        Loggers.playerManager.trace("self.player.previousTrack?()")
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
             self.updatePlayerState()
         }
@@ -494,7 +520,9 @@ class PlayerManager: ObservableObject {
     
     func seekBackwards15Seconds() {
         guard let currentPosition = self.player.playerPosition else {
-            print("couldn't get player position")
+            Loggers.soundVolumeAndPlayerPosition.error(
+                "couldn't get player position"
+            )
             return
         }
         let newPosition = max(0, currentPosition - 15)
@@ -511,7 +539,9 @@ class PlayerManager: ObservableObject {
     
     func seekForwards15Seconds() {
         guard let currentPosition = self.player.playerPosition else {
-            print("couldn't get player position")
+            Loggers.soundVolumeAndPlayerPosition.error(
+                "couldn't get player position"
+            )
             return
         }
         let newPosition: Double
@@ -525,7 +555,6 @@ class PlayerManager: ObservableObject {
         self.setPlayerPosition(to: CGFloat(newPosition))
     }
 
-    
     // MARK: Playlists
     
     func playPlaylist(
@@ -549,7 +578,7 @@ class PlayerManager: ObservableObject {
     /// Retreives the user's playlists.
     func retrievePlaylists() {
         
-        Loggers.playerManager.trace("retrievePlaylists")
+        Loggers.playerManager.trace("")
         
         let retrievePlaylistsPublisher = self.spotify.api
             .currentUserPlaylists(limit: 50)
@@ -949,10 +978,10 @@ private extension PlayerManager {
 //        }
 //        print("\n\n")
 //
-//        let allowedActionsStrings = context.allowedActions.map(\.rawValue)
-//        Loggers.playerManager.trace(
-//            "allowed actions: \(allowedActionsStrings)"
-//        )
+        let allowedActionsString = context.allowedActions.map(\.rawValue)
+        Loggers.playerManager.notice(
+            "allowed actions: \(allowedActionsString)"
+        )
         
         
     }

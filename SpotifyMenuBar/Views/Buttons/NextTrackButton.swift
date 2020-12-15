@@ -21,6 +21,10 @@ struct NextTrackButton: View {
         return ""
     }
     
+    var skipToPreviousTrackIsEnabled: Bool {
+        return playerManager.allowedActions.contains(.skipToNext)
+    }
+    
     var body: some View {
         
         if playerManager.currentTrack?.identifier?.idCategory == .episode {
@@ -37,11 +41,12 @@ struct NextTrackButton: View {
             // MARK: Next Track
             
             Image(systemName: "forward.end.fill")
+                .opacity(skipToPreviousTrackIsEnabled ? 1 : 0.5)
                 .tapAndLongPressAndHoldGesture(
+                    isEnabled: skipToPreviousTrackIsEnabled,
                     onTap: self.playerManager.skipToNextTrack,
                     isLongPressing: $isLongPressing
                 )
-                .disabled(!playerManager.allowedActions.contains(.skipToNext))
                 .onChange(of: isLongPressing) { isLongPressing in
                     if isLongPressing {
                         self.playerManager.seekForwards15Seconds()

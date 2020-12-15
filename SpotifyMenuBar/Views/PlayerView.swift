@@ -110,7 +110,6 @@ struct PlayerView: View {
                 self.playerManager.dismissPlaylistsView(animated: true)
             }
             else {
-                print("not showing playlists view; dismissing popover")
                 appDelegate.popover.performClose(nil)
             }
         }

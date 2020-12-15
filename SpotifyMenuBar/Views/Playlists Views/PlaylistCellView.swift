@@ -2,7 +2,7 @@ import SwiftUI
 import Combine
 import SpotifyWebAPI
 
-struct PlaylistsCellView: View {
+struct PlaylistCellView: View {
     
     @Environment(\.colorScheme) var colorScheme
     
@@ -88,7 +88,7 @@ struct PlaylistsCellView: View {
         
         guard let currentItemURI = playerManager.currentTrack?.id?(),
                 !currentItemURI.isEmpty else {
-            print(
+            Loggers.playlistCellView.error(
                 "PlaylistsView: no URI for the currently playing item"
             )
             self.playerManager.presentNotification(
@@ -102,8 +102,9 @@ struct PlaylistsCellView: View {
         self.playerManager.playlistsLastModifiedDates[playlist.uri] = Date()
         
         let itemName = playerManager.currentTrack?.name ?? "nil"
-        print("adding \(itemName) to \(playlist.name)")
-        
+        Loggers.playlistCellView.notice(
+            "adding '\(itemName)' to '\(playlist.name)'"
+        )
         self.spotify.api.addToPlaylist(
             playlist.uri, uris: [currentItemURI]
         )
@@ -125,7 +126,9 @@ struct PlaylistsCellView: View {
                             title: alertTitle,
                             message: error.localizedDescription
                         )
-                        print("PlaylistsCellView: \(alertTitle): \(error)")
+                        Loggers.playlistCellView.error(
+                            "\(alertTitle): \(error)"
+                        )
                 }
             },
             receiveValue: { _ in }
@@ -145,7 +148,9 @@ struct PlaylistsCellView: View {
                         title: alertTitle,
                         message: error.localizedDescription
                     )
-                    print("PlaylistsCellView: \(alertTitle): \(error)")
+                    Loggers.playlistCellView.error(
+                        "\(alertTitle): \(error)"
+                    )
                 }
             })
         
@@ -153,7 +158,7 @@ struct PlaylistsCellView: View {
 
 }
 
-struct PlaylistsCellView_Previews: PreviewProvider {
+struct PlaylistCellView_Previews: PreviewProvider {
     static var previews: some View {
         PlayerView_Previews.previews
             .onAppear {

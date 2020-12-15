@@ -16,18 +16,20 @@ struct PlayPlaylistsTouchBarView: View {
     
     var playlists: ArraySlice<Playlist<PlaylistsItemsReference>> {
 
-//        let playlistNames = playerManager.playlistsSortedByLastPlayedDate
-//            .map(\.name)
-//
-//        for (index, playlist) in playlistNames.enumerated() {
-//            print("\(index + 1). '\(playlist)'")
-//        }
+        let playlistNames = playerManager.playlistsSortedByLastModifiedDate
+            .map(\.name)
+
+        for (index, playlist) in playlistNames.enumerated() {
+            Loggers.touchBarView.trace("\(index + 1). '\(playlist)'")
+        }
         
         let endIndex = playerManager.playlistsSortedByLastModifiedDate.endIndex
         let minIndex = self.offset * 4
         let maxIndex = min(minIndex + 4, endIndex)
         let indices = minIndex..<maxIndex
-//        print("offset: \(offset); indices: \(indices)")
+        Loggers.touchBarView.trace(
+            "offset: \(offset); indices: \(indices)"
+        )
         return playerManager.playlistsSortedByLastModifiedDate[indices]
     }
     
@@ -78,7 +80,7 @@ struct PlayPlaylistsTouchBarView: View {
         let playlistsCount = self.playerManager
                 .playlistsSortedByLastModifiedDate.count
         
-//        print("\((offset + 1) * 4) >= \(playlistsCount)")
+        Loggers.touchBarView.trace("\((offset + 1) * 4) >= \(playlistsCount)")
         return (offset + 1) * 4 >= playlistsCount
     }
     
