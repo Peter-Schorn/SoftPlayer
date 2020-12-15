@@ -130,21 +130,27 @@ struct PlaylistsScrollView: View {
                 .id(searchFieldId)
                 
                 LazyVStack {
-                    
-                    ForEach(
-                        self.filteredPlaylists,
-                        id: \.element.uri
-                    ) { playlist in
-                        PlaylistCellView(
-                            playlist: playlist.element,
-                            isSelected: selectedPlaylistURI == playlist.element.uri
-                        )
-                        .if(playlist.offset == 0) {
-                            $0.padding(.top, 10)
-                        }
-                        .id(playlist.offset)
+                    if self.filteredPlaylists.isEmpty {
+                        Text("No Playlists Found")
+                            .foregroundColor(.secondary)
+                            .font(.headline)
+                            .padding(.top, 150)
                     }
-                    
+                    else {
+                        ForEach(
+                            self.filteredPlaylists,
+                            id: \.element.uri
+                        ) { playlist in
+                            PlaylistCellView(
+                                playlist: playlist.element,
+                                isSelected: selectedPlaylistURI == playlist.element.uri
+                            )
+                            .if(playlist.offset == 0) {
+                                $0.padding(.top, 10)
+                            }
+                            .id(playlist.offset)
+                        }
+                    }
                 }
                 
                 Spacer()

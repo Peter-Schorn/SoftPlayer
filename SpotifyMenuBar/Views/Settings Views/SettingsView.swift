@@ -23,7 +23,7 @@ struct SettingsView: View {
         }
         .padding()
         .frame(
-            width:  selectedTab == 0 ? 400 : 430,
+            width:  selectedTab == 0 ? 400 : 450,
             height: selectedTab == 0 ? 200 : 400
         )
         

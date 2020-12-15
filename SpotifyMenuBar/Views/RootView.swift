@@ -15,7 +15,6 @@ struct RootView: View {
         VStack {
             if spotify.isAuthorized && !Self.debugShowLoginView {
                 PlayerView()
-//                PlaylistsView(isPresented: .constant(true))
             }
             else {
                 LoginView()
@@ -32,18 +31,18 @@ struct RootView: View {
 
         print("LoginView received redirect URL:", url)
         
-        spotify.isRetrievingTokens = true
+        self.spotify.isRetrievingTokens = true
         
-        self.requestTokensCancellable = spotify.api.authorizationManager
+        self.requestTokensCancellable = self.spotify.api.authorizationManager
             .requestAccessAndRefreshTokens(
                 redirectURIWithQuery: url,
-                codeVerifier: spotify.codeVerifier,
-                state: spotify.authorizationState
+                codeVerifier: self.spotify.codeVerifier,
+                state: self.spotify.authorizationState
             )
             .receive(on: RunLoop.main)
             .sink(receiveCompletion: receiveRequestTokensCompletion(_:))
         
-        spotify.generateNewAuthorizationParameters()
+        self.spotify.generateNewAuthorizationParameters()
 
     }
     
@@ -51,10 +50,11 @@ struct RootView: View {
         _ completion: Subscribers.Completion<Error>
     ) {
         print("request tokens completion:", completion)
-        spotify.isRetrievingTokens = false
+        self.spotify.isRetrievingTokens = false
         let alert = NSAlert()
         let alertTitle: String
         let alertMessage: String
+        
         switch completion {
             case .finished:
                 alertTitle =
@@ -76,9 +76,8 @@ struct RootView: View {
                 }
         }
 
-        alert.informativeText = alertTitle
-        alert.messageText = alertMessage
-        
+        alert.messageText = alertTitle
+        alert.informativeText = alertMessage
         alert.runModal()
     }
     

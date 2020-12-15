@@ -511,10 +511,17 @@ class PlayerManager: ObservableObject {
     }
     
     func skipToPreviousTrack() {
-        self.player.previousTrack?()
-        Loggers.playerManager.trace("self.player.previousTrack?()")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
-            self.updatePlayerState()
+        if self.allowedActions.contains(.skipToPrevious) {
+            self.player.previousTrack?()
+//            Loggers.playerManager.trace("self.player.previousTrack?()")
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+                self.updatePlayerState()
+            }
+        }
+        else {
+            Loggers.playerManager.warning(
+                "skip to previous track disabled"
+            )
         }
     }
     
@@ -534,7 +541,14 @@ class PlayerManager: ObservableObject {
     }
 
     func skipToNextTrack() {
-        self.player.nextTrack?()
+        if self.allowedActions.contains(.skipToNext) {
+            self.player.nextTrack?()
+        }
+        else {
+            Loggers.playerManager.warning(
+                "skip to next track disabled"
+            )
+        }
     }
     
     func seekForwards15Seconds() {
