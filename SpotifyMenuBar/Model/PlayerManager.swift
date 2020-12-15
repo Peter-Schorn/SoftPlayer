@@ -641,7 +641,7 @@ class PlayerManager: ObservableObject {
             
             self.spotify.api.playlistImage(playlist)
                 .flatMap { images -> AnyPublisher<Data, Error> in
-                    guard let image = images.largest else {
+                    guard let image = images.smallest else {
                         Loggers.images.warning(
                             "images array was empty for '\(playlist.name)'"
                         )
@@ -739,7 +739,14 @@ class PlayerManager: ObservableObject {
                 at: categoryFolder,
                 withIntermediateDirectories: true
             )
-            try imageData.write(to: imageURL)
+            guard let nsImage = NSImage(data: imageData) else {
+                return
+            }
+            let resizedImage = nsImage.resized(width: 30, height: 30)
+            guard let newImageData = resizedImage.tiffRepresentation else {
+                return
+            }
+            try newImageData.write(to: imageURL)
             Loggers.images.trace("did save \(identifier.uri) to file")
             self.objectWillChange.send()
 

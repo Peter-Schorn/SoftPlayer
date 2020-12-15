@@ -119,6 +119,32 @@ extension Color {
 
 extension NSImage {
     
+    func resized(width: Int, height: Int) -> NSImage {
+        
+        let newSize = NSSize(width: width, height: height)
+        let newImage = NSImage(size: newSize)
+        newImage.lockFocus()
+        self.draw(
+            in: NSRect(
+                x: 0,
+                y: 0,
+                width: newSize.width,
+                height: newSize.height
+            ),
+            from: NSRect(
+                x: 0,
+                y: 0,
+                width: self.size.width,
+                height: self.size.height
+            ),
+            operation: .sourceOver,
+            fraction: 1
+        )
+        newImage.unlockFocus()
+        newImage.size = newSize
+        return newImage
+    }
+
     /// [Source](https://gist.github.com/musa11971/62abcfda9ce3bb17f54301fdc84d8323)
     var averageColor: NSColor? {
         

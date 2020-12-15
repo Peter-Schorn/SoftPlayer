@@ -25,10 +25,7 @@ struct GeneralSettingsView: View {
             )
         }
         .padding(20)
-//        .background(
-//            FocusView(isFirstResponder: .constant(true))
-//                .touchBar(content: PlayPlaylistsTouchBarView.init)
-//        )
+        
     }
     
     func showImagesCacheFolder() {
