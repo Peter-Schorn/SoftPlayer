@@ -1,12 +1,21 @@
 import SwiftUI
 import Combine
 import SpotifyWebAPI
+import KeyboardShortcuts
 
 struct PlayPauseButton: View {
     
     @EnvironmentObject var spotify: Spotify
     @EnvironmentObject var playerManager: PlayerManager
     
+    var tooltip: String {
+        var tooltip = "Play or pause playback"
+        if let name = KeyboardShortcuts.getShortcut(for: .playPause) {
+            tooltip += " \(name)"
+        }
+        return tooltip
+    }
+
     var body: some View {
         Button(action: playerManager.playPause, label: {
             if self.playerManager.player.playerState == .playing {
@@ -19,7 +28,7 @@ struct PlayPauseButton: View {
             }
         })
         .buttonStyle(PlainButtonStyle())
-        .help("Play or pause playback ⌘K")
+        .help(tooltip)
     }
     
 }

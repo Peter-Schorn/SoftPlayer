@@ -2,6 +2,15 @@
   "object": {
     "pins": [
       {
+        "package": "KeyboardShortcuts",
+        "repositoryURL": "https://github.com/Peter-Schorn/KeyboardShortcuts",
+        "state": {
+          "branch": "master",
+          "revision": "579ff931fdf3aea45b216dab09b81beade065f3b",
+          "version": null
+        }
+      },
+      {
         "package": "KeychainAccess",
         "repositoryURL": "https://github.com/kishikawakatsumi/KeychainAccess",
         "state": {
