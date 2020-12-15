@@ -110,7 +110,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 .environmentObject(spotify)
                 .environmentObject(playerManager)
             self.settingsWindow = NSWindow(
-                contentRect: NSRect(x: 0, y: 0, width: 400, height: 400),
+                contentRect: NSRect(x: 0, y: 0, width: 400, height: 450),
                 styleMask: [
                     .titled,
                     .closable,
