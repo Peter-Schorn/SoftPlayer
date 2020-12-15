@@ -60,7 +60,8 @@ extension SpotifyAPI where AuthorizationManager: SpotifyScopeAuthorizationManage
 }
 
 extension CurrentlyPlayingContext {
-    
+     
+    /// The artist of the currently playing track.
     var artist: Artist? {
         switch self.item {
             case .track(let track):
@@ -70,6 +71,7 @@ extension CurrentlyPlayingContext {
         }
     }
     
+    /// The show for the currently playing episode.
     var show: Show? {
         switch self.item {
             case .episode(let episode):
@@ -175,5 +177,44 @@ extension PlaylistItem {
         }
 
     }
+
+}
+
+extension Collection where Element == SpotifyImage {
+    
+    /// Images with `nil` for height and/or width are considered to be
+    /// the *largest*.
+    var smallest: SpotifyImage? {
+        
+        return self.min { lhs, rhs in
+            
+            let lhsDimensions = lhs.width.map { width in
+                return lhs.height.map { height in
+                    width * height
+                }
+            } as? Int
+            
+            let rhsDimensions = rhs.width.map { width in
+                return rhs.height.map { height in
+                    width * height
+                }
+            } as? Int
+            
+            switch (lhsDimensions, rhsDimensions) {
+                case (nil, .some(_)):
+                    return false
+                case (.some(_), nil):
+                    return true
+                case (.some(let lhs), .some(let rhs)):
+                    return lhs < rhs
+                default:
+                    return false
+
+            }
+            
+        }
+
+    }
+
 
 }

@@ -43,6 +43,7 @@ struct KeyboardShortcutsView: View {
             )
             Button("Restore Defaults", action: KeyboardShortcuts.resetAll)
         }
+        
     }
     
     func shortcutView(
