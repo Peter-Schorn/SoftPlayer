@@ -4,7 +4,7 @@ import Foundation
 /// posts when the player state changes.
 struct PlayerStateNotification {
     
-    /// Whether content is playing or paused.
+    /// Whether content is playing or paused. 
     let state: State?
     
     /// The currend playback position in **seconds**.
@@ -93,11 +93,8 @@ struct PlayerStateNotification {
         self.location = (userInfo["Location"] as? String)
             .map(URL.init(fileURLWithPath:))
         
-        
-        
     }
     
-    /// Whether content is playing or paused.
     enum State: String, CaseIterable {
         case playing
         case paused

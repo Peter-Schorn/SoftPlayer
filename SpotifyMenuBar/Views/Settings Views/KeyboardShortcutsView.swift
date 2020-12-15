@@ -42,6 +42,7 @@ struct KeyboardShortcutsView: View {
                 label: "Toggle only show my playlists"
             )
             Button("Restore Defaults", action: KeyboardShortcuts.resetAll)
+                .padding(.top, 10)
         }
         
     }
