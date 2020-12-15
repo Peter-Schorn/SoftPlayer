@@ -865,6 +865,10 @@ class PlayerManager: ObservableObject {
             return true
         }
 
+        if event.characters(byApplyingModifiers: .command) == "q" {
+            NSApplication.shared.terminate(nil)
+        }
+
         Loggers.keyEvent.trace("PlayerManager: \(event)")
 
         guard let shortcut = KeyboardShortcuts.Shortcut(event: event) else {
