@@ -242,7 +242,6 @@ struct PlayerView: View {
                     }, label: {
                         Image(systemName: "music.note.list")
                     })
-                    .keyboardShortcut("p")
                     .help(showPlaylistsTooltip)
                     
                     Spacer()
@@ -251,7 +250,13 @@ struct PlayerView: View {
                         .padding(.bottom, 2)
 
                     // MARK: Show SettingsView Button
-                    Button(action: appDelegate.openSettingsWindow, label: {
+                    Button(action: {
+                        NSApp.sendAction(
+                            #selector(AppDelegate.openSettingsWindow),
+                            to: nil,
+                            from: nil
+                        )
+                    }, label: {
                         Image(systemName: "gearshape.fill")
                     })
                     .keyboardShortcut(",")
