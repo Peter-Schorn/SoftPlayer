@@ -15,7 +15,6 @@
 		472A742A25859431008998C5 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 472A742925859431008998C5 /* SettingsView.swift */; };
 		47343A642582C86600EF6750 /* PlaylistsScrollView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47343A632582C86600EF6750 /* PlaylistsScrollView.swift */; };
 		474C7C922570F713004A3DB5 /* AvailableDevicesButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 474C7C912570F713004A3DB5 /* AvailableDevicesButton.swift */; };
-		475878BC2586D9E6007EB435 /* PlaylistsScrollViewSkeleton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 475878BB2586D9E6007EB435 /* PlaylistsScrollViewSkeleton.swift */; };
 		475878CE258731F1007EB435 /* CancelButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 475878CD258731F1007EB435 /* CancelButton.swift */; };
 		4768023A2570CDF800397202 /* Logging in Frameworks */ = {isa = PBXBuildFile; productRef = 476802392570CDF800397202 /* Logging */; };
 		47699875257DDE8400B7D6F5 /* ViewExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47699874257DDE8400B7D6F5 /* ViewExtensions.swift */; };
@@ -23,7 +22,6 @@
 		477560E62580140D00B7FFED /* TouchBarPlaylistButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 477560E52580140D00B7FFED /* TouchBarPlaylistButton.swift */; };
 		47832F482566474300AADEA3 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47832F472566474300AADEA3 /* AppDelegate.swift */; };
 		47832F4A2566474300AADEA3 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47832F492566474300AADEA3 /* RootView.swift */; };
-		47832F4D2566474300AADEA3 /* SpotifyMenuBar.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 47832F4B2566474300AADEA3 /* SpotifyMenuBar.xcdatamodeld */; };
 		47832F4F2566474600AADEA3 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 47832F4E2566474600AADEA3 /* Assets.xcassets */; };
 		47832F522566474600AADEA3 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 47832F512566474600AADEA3 /* Preview Assets.xcassets */; };
 		47832F552566474600AADEA3 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 47832F532566474600AADEA3 /* Main.storyboard */; };
@@ -65,7 +63,6 @@
 		472A742925859431008998C5 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		47343A632582C86600EF6750 /* PlaylistsScrollView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaylistsScrollView.swift; sourceTree = "<group>"; };
 		474C7C912570F713004A3DB5 /* AvailableDevicesButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AvailableDevicesButton.swift; sourceTree = "<group>"; };
-		475878BB2586D9E6007EB435 /* PlaylistsScrollViewSkeleton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaylistsScrollViewSkeleton.swift; sourceTree = "<group>"; };
 		475878CD258731F1007EB435 /* CancelButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CancelButton.swift; sourceTree = "<group>"; };
 		47699874257DDE8400B7D6F5 /* ViewExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewExtensions.swift; sourceTree = "<group>"; };
 		477560DF2580083200B7FFED /* SpotifyWebAPIExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotifyWebAPIExtensions.swift; sourceTree = "<group>"; };
@@ -73,7 +70,6 @@
 		47832F442566474300AADEA3 /* SpotifyMenuBar.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SpotifyMenuBar.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		47832F472566474300AADEA3 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		47832F492566474300AADEA3 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
-		47832F4C2566474300AADEA3 /* SpotifyMenuBar.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = SpotifyMenuBar.xcdatamodel; sourceTree = "<group>"; };
 		47832F4E2566474600AADEA3 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		47832F512566474600AADEA3 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		47832F542566474600AADEA3 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
@@ -141,7 +137,6 @@
 		47832F3B2566474300AADEA3 = {
 			isa = PBXGroup;
 			children = (
-				475878BB2586D9E6007EB435 /* PlaylistsScrollViewSkeleton.swift */,
 				47832F462566474300AADEA3 /* SpotifyMenuBar */,
 				47832F452566474300AADEA3 /* Products */,
 			);
@@ -166,7 +161,6 @@
 				47832F532566474600AADEA3 /* Main.storyboard */,
 				47832F562566474600AADEA3 /* Info.plist */,
 				47832F572566474600AADEA3 /* SpotifyMenuBar.entitlements */,
-				47832F4B2566474300AADEA3 /* SpotifyMenuBar.xcdatamodeld */,
 				47832F502566474600AADEA3 /* Preview Content */,
 			);
 			path = SpotifyMenuBar;
@@ -340,7 +334,6 @@
 				47F6EC51257C95D8007079D2 /* ShuffleButton.swift in Sources */,
 				47F6EC60257C96B7007079D2 /* NextTrackButton.swift in Sources */,
 				472A742A25859431008998C5 /* SettingsView.swift in Sources */,
-				47832F4D2566474300AADEA3 /* SpotifyMenuBar.xcdatamodeld in Sources */,
 				4712E607257FD19500A881D5 /* PlayPlaylistsTouchBarView.swift in Sources */,
 				475878CE258731F1007EB435 /* CancelButton.swift in Sources */,
 				47FD3DE3256F9599000E2346 /* SpotifyBridge.swift in Sources */,
@@ -364,7 +357,6 @@
 				47FD3DDA256F642F000E2346 /* PlayerStateNotification.swift in Sources */,
 				47F6EC5D257C9699007079D2 /* RepeatModeButton.swift in Sources */,
 				4712E604257FB1A100A881D5 /* NotificationView.swift in Sources */,
-				475878BC2586D9E6007EB435 /* PlaylistsScrollViewSkeleton.swift in Sources */,
 				47FD3DF3256FA726000E2346 /* LoginView.swift in Sources */,
 				4789A5B725885F0800A5E1E3 /* KeyboardShortcutsView.swift in Sources */,
 				47DC18702582712400EF11BA /* PlaylistCellView.swift in Sources */,
@@ -649,19 +641,6 @@
 			productName = KeychainAccess;
 		};
 /* End XCSwiftPackageProductDependency section */
-
-/* Begin XCVersionGroup section */
-		47832F4B2566474300AADEA3 /* SpotifyMenuBar.xcdatamodeld */ = {
-			isa = XCVersionGroup;
-			children = (
-				47832F4C2566474300AADEA3 /* SpotifyMenuBar.xcdatamodel */,
-			);
-			currentVersion = 47832F4C2566474300AADEA3 /* SpotifyMenuBar.xcdatamodel */;
-			path = SpotifyMenuBar.xcdatamodeld;
-			sourceTree = "<group>";
-			versionGroupType = wrapper.xcdatamodel;
-		};
-/* End XCVersionGroup section */
 	};
 	rootObject = 47832F3C2566474300AADEA3 /* Project object */;
 }

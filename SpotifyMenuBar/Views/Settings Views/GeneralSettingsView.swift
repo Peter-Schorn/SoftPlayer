@@ -23,6 +23,9 @@ struct GeneralSettingsView: View {
                 "Logout from Spotify",
                 action: spotify.api.authorizationManager.deauthorize
             )
+            Button("Quit Application") {
+                NSApplication.shared.terminate(nil)
+            }
         }
         .padding(20)
         
