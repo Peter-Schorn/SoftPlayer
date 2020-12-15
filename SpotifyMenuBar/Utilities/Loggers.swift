@@ -21,5 +21,8 @@ enum Loggers {
     static let syncContext = Logger(
         label: "SyncContext", level: .error
     )
+    static let keyEvent = Logger(
+        label: "KeyEvent", level: .trace
+    )
 
 }

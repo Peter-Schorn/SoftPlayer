@@ -17,8 +17,6 @@ struct PlaylistsScrollView: View {
     @EnvironmentObject var playerManager: PlayerManager
     @EnvironmentObject var spotify: Spotify
 
-    @Binding var isShowingPlaylistsView: Bool
-    
     @AppStorage("onlyShowMyPlaylists") var onlyShowMyPlaylists = false
     
     @State private var searchText = ""
@@ -36,17 +34,18 @@ struct PlaylistsScrollView: View {
         let currentUserId = self.playerManager.currentUser?.id
         
         if searchText.strip().isEmpty {
-            return Array(
-                self.playerManager.playlistsSortedByLastModifiedDate
-                    .filter { playlist in
-                        if onlyShowMyPlaylists, let userId = playlist.owner?.id,
-                                userId != currentUserId {
-                            return false
-                        }
-                        return true
+            let playlists = self.playerManager.playlistsSortedByLastModifiedDate
+                .filter { playlist in
+                    if self.onlyShowMyPlaylists,
+                       let userId = playlist.owner?.id,
+                       userId != currentUserId {
+                        return false
                     }
-                    .enumerated()
-            )
+                    return true
+                }
+                .enumerated()
+            
+            return Array(playlists)
         }
         
         let lowerCasedSearch = searchText.lowercased()
@@ -55,7 +54,8 @@ struct PlaylistsScrollView: View {
         let playlists = self.playerManager.playlistsSortedByLastModifiedDate
             .compactMap { playlist -> RatedPlaylist? in
                 
-                if onlyShowMyPlaylists, let userId = playlist.owner?.id,
+                if self.onlyShowMyPlaylists,
+                        let userId = playlist.owner?.id,
                         userId != currentUserId {
                     return nil
                 }
@@ -145,13 +145,14 @@ struct PlaylistsScrollView: View {
             }
             .background(
                 KeyEventHandler { event in
-                    _ = self.receiveKeyEvent(event, scrollView: scrollView)
+                    return self.receiveKeyEvent(event, scrollView: scrollView)
                 }
                 .touchBar(content: PlayPlaylistsTouchBarView.init)
             )
             .onAppear {
 //                if !ProcessInfo.processInfo.isPreviewing {
                     scrollView.scrollTo(0, anchor: .top)
+//                    self.onlyShowMyPlaylists = self.playerManager.onlyShowMyPlaylists
 //                }
             }
             .onChange(of: searchText) { text in
@@ -190,67 +191,20 @@ struct PlaylistsScrollView: View {
     /// Returns `true` if the key event was handled; else, `false`.
     func receiveKeyEvent(_ event: NSEvent, scrollView: ScrollViewProxy?) -> Bool {
 
-        print("PlaylistsScrollView key event: \(event)")
+        Loggers.keyEvent.trace("PlaylistsScrollView: \(event)")
 
-        let characters = event.charactersIgnoringModifiers
-        
         if event.modifierFlags.contains(.command) {
-            if event.keyCode == 123 {
-                self.playerManager.previousTrackOrSeekBackwards()
-                return true
-            }
-            else if event.keyCode == 49 {
-                self.playerManager.playPause()
-                return true
-            }
-            else if event.keyCode == 124 {
-                self.playerManager.nextTrackOrSeekForwards()
-                return true
-            }
-            else if event.keyCode == 126 {  // up arrow
-                let newSoundVolume = Int(
-                    max(0, self.playerManager.soundVolume - 10)
-                )
-                self.playerManager.player.setSoundVolume?(
-                    newSoundVolume
-                )
-            }
-            else if event.keyCode == 125 {  // down arrow
-                let newSoundVolume = Int(
-                    min(100, self.playerManager.soundVolume + 10)
-                )
-                self.playerManager.player.setSoundVolume?(
-                    newSoundVolume
-                )
-            }
-            else if let characters = characters {
-                switch characters {
-                    case "k":
-                        self.playerManager.playPause()
-                    case "r":
-                        self.playerManager.cycleRepeatMode()
-                    case "s":
-                        self.playerManager.toggleShuffle()
-                    case "m":
-                        self.onlyShowMyPlaylists.toggle()
-                    case ",":
-                        let appDelegate = NSApplication.shared.delegate
-                            as! AppDelegate
-                        appDelegate.openSettingsWindow()
-                    default:
-                        return false
-                }
-                return true
-            }
+            return self.playerManager.receiveKeyEvent(
+                event, requireModifierKey: true
+            )
         }
         // return or enter key
         else if [76, 36].contains(event.keyCode) {
             self.searchFieldDidCommit()
             return true
         }
-        else if let scrollView = scrollView,
-                event.specialKey == nil,
-                let character = characters {
+        else if let scrollView = scrollView, event.specialKey == nil,
+                let character = event.charactersIgnoringModifiers {
             print("charactersIgnoringModifiers: '\(character)'")
             print("PlaylistsScrollView receiveKeyEvent: '\(character)'")
             print(event)
@@ -266,7 +220,7 @@ struct PlaylistsScrollView: View {
 
     func searchFieldDidCommit() {
         print("onSearchFieldCommit")
-        guard isShowingPlaylistsView else {
+        guard self.playerManager.isShowingPlaylistsView else {
             print("skipping because not presented")
             return
         }
@@ -312,7 +266,7 @@ struct PlaylistsScrollView_Previews: PreviewProvider {
     static var previews: some View {
         PlayerView_Previews.previews
             .onAppear {
-                PlayerView.debugShowPlaylistsView = true
+                PlayerView.debugIsShowingPlaylistsView = true
             }
     }
 }

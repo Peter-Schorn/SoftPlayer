@@ -9,6 +9,10 @@ class PlayerManager: ObservableObject {
 
     let spotify: Spotify
     
+    @AppStorage("onlyShowMyPlaylists") var onlyShowMyPlaylists = false
+    
+    @Published var isShowingPlaylistsView = false
+    
     // MARK: Player State
     
     /// Retrieved from the Spotify desktop application using AppleScript.
@@ -69,15 +73,6 @@ class PlayerManager: ObservableObject {
     /// Devices with `nil` for `id` and/or are restricted are filtered out.
     @Published var availableDevices: [Device] = []
     
-    // MARK: Playlists
-
-    @Published var playlists: [Playlist<PlaylistsItemsReference>] = []
-    
-    /// Sorted based on the last time they were played or an item was added to
-    /// them, whichever was later.
-    @Published var playlistsSortedByLastModifiedDate:
-            [Playlist<PlaylistsItemsReference>] = []
-    
     var allowedActions: Set<PlaybackActions> {
         return self.currentlyPlayingContext?.allowedActions
             ?? PlaybackActions.allCases
@@ -98,7 +93,7 @@ class PlayerManager: ObservableObject {
             }
         }
     }
-    
+
     var imagesFolder: URL? {
         guard let applicationSupportFolder = FileManager.default.urls(
             for: .applicationSupportDirectory,
@@ -115,6 +110,15 @@ class PlayerManager: ObservableObject {
             )
     }
 
+    // MARK: Playlists
+
+    @Published var playlists: [Playlist<PlaylistsItemsReference>] = []
+    
+    /// Sorted based on the last time they were played or an item was added to
+    /// them, whichever was later.
+    @Published var playlistsSortedByLastModifiedDate:
+            [Playlist<PlaylistsItemsReference>] = []
+    
     private let playlistsLastModifiedDatesKey = "playlistsLastModifiedDates"
     
     /// The dates that playlists were last played or items were
@@ -796,6 +800,102 @@ class PlayerManager: ObservableObject {
         )
     }
 
+    // MARK: Key Events
+    
+    /// Returns `true` if the key event was handled; else, `false`.
+    func receiveKeyEvent(
+        _ event: NSEvent,
+        requireModifierKey: Bool
+    ) -> Bool {
+
+        Loggers.keyEvent.trace("PlayerManager: \(event)")
+        
+        if requireModifierKey && !event.modifierFlags.contains(.command) {
+            return false
+        }
+        
+        if event.keyCode == 123 {  // left arrow
+            self.previousTrackOrSeekBackwards()
+            return true
+        }
+        else if event.keyCode == 49 {  // space bar
+            self.playPause()
+            return true
+        }
+        else if event.keyCode == 124 {  // right arrow
+            self.nextTrackOrSeekForwards()
+            return true
+        }
+        else if event.keyCode == 126 {  // up arrow
+            Loggers.keyEvent.trace("increase sound volume")
+            let newSoundVolume = (self.soundVolume + 5)
+                .clamped(to: 0...100)
+            self.soundVolume = newSoundVolume
+            self.player.setSoundVolume?(
+                Int(newSoundVolume)
+            )
+            return true
+        }
+        else if event.keyCode == 125 {  // down arrow
+            Loggers.keyEvent.trace("decrease sound volume")
+            let newSoundVolume = (self.soundVolume - 5)
+                .clamped(to: 0...100)
+            self.soundVolume = newSoundVolume
+            self.player.setSoundVolume?(
+                Int(newSoundVolume)
+            )
+            return true
+        }
+        else if let characters = event.charactersIgnoringModifiers {
+            switch characters {
+                case "p":
+                    if self.isShowingPlaylistsView {
+                        self.dismissPlaylistsView(animated: true)
+                    }
+                    else {
+                        withAnimation(PlayerView.animation) {
+                            self.isShowingPlaylistsView = true
+                        }
+                    }
+                case "k":
+                    self.playPause()
+                case "r":
+                    self.cycleRepeatMode()
+                case "s":
+                    self.toggleShuffle()
+                case "m":
+                    self.onlyShowMyPlaylists.toggle()
+                    Loggers.keyEvent.notice(
+                        "onlyShowMyPlaylists = \(self.onlyShowMyPlaylists)"
+                    )
+                case ",":
+                    let appDelegate = NSApplication.shared.delegate
+                        as! AppDelegate
+                    appDelegate.openSettingsWindow()
+                default:
+                    return false
+            }
+            return true
+        }
+        
+        return false
+    }
+
+    func dismissPlaylistsView(animated: Bool) {
+        if animated {
+            withAnimation(PlayerView.animation) {
+                self.isShowingPlaylistsView = false
+            }
+            self.updateSoundVolumeAndPlayerPosition()
+            self.updatePlaylistsSortedByLastModifiedDate()
+            self.retrieveAvailableDevices()
+            self.retrievePlaylistImages()
+        }
+        else {
+            self.isShowingPlaylistsView = false
+        }
+    }
+    
 }
 
 // MARK: Private Members
@@ -840,7 +940,7 @@ private extension PlayerManager {
 //            Loggers.playerManager.warning("no current show or artist")
 //        }
 //        print("\n\n")
-        
+//
 //        let allowedActionsStrings = context.allowedActions.map(\.rawValue)
 //        Loggers.playerManager.trace(
 //            "allowed actions: \(allowedActionsStrings)"
