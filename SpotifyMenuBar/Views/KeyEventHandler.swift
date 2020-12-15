@@ -6,13 +6,13 @@ import Combine
 /// https://stackoverflow.com/a/61155272/12394554
 struct KeyEventHandler: NSViewRepresentable {
     
-    let receiveKeyEvent: (NSEvent) -> Void
+    let receiveKeyEvent: (NSEvent) -> Bool
     
     private class KeyHandlerView: NSView {
         
-        let receiveKeyEvent: (NSEvent) -> Void
+        let receiveKeyEvent: (NSEvent) -> Bool
        
-        init(receiveKeyEvent: @escaping (NSEvent) -> Void) {
+        init(receiveKeyEvent: @escaping (NSEvent) -> Bool) {
             self.receiveKeyEvent = receiveKeyEvent
             super.init(frame: NSZeroRect)
         }
@@ -28,7 +28,9 @@ struct KeyEventHandler: NSViewRepresentable {
             
             // key code 53 = escape key
             if event.charactersIgnoringModifiers != nil, event.keyCode != 53 {
-                self.receiveKeyEvent(event)
+                if !self.receiveKeyEvent(event) {
+                    super.keyDown(with: event)
+                }
             }
             else {
                 super.keyDown(with: event)

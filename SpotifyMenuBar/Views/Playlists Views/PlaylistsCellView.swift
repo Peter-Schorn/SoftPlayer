@@ -157,7 +157,7 @@ struct PlaylistsCellView_Previews: PreviewProvider {
     static var previews: some View {
         PlayerView_Previews.previews
             .onAppear {
-                PlayerView.debugShowPlaylistsView = true
+                PlayerView.debugIsShowingPlaylistsView = true
             }
     }
 }
