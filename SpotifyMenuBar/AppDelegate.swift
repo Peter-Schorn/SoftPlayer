@@ -72,12 +72,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     @objc func togglePopover(_ sender: AnyObject?) {
-//        print("togglePopover")
         if let button = self.statusBarItem.button {
             if self.popover.isShown {
                 self.popover.performClose(sender)
-//                self.playerManager.popoverDidClose
-//                print("self.playerManager.popoverDidDismiss.send()")
             }
             else {
                 self.playerManager.popoverWillShow.send()

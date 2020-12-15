@@ -98,7 +98,7 @@ struct PlayerStateNotification {
     }
     
     /// Whether content is playing or paused.
-    enum State: String {
+    enum State: String, CaseIterable {
         case playing
         case paused
         case stopped
@@ -106,14 +106,14 @@ struct PlayerStateNotification {
         case rewinding
         
         init?(rawValue: String) {
-            switch rawValue.lowercased() {
-                case "playing":
-                    self = .playing
-                case "paused":
-                    self = .paused
-                default:
-                    return nil
+            let lowerCasedRawValue = rawValue.lowercased()
+            for state in Self.allCases {
+                if state.rawValue == lowerCasedRawValue {
+                    self = state
+                    return
+                }
             }
+            return nil
         }
     }
     

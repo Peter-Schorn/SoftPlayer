@@ -13,7 +13,7 @@ enum Loggers {
         label: "AvailableDevicesView", level: .trace
     )
     static let playerManager = Logger(
-        label: "PlayerManager", level: .warning
+        label: "PlayerManager", level: .trace
     )
     static let images = Logger(
         label: "Images", level: .error
@@ -23,6 +23,18 @@ enum Loggers {
     )
     static let keyEvent = Logger(
         label: "KeyEvent", level: .trace
+    )
+    static let playlistsScrollView = Logger(
+        label: "PlaylistsScrollView", level: .trace
+    )
+    static let playlistCellView = Logger(
+        label: "PlaylistCellView", level: .trace
+    )
+    static let touchBarView = Logger(
+        label: "TouchBarView", level: .warning
+    )
+    static let soundVolumeAndPlayerPosition = Logger(
+        label: "SoundVolumeAndPlayerPosition", level: .warning
     )
 
 }

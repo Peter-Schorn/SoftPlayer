@@ -135,7 +135,7 @@ struct PlaylistsScrollView: View {
                         self.filteredPlaylists,
                         id: \.element.uri
                     ) { playlist in
-                        PlaylistsCellView(
+                        PlaylistCellView(
                             playlist: playlist.element,
                             isSelected: selectedPlaylistURI == playlist.element.uri
                         )
@@ -189,7 +189,7 @@ struct PlaylistsScrollView: View {
     }
 
     func receiveSearchFieldKeyEvent(_ event: NSEvent) -> Bool {
-        print("receiveSearchFieldKeyEvent: \(event)")
+        Loggers.keyEvent.trace("search field: \(event)")
         return receiveKeyEvent(event, scrollView: nil)
     }
     
@@ -210,13 +210,9 @@ struct PlaylistsScrollView: View {
         }
         else if let scrollView = scrollView, event.specialKey == nil,
                 let character = event.charactersIgnoringModifiers {
-            print("charactersIgnoringModifiers: '\(character)'")
-            print("PlaylistsScrollView receiveKeyEvent: '\(character)'")
-            print(event)
 
             self.searchFieldIsFocused = true
             self.searchText += character
-            print("scrolling to search field")
             scrollView.scrollTo(searchFieldId, anchor: .top)
             return true
         }
@@ -224,16 +220,16 @@ struct PlaylistsScrollView: View {
     }
 
     func searchFieldDidCommit() {
-        print("onSearchFieldCommit")
         guard self.playerManager.isShowingPlaylistsView else {
-            print("skipping because not presented")
             return
         }
         if let firstPlaylist = self.filteredPlaylists.first?.element {
             withAnimation(highlightAnimation) {
                 self.selectedPlaylistURI = firstPlaylist.uri
             }
-            print("playing playlist \(firstPlaylist.name)")
+            Loggers.playlistsScrollView.trace(
+                "playing playlist '\(firstPlaylist.name)'"
+            )
             self.playPlaylist(firstPlaylist)
 
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
@@ -259,7 +255,9 @@ struct PlaylistsScrollView: View {
                         title: alertTitle,
                         message: error.localizedDescription
                     )
-                    print("PlaylistsScrollView: \(alertTitle): \(error)")
+                    Loggers.playlistsScrollView.error(
+                        "\(alertTitle): \(error)"
+                    )
                 }
             })
 
