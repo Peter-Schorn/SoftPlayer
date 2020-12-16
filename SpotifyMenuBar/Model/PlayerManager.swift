@@ -620,8 +620,6 @@ class PlayerManager: ObservableObject {
         .sink { currentUser, playlists in
             self.playlists = playlists
             self.retrievePlaylistImages()
-//            self.updatePlaylistsSortedByLastPlayedDate()
-//            self.updatePlaylistsSortedByLastAddedDate()
             self.updatePlaylistsSortedByLastModifiedDate()
         }
            
@@ -914,9 +912,7 @@ class PlayerManager: ObservableObject {
                     self.dismissPlaylistsView(animated: true)
                 }
                 else {
-                    withAnimation(PlayerView.animation) {
-                        self.isShowingPlaylistsView = true
-                    }
+                    self.presentPlaylistsView()
                 }
             case .repeatMode:
                 self.cycleRepeatMode()
@@ -939,6 +935,13 @@ class PlayerManager: ObservableObject {
         return true
     }
 
+    func presentPlaylistsView() {
+        self.retrievePlaylists()
+        withAnimation(PlayerView.animation) {
+            self.isShowingPlaylistsView = true
+        }
+    }
+
     func dismissPlaylistsView(animated: Bool) {
         if animated {
             withAnimation(PlayerView.animation) {
@@ -947,7 +950,7 @@ class PlayerManager: ObservableObject {
             self.updateSoundVolumeAndPlayerPosition()
             self.updatePlaylistsSortedByLastModifiedDate()
             self.retrieveAvailableDevices()
-            self.retrievePlaylistImages()
+            self.updatePlaylistsSortedByLastModifiedDate()
         }
         else {
             self.isShowingPlaylistsView = false
