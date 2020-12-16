@@ -2,6 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>NSAppleEventsUsageDescription</key>
+	<string>Access to the Spotify desktop application is required in order to get information about the current playback.</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleExecutable</key>
@@ -27,7 +29,7 @@
 			<string>com.Peter-Schorn.SpotifyMenuBar</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>peter-schorn-spotifymenubar3</string>
+				<string>peter-schorn-spotifymenubar</string>
 			</array>
 		</dict>
 	</array>

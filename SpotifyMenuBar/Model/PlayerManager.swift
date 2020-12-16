@@ -255,25 +255,27 @@ class PlayerManager: ObservableObject {
     
     func updatePlayerState() {
         
-        Loggers.playerManager.trace("will update player state")
+        Loggers.playerState.trace("will update player state")
         self.retrieveCurrentlyPlayingContext()
         self.retrieveAvailableDevices()
+        Loggers.playerState.trace(
+            """
+            player state updated from '\(self.currentTrack?.name ?? "nil")' \
+            to '\(self.player.currentTrack?.name ?? "nil")'
+            """
+        )
         self.currentTrack = self.player.currentTrack
         self.shuffleIsOn = player.shuffling ?? false
         Loggers.shuffle.trace("self.shuffleIsOn = \(self.shuffleIsOn)")
-//        Loggers.playerManager.trace(
-//            "player state updated to '\(self.currentTrack?.name ?? "nil")'"
-//        )
-        
         self.updateSoundVolumeAndPlayerPosition()
         
         if self.currentTrack?.artworkUrl != self.previousArtworkURL {
-//            Loggers.playerManager.trace(
-//                """
-//                artworkURL changed from \(self.previousArtworkURL ?? "nil") \
-//                to \(self.currentTrack?.artworkUrl ?? "nil")
-//                """
-//            )
+            Loggers.playerState.trace(
+                """
+                artworkURL changed from \(self.previousArtworkURL ?? "nil") \
+                to \(self.currentTrack?.artworkUrl ?? "nil")
+                """
+            )
             self.artworkURLDidChange.send()
         }
         self.previousArtworkURL = self.player.currentTrack?.artworkUrl
@@ -470,7 +472,7 @@ class PlayerManager: ObservableObject {
                         )
                     case .finished:
                         Loggers.repeatMode.trace(
-                            "cycleRepeatMode completion: \(repeatModeString)"
+                            "cycleRepeatMode completion for \(repeatModeString)"
                         )
                 }
                 
@@ -971,7 +973,7 @@ private extension PlayerManager {
         self.currentlyPlayingContext = context
         if let repeatMode = self.currentlyPlayingContext?.repeatState {
             self.repeatMode = repeatMode
-            Loggers.playerManager.trace(
+            Loggers.playerState.trace(
                 "self.repeatMode = \(self.repeatMode)"
             )
         }
@@ -999,7 +1001,7 @@ private extension PlayerManager {
 //        print("\n\n")
 //
         let allowedActionsString = context.allowedActions.map(\.rawValue)
-        Loggers.playerManager.notice(
+        Loggers.playerState.notice(
             "allowed actions: \(allowedActionsString)"
         )
         
