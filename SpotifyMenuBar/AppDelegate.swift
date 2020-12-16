@@ -47,11 +47,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         popover.animates = false
         popover.delegate = self
 
-//        let viewController = NSViewController()
-//        viewController.view = NSHostingView(rootView: rootView)
-//        viewController.view.addSubview(PopoverContentView(playerManager: playerManager))
-//        popover.contentViewController = viewController
-        
         popover.contentViewController = NSHostingController(rootView: rootView)
 
         self.popover = popover
