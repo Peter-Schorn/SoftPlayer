@@ -48,7 +48,7 @@ enum Loggers {
         factory: SpotifyMenuBarLogHandler.bootstrap
     )
     static let soundVolumeAndPlayerPosition = Logger(
-        label: "SoundVolumeAndPlayerPosition", level: .error,
+        label: "SoundVolumeAndPlayerPosition", level: .trace,
         factory: SpotifyMenuBarLogHandler.bootstrap
     )
     static let playerState = Logger(
