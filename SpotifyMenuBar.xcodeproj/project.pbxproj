@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		47012A3E258A8A1700174321 /* ShowPlaylistsButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47012A3D258A8A1700174321 /* ShowPlaylistsButton.swift */; };
 		4703151E2583BEA800B2BDF2 /* FocusableTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4703151D2583BEA800B2BDF2 /* FocusableTextField.swift */; };
 		470315232583EED900B2BDF2 /* FocusView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 470315222583EED900B2BDF2 /* FocusView.swift */; };
 		47038544257E801100D0E79A /* BlurView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47038543257E801100D0E79A /* BlurView.swift */; };
@@ -55,6 +56,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		47012A3D258A8A1700174321 /* ShowPlaylistsButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShowPlaylistsButton.swift; sourceTree = "<group>"; };
 		4703151D2583BEA800B2BDF2 /* FocusableTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FocusableTextField.swift; sourceTree = "<group>"; };
 		470315222583EED900B2BDF2 /* FocusView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FocusView.swift; sourceTree = "<group>"; };
 		47038543257E801100D0E79A /* BlurView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlurView.swift; sourceTree = "<group>"; };
@@ -218,6 +220,7 @@
 				47F6EC5F257C96B7007079D2 /* NextTrackButton.swift */,
 				47F6EC5C257C9699007079D2 /* RepeatModeButton.swift */,
 				474C7C912570F713004A3DB5 /* AvailableDevicesButton.swift */,
+				47012A3D258A8A1700174321 /* ShowPlaylistsButton.swift */,
 			);
 			path = Buttons;
 			sourceTree = "<group>";
@@ -347,6 +350,7 @@
 				47DC186925824B5800EF11BA /* Loggers.swift in Sources */,
 				47038544257E801100D0E79A /* BlurView.swift in Sources */,
 				4703151E2583BEA800B2BDF2 /* FocusableTextField.swift in Sources */,
+				47012A3E258A8A1700174321 /* ShowPlaylistsButton.swift in Sources */,
 				477560E02580083200B7FFED /* SpotifyWebAPIExtensions.swift in Sources */,
 				47F6EC56257C963F007079D2 /* PreviousTrackButton.swift in Sources */,
 				47832F4A2566474300AADEA3 /* RootView.swift in Sources */,

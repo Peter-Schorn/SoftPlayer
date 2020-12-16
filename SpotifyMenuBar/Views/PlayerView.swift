@@ -26,14 +26,6 @@ struct PlayerView: View {
         NSApplication.shared.delegate as! AppDelegate
     }
     
-    var showPlaylistsTooltip: String {
-        var tooltip = "Show playlists"
-        if let name = KeyboardShortcuts.getShortcut(for: .showPlaylists) {
-            tooltip += " \(name)"
-        }
-        return tooltip
-    }
-
     // MARK: Geometry Effect Constants
     
     var playerViewIsSource: Bool {
@@ -230,19 +222,7 @@ struct PlayerView: View {
                 
                 HStack {
                     // MARK: Show PlaylistsView Button
-                    Button(action: {
-                        if self.playerManager.isShowingPlaylistsView {
-                            self.playerManager.dismissPlaylistsView(animated: true)
-                        }
-                        else {
-                            withAnimation(Self.animation) {
-                                self.playerManager.isShowingPlaylistsView = true
-                            }
-                        }
-                    }, label: {
-                        Image(systemName: "music.note.list")
-                    })
-                    .help(showPlaylistsTooltip)
+                    ShowPlaylistsButton()
                     
                     Spacer()
 

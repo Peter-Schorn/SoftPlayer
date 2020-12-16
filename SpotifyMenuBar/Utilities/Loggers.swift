@@ -8,15 +8,15 @@ public typealias OSLogger = os.Logger
 enum Loggers {
     
     static let shuffle = Logger(
-        label: "Shuffle", level: .trace,
+        label: "Shuffle", level: .warning,
         factory: SpotifyMenuBarLogHandler.bootstrap
     )
     static let repeatMode = Logger(
-        label: "RepeatMode", level: .trace,
+        label: "RepeatMode", level: .warning,
         factory: SpotifyMenuBarLogHandler.bootstrap
     )
     static let availableDevices = Logger(
-        label: "AvailableDevices", level: .trace,
+        label: "AvailableDevices", level: .warning,
         factory: SpotifyMenuBarLogHandler.bootstrap
     )
     static let playerManager = Logger(
@@ -24,7 +24,7 @@ enum Loggers {
         factory: SpotifyMenuBarLogHandler.bootstrap
     )
     static let images = Logger(
-        label: "Images", level: .warning,
+        label: "Images", level: .error,
         factory: SpotifyMenuBarLogHandler.bootstrap
     )
     static let syncContext = Logger(
@@ -36,11 +36,11 @@ enum Loggers {
         factory: SpotifyMenuBarLogHandler.bootstrap
     )
     static let playlistsScrollView = Logger(
-        label: "PlaylistsScrollView", level: .trace,
+        label: "PlaylistsScrollView", level: .warning,
         factory: SpotifyMenuBarLogHandler.bootstrap
     )
     static let playlistCellView = Logger(
-        label: "PlaylistCellView", level: .trace,
+        label: "PlaylistCellView", level: .warning,
         factory: SpotifyMenuBarLogHandler.bootstrap
     )
     static let touchBarView = Logger(
@@ -48,11 +48,11 @@ enum Loggers {
         factory: SpotifyMenuBarLogHandler.bootstrap
     )
     static let soundVolumeAndPlayerPosition = Logger(
-        label: "SoundVolumeAndPlayerPosition", level: .trace,
+        label: "SoundVolumeAndPlayerPosition", level: .error,
         factory: SpotifyMenuBarLogHandler.bootstrap
     )
     static let playerState = Logger(
-        label: "PlayerState", level: .trace,
+        label: "PlayerState", level: .error,
         factory: SpotifyMenuBarLogHandler.bootstrap
     )
  
