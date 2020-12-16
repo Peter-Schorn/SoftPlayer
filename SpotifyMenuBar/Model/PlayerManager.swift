@@ -283,15 +283,22 @@ class PlayerManager: ObservableObject {
     
     func updateSoundVolumeAndPlayerPosition() {
         Loggers.soundVolumeAndPlayerPosition.trace("")
-        let newSoundVolume = CGFloat(self.player.soundVolume ?? 100)
-        if abs(newSoundVolume - self.soundVolume) >= 2 {
-            Loggers.soundVolumeAndPlayerPosition.trace(
-                """
+        if let intSoundVolume = self.player.soundVolume {
+            let newSoundVolume = CGFloat(intSoundVolume)
+            if abs(newSoundVolume - self.soundVolume) >= 2 {
+                Loggers.soundVolumeAndPlayerPosition.trace(
+                    """
                 changed sound volume from \(soundVolume) to \
                 \(newSoundVolume)"
                 """
+                )
+                self.soundVolume = newSoundVolume
+            }
+        }
+        else {
+            Loggers.soundVolumeAndPlayerPosition.warning(
+                "couldn't get sound volume"
             )
-            self.soundVolume = newSoundVolume
         }
         if let playerPosition = self.player.playerPosition,
                 !self.playbackPositionViewIsDragging {
