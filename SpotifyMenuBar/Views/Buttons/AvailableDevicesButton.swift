@@ -57,7 +57,7 @@ struct AvailableDevicesButton: View {
         
         Loggers.availableDevices.trace("tranferring playback to '\(device.name)'")
         self.transferPlaybackCancellable = self.spotify.api
-            .transferPlayback(to: id + "invalid", play: true)
+            .transferPlayback(to: id, play: true)
             .receive(on: RunLoop.main)
             .sink(receiveCompletion: { completion in
                 switch completion {
