@@ -331,13 +331,12 @@ class PlayerManager: ObservableObject {
                         Loggers.playerManager.error(
                             "couldn't load artwork image: \(error)"
                         )
-                        // MARK: Receive Image
                         self.artworkImage = Image(.spotifyAlbumPlaceholder)
                     }
                 },
                 receiveValue: { data, response in
                     if let nsImage = NSImage(data: data) {
-                        
+                        // MARK: Successfully Receive Image
                         self.artworkImage = Image(nsImage: nsImage)
                     }
                     else {

@@ -31,6 +31,18 @@ extension View {
         }
     }
     
+    @ViewBuilder func map<T, Content: View>(
+        _ t: T?, _ content: (Self, T) -> Content
+    ) -> some View {
+        if let t = t {
+            content(self, t)
+        }
+        else {
+            self
+        }
+    }
+
+    
     func adaptiveShadow(
         radius: CGFloat,
         x: CGFloat = 0,
