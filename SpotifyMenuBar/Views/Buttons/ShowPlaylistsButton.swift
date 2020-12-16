@@ -27,9 +27,7 @@ struct ShowPlaylistsButton: View {
                 self.playerManager.dismissPlaylistsView(animated: true)
             }
             else {
-                withAnimation(PlayerView.animation) {
-                    self.playerManager.isShowingPlaylistsView = true
-                }
+                self.playerManager.presentPlaylistsView()
             }
         }, label: {
             Image(systemName: "music.note.list")
