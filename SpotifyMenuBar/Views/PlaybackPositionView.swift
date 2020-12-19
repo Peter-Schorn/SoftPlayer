@@ -27,6 +27,7 @@ struct PlaybackPositionView: View {
                 isDragging: $playerManager.playbackPositionViewIsDragging,
                 range: 0...duration,
                 knobDiameter: 10,
+                knobColor: .white,
                 knobScaleEffectMagnitude: 1.3,
                 leadingRectangleColor: .playbackPositionLeadingRectangle,
                 onEndedDragging: { _ in self.updatePlaybackPosition() }
