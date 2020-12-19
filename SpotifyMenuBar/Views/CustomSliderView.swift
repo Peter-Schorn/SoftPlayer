@@ -9,6 +9,7 @@ struct CustomSliderView: View {
     
     let range: ClosedRange<CGFloat>
     let knobDiameter: CGFloat
+    let knobColor: Color
     let knobScaleEffectMagnitude: CGFloat
     let leadingRectangleColor: Color
 
@@ -25,6 +26,7 @@ struct CustomSliderView: View {
         isDragging: Binding<Bool>,
         range: ClosedRange<CGFloat>,
         knobDiameter: CGFloat,
+        knobColor: Color,
         knobScaleEffectMagnitude: CGFloat = 1,
         leadingRectangleColor: Color,
         onEndedDragging: ((DragGesture.Value) -> Void)? = nil
@@ -33,6 +35,7 @@ struct CustomSliderView: View {
         self._isDragging = isDragging
         self.range = range
         self.knobDiameter = knobDiameter
+        self.knobColor = knobColor
         self.knobScaleEffectMagnitude = knobScaleEffectMagnitude
         self.leadingRectangleColor = leadingRectangleColor
         self.onEndedDragging = onEndedDragging
@@ -57,7 +60,7 @@ struct CustomSliderView: View {
                 HStack(spacing: 0) {
                     // MARK: Knob
                     Circle()
-                        .fill(Color.white)
+                        .fill(knobColor)
                         .frame(width: knobDiameter)
                         .scaleEffect(isDragging ? knobScaleEffectMagnitude : 1)
                         .shadow(radius: 5)
