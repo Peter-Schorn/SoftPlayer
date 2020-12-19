@@ -14,6 +14,7 @@ struct SoundVolumeSlider: View {
                 isDragging: .constant(false),
                 range: 0...100,
                 knobDiameter: 15,
+                knobColor: .white,
                 leadingRectangleColor: .green
             )
             Image(systemName: "speaker.wave.3.fill")
