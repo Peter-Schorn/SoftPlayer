@@ -3,7 +3,7 @@ import Combine
 import SpotifyWebAPI
 
 struct SoundVolumeSlider: View {
-    
+
     @EnvironmentObject var playerManager: PlayerManager
 
     var body: some View {
@@ -11,11 +11,12 @@ struct SoundVolumeSlider: View {
             Image(systemName: "speaker.fill")
             CustomSliderView(
                 value: $playerManager.soundVolume,
-                isDragging: .constant(false),
+                isDragging: $playerManager.isDraggingSoundVolumeSlider,
                 range: 0...100,
                 knobDiameter: 15,
                 knobColor: .white,
-                leadingRectangleColor: .green
+                leadingRectangleColor: .green,
+                onEndedDragging: onEndedDragging
             )
             Image(systemName: "speaker.wave.3.fill")
         }
@@ -28,6 +29,10 @@ struct SoundVolumeSlider: View {
             }
         })
         
+    }
+    
+    func onEndedDragging(_ value: DragGesture.Value) {
+        self.playerManager.lastAdjustedSoundVolumeSliderDate = Date()
     }
 }
 
