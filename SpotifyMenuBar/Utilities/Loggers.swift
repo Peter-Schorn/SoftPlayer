@@ -7,64 +7,81 @@ typealias OSLogger = os.Logger
 
 enum Loggers {
     
-    static let shuffle = Logger(
-        label: "Shuffle",
-        level: .traceOnReleaseOr(.warning),
-        factory: SpotifyMenuBarLogHandler.bootstrap
-    )
-    static let repeatMode = Logger(
-        label: "RepeatMode",
-        level: .traceOnReleaseOr(.warning),
-        factory: SpotifyMenuBarLogHandler.bootstrap
-    )
-    static let availableDevices = Logger(
-        label: "AvailableDevices",
-        level: .traceOnReleaseOr(.warning),
-        factory: SpotifyMenuBarLogHandler.bootstrap
-    )
     static let playerManager = Logger(
         label: "PlayerManager",
         level: .traceOnReleaseOr(.trace),
         factory: SpotifyMenuBarLogHandler.bootstrap
     )
+    
+    static let playerState = Logger(
+        label: "PlayerState",
+        level: .traceOnReleaseOr(.trace),
+        factory: SpotifyMenuBarLogHandler.bootstrap
+    )
+    
+    static let artwork = Logger(
+        label: "Artwork",
+        level: .traceOnReleaseOr(.trace),
+        factory: SpotifyMenuBarLogHandler.bootstrap(label:)
+    )
+
+    static let shuffle = Logger(
+        label: "Shuffle",
+        level: .traceOnReleaseOr(.warning),
+        factory: SpotifyMenuBarLogHandler.bootstrap
+    )
+    
+    static let repeatMode = Logger(
+        label: "RepeatMode",
+        level: .traceOnReleaseOr(.warning),
+        factory: SpotifyMenuBarLogHandler.bootstrap
+    )
+    
+    static let availableDevices = Logger(
+        label: "AvailableDevices",
+        level: .traceOnReleaseOr(.warning),
+        factory: SpotifyMenuBarLogHandler.bootstrap
+    )
+    
     static let images = Logger(
         label: "Images",
         level: .traceOnReleaseOr(.error),
         factory: SpotifyMenuBarLogHandler.bootstrap
     )
+    
     static let syncContext = Logger(
         label: "SyncContext",
         level: .traceOnReleaseOr(.error),
         factory: SpotifyMenuBarLogHandler.bootstrap
     )
+    
     static let keyEvent = Logger(
         label: "KeyEvent",
         level: .traceOnReleaseOr(.trace),
         factory: SpotifyMenuBarLogHandler.bootstrap
     )
+    
     static let playlistsScrollView = Logger(
         label: "PlaylistsScrollView",
         level: .traceOnReleaseOr(.warning),
         factory: SpotifyMenuBarLogHandler.bootstrap
     )
+    
     static let playlistCellView = Logger(
         label: "PlaylistCellView",
         level: .traceOnReleaseOr(.warning),
         factory: SpotifyMenuBarLogHandler.bootstrap
     )
+    
     static let touchBarView = Logger(
         label: "TouchBarView",
         level: .traceOnReleaseOr(.warning),
         factory: SpotifyMenuBarLogHandler.bootstrap
     )
+    
     static let soundVolumeAndPlayerPosition = Logger(
         label: "SoundVolumeAndPlayerPosition",
-        level: .traceOnReleaseOr(.trace),
-        factory: SpotifyMenuBarLogHandler.bootstrap
-    )
-    static let playerState = Logger(
-        label: "PlayerState",
-        level: .traceOnReleaseOr(.error),
+        level: .traceOnReleaseOr(.warning),
         factory: SpotifyMenuBarLogHandler.bootstrap
     )
  

@@ -55,17 +55,18 @@ struct AvailableDevicesButton: View {
             return
         }
         
+        self.playerManager.isTransferringPlayback = true
         Loggers.availableDevices.trace("tranferring playback to '\(device.name)'")
         self.transferPlaybackCancellable = self.spotify.api
             .transferPlayback(to: id, play: true)
             .receive(on: RunLoop.main)
             .sink(receiveCompletion: { completion in
+                self.playerManager.isTransferringPlayback = false
                 switch completion {
                     case .finished:
                         self.playerManager.updateSoundVolumeAndPlayerPosition()
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                            self.playerManager.retrieveAvailableDevices()
-                            self.playerManager.updateSoundVolumeAndPlayerPosition()
+                            self.playerManager.updatePlayerState()
                         }
                     case .failure(let error):
                         let alertTitle = "Couldn't Transfer Playback " +
