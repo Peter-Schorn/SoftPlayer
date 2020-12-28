@@ -21,7 +21,7 @@ struct PreviousTrackButton: View {
         return ""
     }
     
-    var skipToNextTrackIsEnabled: Bool {
+    var skipToPreviousTrackIsEnabled: Bool {
         return playerManager.allowedActions.contains(.skipToPrevious)
     }
 
@@ -38,7 +38,6 @@ struct PreviousTrackButton: View {
         }
         else {
             Image(systemName: "backward.end.fill")
-                .opacity(skipToNextTrackIsEnabled ? 1 : 0.5)
                 .tapAndLongPressAndHoldGesture(
                     onTap: playerManager.skipToPreviousTrack,
                     isLongPressing: $isLongPressing

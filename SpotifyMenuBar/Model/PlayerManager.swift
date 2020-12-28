@@ -85,6 +85,10 @@ class PlayerManager: ObservableObject {
     /// Devices with `nil` for `id` and/or are restricted are filtered out.
     @Published var availableDevices: [Device] = []
     
+    /// Whether or not there is an in-progress request to transfer playback to
+    /// a different device.
+    @Published var isTransferringPlayback = false
+    
     var activeDevice: Device? {
         return self.availableDevices.first { device in
             device.isActive
@@ -269,9 +273,17 @@ class PlayerManager: ObservableObject {
     func updatePlayerState() {
         
         Loggers.playerState.trace("will update player state")
+        self.retrieveAvailableDevices()
+
+        if self.isTransferringPlayback {
+            Loggers.artwork.notice(
+                "not updating player state because isTransferringPlayback"
+            )
+            return
+        }
+        
         self.updateSoundVolumeAndPlayerPosition()
         self.retrieveCurrentlyPlayingContext()
-        self.retrieveAvailableDevices()
         Loggers.playerState.trace(
             """
             player state updated from '\(self.currentTrack?.name ?? "nil")' \
@@ -282,8 +294,9 @@ class PlayerManager: ObservableObject {
         self.shuffleIsOn = player.shuffling ?? false
         Loggers.shuffle.trace("self.shuffleIsOn = \(self.shuffleIsOn)")
         
+        Loggers.artwork.trace("URL: '\(self.currentTrack?.artworkUrl ?? "nil")'")
         if self.currentTrack?.artworkUrl != self.previousArtworkURL {
-            Loggers.playerState.trace(
+            Loggers.artwork.trace(
                 """
                 artworkURL changed from \(self.previousArtworkURL ?? "nil") \
                 to \(self.currentTrack?.artworkUrl ?? "nil")
@@ -330,6 +343,7 @@ class PlayerManager: ObservableObject {
             // if the player position was adjusted by the user three seconds ago
             // or less, then don't update it here.
             if let lastAdjusted = self.lastAdjustedPlayerPositionDate,
+               fromTimer,
                lastAdjusted.addingTimeInterval(3) >= Date() {
                 Loggers.soundVolumeAndPlayerPosition.notice(
                     "player position was adjusted three seconds ago or less"
@@ -553,17 +567,10 @@ class PlayerManager: ObservableObject {
     }
     
     func skipToPreviousTrack() {
-        if self.allowedActions.contains(.skipToPrevious) {
-            self.player.previousTrack?()
-//            Loggers.playerManager.trace("self.player.previousTrack?()")
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
-                self.updatePlayerState()
-            }
-        }
-        else {
-            Loggers.playerManager.warning(
-                "skip to previous track disabled"
-            )
+        Loggers.playerState.trace("")
+        self.player.previousTrack?()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            self.updatePlayerState()
         }
     }
     
@@ -583,14 +590,8 @@ class PlayerManager: ObservableObject {
     }
 
     func skipToNextTrack() {
-        if self.allowedActions.contains(.skipToNext) {
-            self.player.nextTrack?()
-        }
-        else {
-            Loggers.playerManager.warning(
-                "skip to next track disabled"
-            )
-        }
+        Loggers.playerState.trace("")
+        self.player.nextTrack?()
     }
     
     func seekForwards15Seconds() {
