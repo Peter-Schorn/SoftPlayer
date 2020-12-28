@@ -41,7 +41,6 @@ struct NextTrackButton: View {
             // MARK: Next Track
             
             Image(systemName: "forward.end.fill")
-                .opacity(skipToPreviousTrackIsEnabled ? 1 : 0.5)
                 .tapAndLongPressAndHoldGesture(
                     onTap: self.playerManager.skipToNextTrack,
                     isLongPressing: $isLongPressing
