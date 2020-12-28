@@ -24,7 +24,7 @@ struct PlaybackPositionView: View {
         VStack(spacing: -5) {
             CustomSliderView(
                 value: $playerManager.playerPosition,
-                isDragging: $playerManager.playbackPositionViewIsDragging,
+                isDragging: $playerManager.isDraggingPlaybackPositionView,
                 range: 0...duration,
                 knobDiameter: 10,
                 knobColor: .white,
@@ -44,7 +44,7 @@ struct PlaybackPositionView: View {
             .padding(.horizontal, 5)
         }
         .onReceive(timer) { _ in
-            if self.playerManager.playbackPositionViewIsDragging ||
+            if self.playerManager.isDraggingPlaybackPositionView ||
                     self.playerManager.player.playerState != .playing {
                 return
             }
@@ -80,6 +80,7 @@ struct PlaybackPositionView: View {
     }
     
     func updatePlaybackPosition() {
+        self.playerManager.lastAdjustedPlayerPositionDate = Date()
         Loggers.soundVolumeAndPlayerPosition.trace(
             """
             updating playback position to \

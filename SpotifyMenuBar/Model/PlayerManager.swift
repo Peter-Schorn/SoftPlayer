@@ -13,7 +13,8 @@ class PlayerManager: ObservableObject {
     @AppStorage("onlyShowMyPlaylists") var onlyShowMyPlaylists = false
     
     @Published var isShowingPlaylistsView = false
-    @Published var playbackPositionViewIsDragging = false
+    @Published var isDraggingPlaybackPositionView = false
+    @Published var isDraggingSoundVolumeSlider = false
     
     // MARK: Player State
     
@@ -38,6 +39,15 @@ class PlayerManager: ObservableObject {
     @Published var repeatMode = RepeatMode.off
     @Published var playerPosition: CGFloat = 0
     @Published var soundVolume: CGFloat = 100
+    
+    /// The last date that the user adjusted the player position from this
+    /// app.
+    var lastAdjustedPlayerPositionDate: Date? = nil
+    
+    /// The last date that the user adjusted the sound volume from this
+    /// app.
+    var lastAdjustedSoundVolumeSliderDate: Date? = nil
+    
     
     /// Retrieved from the Spotify web API.
     @Published var currentlyPlayingContext: CurrentlyPlayingContext? = nil
@@ -75,6 +85,12 @@ class PlayerManager: ObservableObject {
     /// Devices with `nil` for `id` and/or are restricted are filtered out.
     @Published var availableDevices: [Device] = []
     
+    var activeDevice: Device? {
+        return self.availableDevices.first { device in
+            device.isActive
+        }
+    }
+
     var allowedActions: Set<PlaybackActions> {
         return self.currentlyPlayingContext?.allowedActions
             ?? PlaybackActions.allCases
@@ -203,13 +219,13 @@ class PlayerManager: ObservableObject {
                 self.updatePlayerState()
             }
             self.updateSoundVolumeAndPlayerPositionCancellable = Timer.publish(
-                every: 2, on: .main, in: .common
+                every: 1, on: .main, in: .common
             )
             .autoconnect()
             .sink { _ in
                 if !self.isShowingPlaylistsView && self.spotify.isAuthorized {
                     Loggers.soundVolumeAndPlayerPosition.trace("timer fired")
-                    self.updateSoundVolumeAndPlayerPosition()
+                    self.updateSoundVolumeAndPlayerPosition(fromTimer: true)
                 }
             }
         }
@@ -218,9 +234,6 @@ class PlayerManager: ObservableObject {
         self.popoverDidClose.sink {
             self.updateSoundVolumeAndPlayerPositionCancellable = nil
             Loggers.playerManager.trace("popoverDidDismiss")
-            if self.spotify.isAuthorized {
-                self.retrievePlaylists()
-            }
         }
         .store(in: &cancellables)
         
@@ -256,6 +269,7 @@ class PlayerManager: ObservableObject {
     func updatePlayerState() {
         
         Loggers.playerState.trace("will update player state")
+        self.updateSoundVolumeAndPlayerPosition()
         self.retrieveCurrentlyPlayingContext()
         self.retrieveAvailableDevices()
         Loggers.playerState.trace(
@@ -267,7 +281,6 @@ class PlayerManager: ObservableObject {
         self.currentTrack = self.player.currentTrack
         self.shuffleIsOn = player.shuffling ?? false
         Loggers.shuffle.trace("self.shuffleIsOn = \(self.shuffleIsOn)")
-        self.updateSoundVolumeAndPlayerPosition()
         
         if self.currentTrack?.artworkUrl != self.previousArtworkURL {
             Loggers.playerState.trace(
@@ -281,9 +294,20 @@ class PlayerManager: ObservableObject {
         self.previousArtworkURL = self.player.currentTrack?.artworkUrl
     }
     
-    func updateSoundVolumeAndPlayerPosition() {
+    func updateSoundVolumeAndPlayerPosition(fromTimer: Bool = false) {
         Loggers.soundVolumeAndPlayerPosition.trace("")
         if let intSoundVolume = self.player.soundVolume {
+            if self.isDraggingSoundVolumeSlider {
+                return
+            }
+            if let lastAdjusted = self.lastAdjustedSoundVolumeSliderDate,
+               lastAdjusted.addingTimeInterval(3) >= Date() {
+                Loggers.soundVolumeAndPlayerPosition.notice(
+                    "sound volume was adjusted three seconds ago or less"
+                )
+                return
+            }
+            
             let newSoundVolume = CGFloat(intSoundVolume)
             if abs(newSoundVolume - self.soundVolume) >= 2 {
                 Loggers.soundVolumeAndPlayerPosition.trace(
@@ -300,14 +324,24 @@ class PlayerManager: ObservableObject {
                 "couldn't get sound volume"
             )
         }
+        
         if let playerPosition = self.player.playerPosition,
-                !self.playbackPositionViewIsDragging {
+                !self.isDraggingPlaybackPositionView {
+            // if the player position was adjusted by the user three seconds ago
+            // or less, then don't update it here.
+            if let lastAdjusted = self.lastAdjustedPlayerPositionDate,
+               lastAdjusted.addingTimeInterval(3) >= Date() {
+                Loggers.soundVolumeAndPlayerPosition.notice(
+                    "player position was adjusted three seconds ago or less"
+                )
+                return
+            }
             let cgPlayerPosition = CGFloat(playerPosition)
             if abs(cgPlayerPosition - self.playerPosition) > 1 {
                 
                 Loggers.soundVolumeAndPlayerPosition.trace(
                     """
-                    changed play position from \(playerPosition) to \
+                    changed player position from \(playerPosition) to \
                     \(cgPlayerPosition)"
                     """
                 )

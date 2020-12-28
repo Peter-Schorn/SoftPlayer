@@ -24,8 +24,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         
-//        NSApplication.shared.isAutomaticCustomizeTouchBarMenuItemEnabled = true
-        
         self.initializeKeyboardShortcutNames()
         
         SpotifyAPILogHandler.bootstrap()
