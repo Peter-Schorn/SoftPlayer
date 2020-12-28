@@ -46,30 +46,41 @@ struct QueueView: View {
                     ForEach(upNextItems.identifiedArray()) { item in
                         QueueItemView(item: item.item)
                     }
-                    .onMove(perform: onMove)
-                    .onDelete(perform: onDelete)
+                    .onMove(perform: onMoveUpNextItems)
+                    .onDelete(perform: onDeleteUpNextItems)
                 }
                 Section(header: nextFromContextHeader) {
                     ForEach(nextFromContextItems.identifiedArray()) { item in
                         QueueItemView(item: item.item)
                     }
-                    .onMove(perform: onMove)
-                    .onDelete(perform: onDelete)
+                    .onMove(perform: onMoveNextFromContextItems)
+                    .onDelete(perform: onDeleteNextFromContextItems)
                 }
             }
             .listStyle(PlainListStyle())
         }
     }
 
-    func onMove(offsets: IndexSet, newOffset: Int) {
+    func onMoveUpNextItems(offsets: IndexSet, newOffset: Int) {
         self.upNextItems.move(
             fromOffsets: offsets,
             toOffset: newOffset
         )
     }
     
-    func onDelete(offsets: IndexSet) {
+    func onDeleteUpNextItems(offsets: IndexSet) {
         self.upNextItems.remove(atOffsets: offsets)
+    }
+
+    func onMoveNextFromContextItems(offsets: IndexSet, newOffset: Int) {
+        self.nextFromContextItems.move(
+            fromOffsets: offsets,
+            toOffset: newOffset
+        )
+    }
+    
+    func onDeleteNextFromContextItems(offsets: IndexSet) {
+        self.nextFromContextItems.remove(atOffsets: offsets)
     }
 
 }
