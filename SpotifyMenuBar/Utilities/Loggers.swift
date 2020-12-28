@@ -9,19 +9,19 @@ enum Loggers {
     
     static let playerManager = Logger(
         label: "PlayerManager",
-        level: .traceOnReleaseOr(.trace),
+        level: .traceOnReleaseOr(.warning),
         factory: SpotifyMenuBarLogHandler.bootstrap
     )
     
     static let playerState = Logger(
         label: "PlayerState",
-        level: .traceOnReleaseOr(.trace),
+        level: .traceOnReleaseOr(.warning),
         factory: SpotifyMenuBarLogHandler.bootstrap
     )
     
     static let artwork = Logger(
         label: "Artwork",
-        level: .traceOnReleaseOr(.trace),
+        level: .traceOnReleaseOr(.warning),
         factory: SpotifyMenuBarLogHandler.bootstrap(label:)
     )
 

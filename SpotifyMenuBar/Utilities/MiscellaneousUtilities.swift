@@ -105,16 +105,31 @@ extension CGFloat {
     }
 }
 
-extension Color {
+extension Sequence {
     
-    static let playbackPositionLeadingRectangle = Color.init(
-        NSColor(named: .init("playbackPositionLeadingRectangle"))!
+    /// Returns an array with the elements identified by their offset
+    /// in the sequence.
+    func identifiedArray() -> [Identified<Element>] {
+        return self.enumerated().map { offset, element in
+            Identified(id: offset, item: element)
+        }
+    }
+
+}
+
+struct Identified<T>: Identifiable {
+    
+    let id: Int
+    let item: T
+
+}
+
+extension EdgeInsets {
+    
+    static let zero = Self(
+        top: 0, leading: 0, bottom: 0, trailing: 0
     )
-    
-    static let sliderTrailingRectangle = Color.init(
-        NSColor(named: .init("sliderTrailingRectangle"))!
-    )
-    
+
 }
 
 extension NSImage {

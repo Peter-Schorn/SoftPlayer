@@ -134,7 +134,7 @@ struct PlaylistsScrollView: View {
                         Text("No Playlists Found")
                             .foregroundColor(.secondary)
                             .font(.headline)
-                            .padding(.top, 150)
+                            .frame(height: 282)
                     }
                     else {
                         ForEach(

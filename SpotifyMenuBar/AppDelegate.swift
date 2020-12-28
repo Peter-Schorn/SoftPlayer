@@ -8,7 +8,10 @@ import KeyboardShortcuts
 @NSApplicationMain
 class AppDelegate: NSObject, NSApplicationDelegate {
 
+    /// 250
     static let popoverWidth: CGFloat = 250
+    
+    /// 460
     static let popoverHeight: CGFloat = 460
     
 //    var window: NSWindow!

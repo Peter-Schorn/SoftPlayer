@@ -16,9 +16,9 @@ struct PlayerView: View {
     
     @Namespace var namespace
     
+    @State private var selectedTab = 1
+
     @State private var isShowingMiniPlayerViewBackground = false
-    
-    @State private var isFirstResponder = false
     
     @State private var cancellables: Set<AnyCancellable> = []
 
@@ -45,6 +45,11 @@ struct PlayerView: View {
     let playPauseButtonId = "playPauseButton"
     let nextTrackButtonId = "nextTrack"
     let repeatModeButtonId = "repeatModeButton"
+    
+    let playlistsQueueTabId = "playlistsQueueTab"
+
+    let playlistsScrollView = PlaylistsScrollView()
+    let queueView = QueueView()
 
     // MARK: - Begin Views -
     
@@ -52,25 +57,8 @@ struct PlayerView: View {
         ZStack(alignment: .top) {
             if playerManager.isShowingPlaylistsView
                     || Self.debugIsShowingPlaylistsView {
-                VStack(spacing: 0) {
-                    
-                    miniPlayerViewBackground
-                    
-                    PlaylistsScrollView()
-                    
-                }
-                .background(
-                    Rectangle()
-                        .fill(BackgroundStyle())
-                )
-                // MARK: Playlists View Transition
-                .transition(.move(edge: .bottom))
-                .onExitCommand {
-                    self.playerManager.dismissPlaylistsView(animated: true)
-                }
-                .onReceive(playerManager.popoverDidClose) {
-                    self.playerManager.dismissPlaylistsView(animated: false)
-                }
+                
+                miniPlayerViewBackground
                 
                 miniPlayerView
                     .padding(.top, 33)
@@ -280,7 +268,7 @@ struct PlayerView: View {
                 .adaptiveShadow(radius: 2)
                 .padding(.leading, 7)
                 .padding(.trailing, 2)
-                
+            
             VStack(spacing: 0) {
                 // MARK: Small Playing Title
                 VStack(spacing: 3) {
@@ -368,27 +356,64 @@ struct PlayerView: View {
     }
 
     var miniPlayerViewBackground: some View {
-        VStack {
-            Button(action: {
-                self.playerManager.dismissPlaylistsView(animated: true)
-            }, label: {
-                Image(systemName: "chevron.down")
-                    .padding(-3)
-            })
-            .padding(.top, 5)
-            .keyboardShortcut("p")
-                .padding(.top, 1)
-            Spacer()
-                .frame(height: 85)
+        VStack(spacing: 0) {
+            // MARK: Header
+            VStack(spacing: 0) {
+                Button(action: {
+                    self.playerManager.dismissPlaylistsView(animated: true)
+                }, label: {
+                    Image(systemName: "chevron.down")
+                        .padding(-3)
+                })
+                .padding(.top, 6)
+                .keyboardShortcut("p")
+                
+                // mini player view goes here
+                Spacer()
+                    .frame(height: 85)
+                
+                PlaylistsAndQueueTabHeader(selectedTab: $selectedTab)
+                
+            }
+            .frame(maxWidth: .infinity)
+            .background(
+                Rectangle()
+                    .fill(BackgroundStyle())
+                    .if(isShowingMiniPlayerViewBackground ||
+                            Self.debugIsShowingPlaylistsView
+                    ) {
+                        $0.adaptiveShadow(radius: 3, y: 2)
+                    }
+            )
+            
+            if selectedTab == 0 {
+                playlistsScrollView
+                    .transition(.asymmetric(
+                        insertion: .move(edge: .leading),
+                        removal: .move(edge: .trailing)
+                    ))
+            }
+            else {
+                queueView
+                    .transition(.asymmetric(
+                        insertion: .move(edge: .trailing),
+                        removal: .move(edge: .leading)
+                    ))
+            }
+            
         }
-        .frame(maxWidth: .infinity)
         .background(
             Rectangle()
                 .fill(BackgroundStyle())
-                .if(isShowingMiniPlayerViewBackground) {
-                    $0.adaptiveShadow(radius: 3, y: 2)
-                }
         )
+        // MARK: Playlists View Transition
+        .transition(.move(edge: .bottom))
+        .onExitCommand {
+            self.playerManager.dismissPlaylistsView(animated: true)
+        }
+        .onReceive(playerManager.popoverDidClose) {
+            self.playerManager.dismissPlaylistsView(animated: false)
+        }
         
     }
     

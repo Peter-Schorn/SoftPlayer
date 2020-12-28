@@ -1,6 +1,8 @@
 import Foundation
 import SwiftUI
 
+// MARK: Images
+
 /// The names of the image assets.
 enum ImageName: String {
     
@@ -30,3 +32,18 @@ extension NSImage {
     
 }
 
+// MARK: Colors
+
+extension Color {
+    
+    static let playbackPositionLeadingRectangle = Color.init(
+        "playbackPositionLeadingRectangle"
+    )
+    
+    static let sliderTrailingRectangle = Color.init(
+        "sliderTrailingRectangle"
+    )
+ 
+    static let lightGreen = Color("lightGreen")
+
+}

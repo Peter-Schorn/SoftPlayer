@@ -137,6 +137,13 @@ extension Track {
         return false
     }
 
+    static let missingArtist = Track(
+        name: "Echoes",
+        uri: "_missingArtist_",
+        isLocal: false,
+        isExplicit: false
+    )
+
 }
 
 extension Episode {
@@ -176,6 +183,15 @@ extension PlaylistItem {
                 return false
         }
 
+    }
+
+    var artistOrShowName: String? {
+        switch self {
+            case .track(let track):
+                return track.artists?.first?.name
+            case .episode(let episode):
+                return episode.show?.name
+        }
     }
 
 }
