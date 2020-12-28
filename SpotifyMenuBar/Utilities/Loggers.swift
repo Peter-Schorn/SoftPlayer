@@ -2,57 +2,69 @@ import Foundation
 import Logging
 import os
 
-public typealias Logger = Logging.Logger
-public typealias OSLogger = os.Logger
+typealias Logger = Logging.Logger
+typealias OSLogger = os.Logger
 
 enum Loggers {
     
     static let shuffle = Logger(
-        label: "Shuffle", level: .warning,
+        label: "Shuffle",
+        level: .traceOnReleaseOr(.warning),
         factory: SpotifyMenuBarLogHandler.bootstrap
     )
     static let repeatMode = Logger(
-        label: "RepeatMode", level: .warning,
+        label: "RepeatMode",
+        level: .traceOnReleaseOr(.warning),
         factory: SpotifyMenuBarLogHandler.bootstrap
     )
     static let availableDevices = Logger(
-        label: "AvailableDevices", level: .warning,
+        label: "AvailableDevices",
+        level: .traceOnReleaseOr(.warning),
         factory: SpotifyMenuBarLogHandler.bootstrap
     )
     static let playerManager = Logger(
-        label: "PlayerManager", level: .trace,
+        label: "PlayerManager",
+        level: .traceOnReleaseOr(.trace),
         factory: SpotifyMenuBarLogHandler.bootstrap
     )
     static let images = Logger(
-        label: "Images", level: .error,
+        label: "Images",
+        level: .traceOnReleaseOr(.error),
         factory: SpotifyMenuBarLogHandler.bootstrap
     )
     static let syncContext = Logger(
-        label: "SyncContext", level: .error,
+        label: "SyncContext",
+        level: .traceOnReleaseOr(.error),
         factory: SpotifyMenuBarLogHandler.bootstrap
     )
     static let keyEvent = Logger(
-        label: "KeyEvent", level: .trace,
+        label: "KeyEvent",
+        level: .traceOnReleaseOr(.trace),
         factory: SpotifyMenuBarLogHandler.bootstrap
     )
     static let playlistsScrollView = Logger(
-        label: "PlaylistsScrollView", level: .warning,
+        label: "PlaylistsScrollView",
+        level: .traceOnReleaseOr(.warning),
         factory: SpotifyMenuBarLogHandler.bootstrap
     )
     static let playlistCellView = Logger(
-        label: "PlaylistCellView", level: .warning,
+        label: "PlaylistCellView",
+        level: .traceOnReleaseOr(.warning),
         factory: SpotifyMenuBarLogHandler.bootstrap
     )
     static let touchBarView = Logger(
-        label: "TouchBarView", level: .warning,
+        label: "TouchBarView",
+        level: .traceOnReleaseOr(.warning),
         factory: SpotifyMenuBarLogHandler.bootstrap
     )
     static let soundVolumeAndPlayerPosition = Logger(
-        label: "SoundVolumeAndPlayerPosition", level: .trace,
+        label: "SoundVolumeAndPlayerPosition",
+        level: .traceOnReleaseOr(.trace),
         factory: SpotifyMenuBarLogHandler.bootstrap
     )
     static let playerState = Logger(
-        label: "PlayerState", level: .error,
+        label: "PlayerState",
+        level: .traceOnReleaseOr(.error),
         factory: SpotifyMenuBarLogHandler.bootstrap
     )
  
@@ -73,7 +85,19 @@ enum Loggers {
 
 }
 
-public struct SpotifyMenuBarLogHandler: LogHandler {
+extension Logger.Level {
+    
+    static func traceOnReleaseOr(_ level: Self) -> Self {
+        #if RELEASE
+        return .trace
+        #else
+        return level
+        #endif
+    }
+
+}
+
+struct SpotifyMenuBarLogHandler: LogHandler {
     
     private static var handlerIsInitialized = false
     
@@ -81,17 +105,17 @@ public struct SpotifyMenuBarLogHandler: LogHandler {
         label: "SpotifyAPILogHandler.initializeHandler"
     )
     
-    public static func bootstrap(label: String) -> Self {
+    static func bootstrap(label: String) -> Self {
         return Self.init(label: label, logLevel: .trace)
     }
     
     
     /// A label for the logger.
-    public let label: String
+    let label: String
     
-    public var logLevel: Logger.Level
+    var logLevel: Logger.Level
     
-    public var metadata = Logger.Metadata()
+    var metadata: Logger.Metadata
     
     private let osLogger: OSLogger
 
@@ -103,7 +127,7 @@ public struct SpotifyMenuBarLogHandler: LogHandler {
      - logLevel: The log level.
      - metadata: Metadata for this logger.
      */
-    public init(
+    init(
         label: String,
         logLevel: Logger.Level,
         metadata: Logger.Metadata = Logger.Metadata()
@@ -117,7 +141,7 @@ public struct SpotifyMenuBarLogHandler: LogHandler {
         )
     }
     
-    public subscript(metadataKey metadataKey: String) -> Logger.Metadata.Value? {
+    subscript(metadataKey metadataKey: String) -> Logger.Metadata.Value? {
         get {
             return metadata[metadataKey]
         }
@@ -126,7 +150,7 @@ public struct SpotifyMenuBarLogHandler: LogHandler {
         }
     }
     
-    public func log(
+    func log(
         level: Logger.Level,
         message: Logger.Message,
         metadata: Logger.Metadata?,
