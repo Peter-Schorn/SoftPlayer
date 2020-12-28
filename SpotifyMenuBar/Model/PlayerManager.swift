@@ -236,8 +236,9 @@ class PlayerManager: ObservableObject {
         .store(in: &cancellables)
         
         self.popoverDidClose.sink {
-            self.updateSoundVolumeAndPlayerPositionCancellable = nil
             Loggers.playerManager.trace("popoverDidDismiss")
+            self.updateSoundVolumeAndPlayerPositionCancellable = nil
+            self.updatePlaylistsSortedByLastModifiedDate()
         }
         .store(in: &cancellables)
         
