@@ -139,7 +139,7 @@ struct PlayerView: View {
                     .multilineTextAlignment(.center)
                     .lineLimit(2)
                     .onTapGesture(
-                        perform: playerManager.openCurrentPlaybackInBrowser
+                        perform: playerManager.openCurrentPlaybackInSpotify
                     )
 
                 Text(playerManager.albumArtistTitle)
@@ -152,7 +152,7 @@ struct PlayerView: View {
                     .lineLimit(1)
                     .foregroundColor(Color.primary.opacity(0.9))
                     .onTapGesture(
-                        perform: playerManager.openArtistOrShowInBrowser
+                        perform: playerManager.openArtistOrShowInSpotify
                     )
                 
             }
@@ -283,7 +283,7 @@ struct PlayerView: View {
                 
             VStack(spacing: 0) {
                 // MARK: Small Playing Title
-                VStack {
+                VStack(spacing: 3) {
                     Text(playerManager.currentTrack?.name ?? "")
                         .fontWeight(.semibold)
                         .font(.callout)
@@ -296,7 +296,7 @@ struct PlayerView: View {
                         .lineLimit(1)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .onTapGesture(
-                            perform: playerManager.openCurrentPlaybackInBrowser
+                            perform: playerManager.openCurrentPlaybackInSpotify
                         )
                     Text(playerManager.albumArtistTitle)
                         .font(.footnote)
@@ -309,9 +309,10 @@ struct PlayerView: View {
                         .lineLimit(1)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .onTapGesture(
-                            perform: playerManager.openArtistOrShowInBrowser
+                            perform: playerManager.openArtistOrShowInSpotify
                         )
                 }
+                Spacer()
                 // MARK: Small Player Controls
                 HStack(spacing: 15) {
                     ShuffleButton()
@@ -358,9 +359,10 @@ struct PlayerView: View {
                         )
                         .transition(.scale)
                 }
-                .padding(.vertical, 5)
+                .padding(.bottom, 3)
             }
-            .padding(5)
+            .padding(.horizontal, 5)
+            .padding(.vertical, 10)
             .frame(height: 70)
         }
     }

@@ -22,13 +22,13 @@ class PlayerManager: ObservableObject {
     
     var albumArtistTitle: String {
         let albumName = self.currentTrack?.album
-        if let artistName = self.currentTrack?.artist {
-            if let albumName = albumName {
+        if let artistName = self.currentTrack?.artist, !artistName.isEmpty {
+            if let albumName = albumName, !albumName.isEmpty {
                 return "\(artistName) - \(albumName)"
             }
             return artistName
         }
-        if let albumName = albumName {
+        if let albumName = albumName, !albumName.isEmpty {
             return albumName
         }
         return ""
@@ -818,23 +818,33 @@ class PlayerManager: ObservableObject {
     }
     
     /// Open the currently playing track/episode in the browser.
-    func openCurrentPlaybackInBrowser() {
+    func openCurrentPlaybackInSpotify() {
         
         guard let identifier = self.currentTrack?.identifier else {
             print("no id for current track/episode")
             return
         }
-        if let url = identifier.url {
-            NSWorkspace.shared.open(url)
+        guard let uriURL = URL(string: identifier.uri) else {
+            print("couldn't convert '\(identifier.uri)' to URL")
+            return
+        }
+        
+        self.openSpotifyDesktopApplication { _, _ in
+            NSWorkspace.shared.open(uriURL)
         }
 
     }
     
     /// Open the current artist/show in the browser.
-    func openArtistOrShowInBrowser() {
+    func openArtistOrShowInSpotify() {
         
         self.openArtistOrShowCancellable = self.syncedCurrentlyPlayingContext
-            .compactMap { $0?.showOrArtistIdentifier?.url }
+            .compactMap { context -> URL? in
+                if let uri = context?.showOrArtistIdentifier?.uri {
+                    return URL(string: uri)
+                }
+                return nil
+            }
             .receive(on: RunLoop.main)
             .sink(
                 receiveCompletion: { completion in
@@ -843,11 +853,29 @@ class PlayerManager: ObservableObject {
                     }
                 },
                 receiveValue: { url in
-                    NSWorkspace.shared.open(url)
+                    self.openSpotifyDesktopApplication { _, _ in
+                        NSWorkspace.shared.open(url)
+                    }
                 }
             )
             
     }
+    
+    func openSpotifyDesktopApplication(
+        _ completionHandler: ((NSRunningApplication?, Error?) -> Void)? = nil
+    ) {
+        
+        let spotifyPath = URL(fileURLWithPath: "/Applications/Spotify.app")
+        let configuration = NSWorkspace.OpenConfiguration()
+        configuration.activates = true
+        NSWorkspace.shared.openApplication(
+            at: spotifyPath,
+            configuration: configuration,
+            completionHandler: completionHandler
+        )
+
+    }
+
 
     // MARK: Notification
     

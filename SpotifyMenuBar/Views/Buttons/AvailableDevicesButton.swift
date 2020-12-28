@@ -64,6 +64,7 @@ struct AvailableDevicesButton: View {
                     case .finished:
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                             self.playerManager.retrieveAvailableDevices()
+                            self.playerManager.updateSoundVolumeAndPlayerPosition()
                         }
                     case .failure(let error):
                         let alertTitle = "Couldn't Transfer Playback " +

@@ -177,7 +177,6 @@ final class Spotify: ObservableObject {
 
         let url = self.api.authorizationManager.makeAuthorizationURL(
             redirectURI: loginCallbackURL,
-            showDialog: true,
             codeChallenge: codeChallenge,
             state: authorizationState,
             scopes: [
