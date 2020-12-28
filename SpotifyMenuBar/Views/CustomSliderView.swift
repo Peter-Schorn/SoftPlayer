@@ -21,6 +21,8 @@ struct CustomSliderView: View {
     let knobAnimation = Animation.linear(duration: 0.1)
     let knobTransition = AnyTransition.scale
     
+    let disabled: Bool
+
     init(
         value: Binding<CGFloat>,
         isDragging: Binding<Bool>,
@@ -29,7 +31,8 @@ struct CustomSliderView: View {
         knobColor: Color,
         knobScaleEffectMagnitude: CGFloat = 1,
         leadingRectangleColor: Color,
-        onEndedDragging: ((DragGesture.Value) -> Void)? = nil
+        onEndedDragging: ((DragGesture.Value) -> Void)? = nil,
+        disabled: Bool = false
     ) {
         self._value = value
         self._isDragging = isDragging
@@ -39,6 +42,7 @@ struct CustomSliderView: View {
         self.knobScaleEffectMagnitude = knobScaleEffectMagnitude
         self.leadingRectangleColor = leadingRectangleColor
         self.onEndedDragging = onEndedDragging
+        self.disabled = disabled
     }
     
     var body: some View {
@@ -48,6 +52,7 @@ struct CustomSliderView: View {
                     // MARK: Leading Rectangle
                     Capsule()
                         .fill(leadingRectangleColor)
+                        .opacity(disabled ? 0.5 : 1)
                         .frame(
                             width: leadingRectangleWidth(geometry),
                             height: sliderHeight
@@ -72,6 +77,7 @@ struct CustomSliderView: View {
             }
             .contentShape(Rectangle())
             .gesture(knobPositionDragGesture(geometry))
+            .disabled(disabled)
         }
         .frame(height: knobDiameter + 7)
         .padding(.horizontal, 5)
@@ -128,8 +134,9 @@ struct CustomSliderView: View {
                 let knobOffsetMin = knobDiameter / 2
                 let knobOffsetMax = geometry.size.width - knobDiameter / 2
                 let knobOffsetRange = knobOffsetMin...knobOffsetMax
-                let knobOffset = dragValue.location.x
-                    .clamped(to: knobOffsetRange)
+                let knobOffset = dragValue.location.x.clamped(
+                    to: knobOffsetRange
+                )
                 self.value = knobOffset.map(
                     from: knobOffsetRange,
                     to: self.range

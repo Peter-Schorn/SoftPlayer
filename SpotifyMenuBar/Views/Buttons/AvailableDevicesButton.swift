@@ -62,6 +62,7 @@ struct AvailableDevicesButton: View {
             .sink(receiveCompletion: { completion in
                 switch completion {
                     case .finished:
+                        self.playerManager.updateSoundVolumeAndPlayerPosition()
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                             self.playerManager.retrieveAvailableDevices()
                             self.playerManager.updateSoundVolumeAndPlayerPosition()
