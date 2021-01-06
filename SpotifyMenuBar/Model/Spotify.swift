@@ -15,22 +15,24 @@ import SpotifyWebAPI
 final class Spotify: ObservableObject {
     
     private static let clientId: String = {
-        if let clientId = ProcessInfo.processInfo
-                .environment["client_id"] {
-            return clientId
+        let __clientId__ = ""
+        if __clientId__.isEmpty {
+            fatalError(
+                "failed to inject value for client id in pre-build script"
+            )
         }
-        fatalError("Could not find 'client_id' in environment variables")
+        return __clientId__
     }()
-//    private static let clientId = ""
     
     private static let clientSecret: String = {
-        if let clientSecret = ProcessInfo.processInfo
-                .environment["client_secret"] {
-            return clientSecret
+        let __clientSecret__ = ""
+        if __clientSecret__.isEmpty {
+            fatalError(
+                "failed to inject value for client secret in pre-build script"
+            )
         }
-        fatalError("Could not find 'client_secret' in environment variables")
+        return __clientSecret__
     }()
-//    private static let clientSecret = ""
     
     /// The key in the keychain that is used to store the authorization
     /// information: "authorizationManager".
