@@ -7,7 +7,7 @@ struct QueueView: View {
 
     @Environment(\.colorScheme) var colorScheme
 
-    @State private var upNextItems: [PlaylistItem] = [
+    let upNextItems: [PlaylistItem] = [
         .track(.missingArtist),
         .episode(.samHarris215),
         .track(.because),
@@ -23,10 +23,45 @@ struct QueueView: View {
         .track(.time)
     ]
     
-    @State private var nextFromContextItems =
+    let nextFromContextItems =
             Playlist.crumb.items.items.compactMap(\.item)
 
+    @State private var allItems: [PlaylistItem]
+    @State private var nextFromContextOffset: Int
 
+    init() {
+        self._allItems = State(initialValue: upNextItems + nextFromContextItems)
+        self._nextFromContextOffset = State(initialValue: upNextItems.count)
+    }
+
+    var body: some View {
+        VStack(spacing: 0) {
+            Divider()
+                .opacity(0.1)
+            List {
+                Section(header: upNextHeader) {
+                    ForEach(
+                        allItems[..<nextFromContextOffset].identifiedArray()
+                    ) { item in
+                        QueueItemView(item: item.item)
+                    }
+                    .onMove(perform: onMove)
+                    .onDelete(perform: onDelete)
+                }
+                Section(header: nextFromContextHeader) {
+                    ForEach(
+                        allItems[nextFromContextOffset...].identifiedArray()
+                    ) { item in
+                        QueueItemView(item: item.item)
+                    }
+                    .onMove(perform: onMove)
+                    .onDelete(perform: onDelete)
+                }
+            }
+            .listStyle(PlainListStyle())
+        }
+    }
+    
     var upNextHeader: some View {
         Text("Up Next")
             .headerModifiers(colorScheme)
@@ -37,50 +72,15 @@ struct QueueView: View {
             .headerModifiers(colorScheme)
     }
 
-    var body: some View {
-        VStack(spacing: 0) {
-            Divider()
-                .opacity(0.1)
-            List {
-                Section(header: upNextHeader) {
-                    ForEach(upNextItems.identifiedArray()) { item in
-                        QueueItemView(item: item.item)
-                    }
-                    .onMove(perform: onMoveUpNextItems)
-                    .onDelete(perform: onDeleteUpNextItems)
-                }
-                Section(header: nextFromContextHeader) {
-                    ForEach(nextFromContextItems.identifiedArray()) { item in
-                        QueueItemView(item: item.item)
-                    }
-                    .onMove(perform: onMoveNextFromContextItems)
-                    .onDelete(perform: onDeleteNextFromContextItems)
-                }
-            }
-            .listStyle(PlainListStyle())
-        }
-    }
-
-    func onMoveUpNextItems(offsets: IndexSet, newOffset: Int) {
-        self.upNextItems.move(
+    func onMove(offsets: IndexSet, newOffset: Int) {
+        self.allItems.move(
             fromOffsets: offsets,
             toOffset: newOffset
         )
     }
-    
-    func onDeleteUpNextItems(offsets: IndexSet) {
-        self.upNextItems.remove(atOffsets: offsets)
-    }
 
-    func onMoveNextFromContextItems(offsets: IndexSet, newOffset: Int) {
-        self.nextFromContextItems.move(
-            fromOffsets: offsets,
-            toOffset: newOffset
-        )
-    }
-    
-    func onDeleteNextFromContextItems(offsets: IndexSet) {
-        self.nextFromContextItems.remove(atOffsets: offsets)
+    func onDelete(offsets: IndexSet) {
+        self.allItems.remove(atOffsets: offsets)
     }
 
 }

@@ -14,23 +14,29 @@ import SpotifyWebAPI
  */
 final class Spotify: ObservableObject {
     
-//    private static let clientId: String = {
-//        if let clientId = ProcessInfo.processInfo
-//                .environment["client_id"] {
-//            return clientId
-//        }
-//        fatalError("Could not find 'client_id' in environment variables")
-//    }()
-    private static let clientId = "***REMOVED***"
+    private static let clientId: String = {
+        if let clientId = ProcessInfo.processInfo
+                .environment["client_id"] {
+            return clientId
+        }
+        let __clientId__: String? = nil
+        if let clientId = __clientId__ {
+            return clientId
+        }
+        fatalError("Could not find 'client_id' in environment variables")
+    }()
     
-//    private static let clientSecret: String = {
-//        if let clientSecret = ProcessInfo.processInfo
-//                .environment["client_secret"] {
-//            return clientSecret
-//        }
-//        fatalError("Could not find 'client_secret' in environment variables")
-//    }()
-    private static let clientSecret = "c538a32d6b3642bebe96e2ddd7bf37e2"
+    private static let clientSecret: String = {
+        if let clientSecret = ProcessInfo.processInfo
+                .environment["client_secret"] {
+            return clientSecret
+        }
+        let __clientSecret__: String? = nil
+        if let clientSecret = __clientSecret__ {
+            return clientSecret
+        }
+        fatalError("Could not find 'client_secret' in environment variables")
+    }()
     
     /// The key in the keychain that is used to store the authorization
     /// information: "authorizationManager".

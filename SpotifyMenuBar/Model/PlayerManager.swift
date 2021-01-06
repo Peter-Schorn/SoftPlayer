@@ -687,7 +687,7 @@ class PlayerManager: ObservableObject {
                     rhs: (index: rhs.offset, date: rhsDate)
                 )
             }
-            .map(\.1)
+            .map(\.element)
             
             DispatchQueue.main.async {
                 self.playlistsSortedByLastModifiedDate = sortedPlaylists
@@ -739,7 +739,7 @@ class PlayerManager: ObservableObject {
                         return Empty().eraseToAnyPublisher()
                     }
                     return URLSession.shared.dataTaskPublisher(for: url)
-                        .map { data, response in data }
+                        .map(\.data)
                         .mapError { $0 as Error }
                         .eraseToAnyPublisher()
                 }
@@ -758,7 +758,6 @@ class PlayerManager: ObservableObject {
                                 imageData: imageData,
                                 identifier: try SpotifyIdentifier(uri: playlist)
                             )
-                            
                             
                         } catch {
                             Loggers.images.error(

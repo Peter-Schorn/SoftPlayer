@@ -6,7 +6,7 @@ import KeyboardShortcuts
 
 struct PlayerView: View {
 
-    static var debugIsShowingPlaylistsView = false
+    static var debugIsShowingPlaylistsView = true
     
     static let animation = Animation.easeOut(duration: 0.5)
     
@@ -357,7 +357,6 @@ struct PlayerView: View {
 
     var miniPlayerViewBackground: some View {
         VStack(spacing: 0) {
-            // MARK: Header
             VStack(spacing: 0) {
                 Button(action: {
                     self.playerManager.dismissPlaylistsView(animated: true)
@@ -368,7 +367,7 @@ struct PlayerView: View {
                 .padding(.top, 6)
                 .keyboardShortcut("p")
                 
-                // mini player view goes here
+                // MARK: mini player view goes here
                 Spacer()
                     .frame(height: 85)
                 
