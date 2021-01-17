@@ -7,82 +7,69 @@ typealias OSLogger = os.Logger
 
 enum Loggers {
     
-    static let playerManager = Logger(
+    static let playerManager = Logger.appInit(
         label: "PlayerManager",
-        level: .traceOnReleaseOr(.trace),
-        factory: SpotifyMenuBarLogHandler.bootstrap
+        level: .trace
     )
     
-    static let playerState = Logger(
+    static let playerState = Logger.appInit(
         label: "PlayerState",
-        level: .traceOnReleaseOr(.trace),
-        factory: SpotifyMenuBarLogHandler.bootstrap
+        level: .trace
     )
     
-    static let artwork = Logger(
+    static let artwork = Logger.appInit(
         label: "Artwork",
-        level: .traceOnReleaseOr(.trace),
-        factory: SpotifyMenuBarLogHandler.bootstrap(label:)
+        level: .trace
     )
 
-    static let shuffle = Logger(
+    static let shuffle = Logger.appInit(
         label: "Shuffle",
-        level: .traceOnReleaseOr(.warning),
-        factory: SpotifyMenuBarLogHandler.bootstrap
+        level: .warning
     )
     
-    static let repeatMode = Logger(
+    static let repeatMode = Logger.appInit(
         label: "RepeatMode",
-        level: .traceOnReleaseOr(.warning),
-        factory: SpotifyMenuBarLogHandler.bootstrap
+        level: .warning
     )
     
-    static let availableDevices = Logger(
+    static let availableDevices = Logger.appInit(
         label: "AvailableDevices",
-        level: .traceOnReleaseOr(.warning),
-        factory: SpotifyMenuBarLogHandler.bootstrap
+        level: .trace
     )
     
-    static let images = Logger(
+    static let images = Logger.appInit(
         label: "Images",
-        level: .traceOnReleaseOr(.error),
-        factory: SpotifyMenuBarLogHandler.bootstrap
+        level: .error
     )
     
-    static let syncContext = Logger(
+    static let syncContext = Logger.appInit(
         label: "SyncContext",
-        level: .traceOnReleaseOr(.error),
-        factory: SpotifyMenuBarLogHandler.bootstrap
+        level: .error
     )
     
-    static let keyEvent = Logger(
+    static let keyEvent = Logger.appInit(
         label: "KeyEvent",
-        level: .traceOnReleaseOr(.trace),
-        factory: SpotifyMenuBarLogHandler.bootstrap
+        level: .trace
     )
     
-    static let playlistsScrollView = Logger(
+    static let playlistsScrollView = Logger.appInit(
         label: "PlaylistsScrollView",
-        level: .traceOnReleaseOr(.warning),
-        factory: SpotifyMenuBarLogHandler.bootstrap
+        level: .warning
     )
     
-    static let playlistCellView = Logger(
+    static let playlistCellView = Logger.appInit(
         label: "PlaylistCellView",
-        level: .traceOnReleaseOr(.warning),
-        factory: SpotifyMenuBarLogHandler.bootstrap
+        level: .warning
     )
     
-    static let touchBarView = Logger(
+    static let touchBarView = Logger.appInit(
         label: "TouchBarView",
-        level: .traceOnReleaseOr(.warning),
-        factory: SpotifyMenuBarLogHandler.bootstrap
+        level: .warning
     )
     
-    static let soundVolumeAndPlayerPosition = Logger(
+    static let soundVolumeAndPlayerPosition = Logger.appInit(
         label: "SoundVolumeAndPlayerPosition",
-        level: .traceOnReleaseOr(.warning),
-        factory: SpotifyMenuBarLogHandler.bootstrap
+        level: .warning
     )
  
     static func convertToOSLogLevel(_ level: Logger.Level) -> OSLogType {
@@ -98,6 +85,24 @@ enum Loggers {
             case .critical:
                 return .fault
         }
+    }
+
+}
+
+extension Logger {
+    
+    /// The standard initializer for making loggers for this app.
+    static func appInit(
+        label: String,
+        level: Logger.Level
+    ) -> Self {
+        
+        return Logger(
+            label: label,
+            level: .traceOnReleaseOr(level),
+            factory: SpotifyMenuBarLogHandler.bootstrap(label:)
+        )
+
     }
 
 }

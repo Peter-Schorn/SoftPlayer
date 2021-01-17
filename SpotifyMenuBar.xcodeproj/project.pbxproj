@@ -33,6 +33,7 @@
 		4789A5B725885F0800A5E1E3 /* KeyboardShortcutsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4789A5B625885F0800A5E1E3 /* KeyboardShortcutsView.swift */; };
 		4789A5BA25885F1900A5E1E3 /* KeyboardShortcutsNames.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4789A5B925885F1900A5E1E3 /* KeyboardShortcutsNames.swift */; };
 		4795210D25744AA6000A5B82 /* MiscellaneousUtilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4795210C25744AA6000A5B82 /* MiscellaneousUtilities.swift */; };
+		47A4FA7B25B2FE6500F8102D /* AppKitMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47A4FA7A25B2FE6500F8102D /* AppKitMenu.swift */; };
 		47CDDC8A2582D97F00E87918 /* RegularExpressions in Frameworks */ = {isa = PBXBuildFile; productRef = 47CDDC892582D97F00E87918 /* RegularExpressions */; };
 		47D8CF7F256663080034FA1E /* NotificationNames.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47D8CF7E256663080034FA1E /* NotificationNames.swift */; };
 		47D8CF83256664C60034FA1E /* PlayerManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47D8CF82256664C60034FA1E /* PlayerManager.swift */; };
@@ -84,6 +85,7 @@
 		4789A5B625885F0800A5E1E3 /* KeyboardShortcutsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardShortcutsView.swift; sourceTree = "<group>"; };
 		4789A5B925885F1900A5E1E3 /* KeyboardShortcutsNames.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardShortcutsNames.swift; sourceTree = "<group>"; };
 		4795210C25744AA6000A5B82 /* MiscellaneousUtilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MiscellaneousUtilities.swift; sourceTree = "<group>"; };
+		47A4FA7A25B2FE6500F8102D /* AppKitMenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppKitMenu.swift; sourceTree = "<group>"; };
 		47D8CF7E256663080034FA1E /* NotificationNames.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationNames.swift; sourceTree = "<group>"; };
 		47D8CF82256664C60034FA1E /* PlayerManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerManager.swift; sourceTree = "<group>"; };
 		47DC186825824B5800EF11BA /* Loggers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Loggers.swift; sourceTree = "<group>"; };
@@ -244,6 +246,7 @@
 				47038543257E801100D0E79A /* BlurView.swift */,
 				470315222583EED900B2BDF2 /* FocusView.swift */,
 				47891C942583128900063460 /* KeyEventHandler.swift */,
+				47A4FA7A25B2FE6500F8102D /* AppKitMenu.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -344,6 +347,7 @@
 				4789987825747F0F00866EE1 /* PlaybackPositionView.swift in Sources */,
 				47D8CF7F256663080034FA1E /* NotificationNames.swift in Sources */,
 				47FD3E03256FB031000E2346 /* PlayerView.swift in Sources */,
+				47A4FA7B25B2FE6500F8102D /* AppKitMenu.swift in Sources */,
 				47FD3DF7256FA77F000E2346 /* Spotify.swift in Sources */,
 				47343A642582C86600EF6750 /* PlaylistsScrollView.swift in Sources */,
 				47FD3DFB256FA7CF000E2346 /* ImageNames.swift in Sources */,
