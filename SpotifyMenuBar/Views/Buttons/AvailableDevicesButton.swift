@@ -7,7 +7,7 @@ struct AvailableDevicesButton: View {
     
     @EnvironmentObject var spotify: Spotify
     @EnvironmentObject var playerManager: PlayerManager
-
+ 
     @State private var transferPlaybackCancellable: AnyCancellable? = nil
     
     var body: some View {
@@ -37,6 +37,26 @@ struct AvailableDevicesButton: View {
         .help("Transfer playback to a different device")
         .scaleEffect(1.2)
         .frame(width: 33)
+        .onHover(enterDelay: 0.2, exitDelay: 2) { isHovering in
+            
+            guard isHovering else { return }
+            
+            if self.playerManager.isRetrievingAvailableDevices {
+                Loggers.availableDevices.notice(
+                    """
+                    not retrieving available devices from hover because a \
+                    request is already in progress
+                    """
+                )
+            }
+            else {
+                Loggers.availableDevices.trace(
+                    "retrieving available devices"
+                )
+                self.playerManager.retrieveAvailableDevices()
+            }
+
+        }
         
     }
     

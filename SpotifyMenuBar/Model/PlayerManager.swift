@@ -85,6 +85,8 @@ class PlayerManager: ObservableObject {
     /// Devices with `nil` for `id` and/or are restricted are filtered out.
     @Published var availableDevices: [Device] = []
     
+    @Published var isRetrievingAvailableDevices = false
+
     /// Whether or not there is an in-progress request to transfer playback to
     /// a different device.
     @Published var isTransferringPlayback = false
@@ -409,12 +411,18 @@ class PlayerManager: ObservableObject {
     }
     
     func retrieveAvailableDevices() {
+        
+        self.isRetrievingAvailableDevices = true
         self.retrieveAvailableDevicesCancellable = self.spotify.api
             .availableDevices()
             .receive(on: RunLoop.main)
             .handleAuthenticationError(spotify: self.spotify)
+            .handleEvents(receiveCancel: {
+                self.isRetrievingAvailableDevices = false
+            })
             .sink(
                 receiveCompletion: { completion in
+                    self.isRetrievingAvailableDevices = false
                     if case .failure(let error) = completion {
                         Loggers.playerManager.error(
                             "couldn't retreive available devices: \(error)"

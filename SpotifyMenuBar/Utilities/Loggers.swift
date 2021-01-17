@@ -15,13 +15,13 @@ enum Loggers {
     
     static let playerState = Logger(
         label: "PlayerState",
-        level: .traceOnReleaseOr(.trace),
+        level: .traceOnReleaseOr(.warning),
         factory: SpotifyMenuBarLogHandler.bootstrap
     )
     
     static let artwork = Logger(
         label: "Artwork",
-        level: .traceOnReleaseOr(.trace),
+        level: .traceOnReleaseOr(.warning),
         factory: SpotifyMenuBarLogHandler.bootstrap(label:)
     )
 
@@ -39,7 +39,7 @@ enum Loggers {
     
     static let availableDevices = Logger(
         label: "AvailableDevices",
-        level: .traceOnReleaseOr(.warning),
+        level: .traceOnReleaseOr(.trace),
         factory: SpotifyMenuBarLogHandler.bootstrap
     )
     
