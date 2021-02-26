@@ -9,82 +9,82 @@ enum Loggers {
     
     static let playerManager = Logger(
         label: "PlayerManager",
-        level: .traceOnReleaseOr(.trace),
+        level: .trace,
         factory: SpotifyMenuBarLogHandler.bootstrap
     )
     
     static let playerState = Logger(
         label: "PlayerState",
-        level: .traceOnReleaseOr(.trace),
+        level: .trace,
         factory: SpotifyMenuBarLogHandler.bootstrap
     )
     
     static let artwork = Logger(
         label: "Artwork",
-        level: .traceOnReleaseOr(.trace),
-        factory: SpotifyMenuBarLogHandler.bootstrap(label:)
+        level: .trace,
+        factory: SpotifyMenuBarLogHandler.bootstrap
     )
 
     static let shuffle = Logger(
         label: "Shuffle",
-        level: .traceOnReleaseOr(.warning),
+        level: .warning,
         factory: SpotifyMenuBarLogHandler.bootstrap
     )
     
     static let repeatMode = Logger(
         label: "RepeatMode",
-        level: .traceOnReleaseOr(.warning),
+        level: .warning,
         factory: SpotifyMenuBarLogHandler.bootstrap
     )
     
     static let availableDevices = Logger(
         label: "AvailableDevices",
-        level: .traceOnReleaseOr(.warning),
+        level: .warning,
         factory: SpotifyMenuBarLogHandler.bootstrap
     )
     
     static let images = Logger(
         label: "Images",
-        level: .traceOnReleaseOr(.error),
+        level: .error,
         factory: SpotifyMenuBarLogHandler.bootstrap
     )
     
     static let syncContext = Logger(
         label: "SyncContext",
-        level: .traceOnReleaseOr(.error),
+        level: .error,
         factory: SpotifyMenuBarLogHandler.bootstrap
     )
     
     static let keyEvent = Logger(
         label: "KeyEvent",
-        level: .traceOnReleaseOr(.trace),
+        level: .trace,
         factory: SpotifyMenuBarLogHandler.bootstrap
     )
     
     static let playlistsScrollView = Logger(
         label: "PlaylistsScrollView",
-        level: .traceOnReleaseOr(.warning),
+        level: .warning,
         factory: SpotifyMenuBarLogHandler.bootstrap
     )
     
     static let playlistCellView = Logger(
         label: "PlaylistCellView",
-        level: .traceOnReleaseOr(.warning),
+        level: .warning,
         factory: SpotifyMenuBarLogHandler.bootstrap
     )
     
     static let touchBarView = Logger(
         label: "TouchBarView",
-        level: .traceOnReleaseOr(.warning),
+        level: .warning,
         factory: SpotifyMenuBarLogHandler.bootstrap
     )
     
     static let soundVolumeAndPlayerPosition = Logger(
         label: "SoundVolumeAndPlayerPosition",
-        level: .traceOnReleaseOr(.warning),
+        level: .warning,
         factory: SpotifyMenuBarLogHandler.bootstrap
     )
- 
+    
     static func convertToOSLogLevel(_ level: Logger.Level) -> OSLogType {
         switch level {
             case .trace, .notice:
@@ -98,18 +98,6 @@ enum Loggers {
             case .critical:
                 return .fault
         }
-    }
-
-}
-
-extension Logger.Level {
-    
-    static func traceOnReleaseOr(_ level: Self) -> Self {
-        #if RELEASE
-        return .trace
-        #else
-        return level
-        #endif
     }
 
 }
@@ -130,7 +118,20 @@ struct SpotifyMenuBarLogHandler: LogHandler {
     /// A label for the logger.
     let label: String
     
-    var logLevel: Logger.Level
+    var _logLevel: Logger.Level
+
+    var logLevel: Logger.Level {
+        get {
+            #if RELEASE
+            return .trace
+            #else
+            return self._logLevel
+            #endif
+        }
+        set {
+            self._logLevel = newValue
+        }
+    }
     
     var metadata: Logger.Metadata
     
@@ -150,7 +151,7 @@ struct SpotifyMenuBarLogHandler: LogHandler {
         metadata: Logger.Metadata = Logger.Metadata()
     ) {
         self.label = label
-        self.logLevel = logLevel
+        self._logLevel = logLevel
         self.metadata = metadata
         self.osLogger = OSLogger(
             subsystem: Bundle.main.bundleIdentifier!,
@@ -177,8 +178,8 @@ struct SpotifyMenuBarLogHandler: LogHandler {
         line: UInt
     ) {
         let logMessage = """
-                [\(label): \(level): \(function) line \(line)] \(message)
-                """
+            [\(label): \(level): \(function) line \(line)] \(message)
+            """
         print(logMessage)
         let osLogLevel = Loggers.convertToOSLogLevel(level)
         self.osLogger.log(level: osLogLevel, "\(logMessage, privacy: .public)")
