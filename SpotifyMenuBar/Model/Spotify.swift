@@ -98,7 +98,7 @@ final class Spotify: ObservableObject {
         self.codeVerifier = String.randomURLSafe(length: 128)
         self.codeChallenge = codeVerifier.makeCodeChallenge()
         self.authorizationState = String.randomURLSafe(length: 128)
-
+        
         let urlTypes = Bundle.main.object(
             forInfoDictionaryKey: "CFBundleURLTypes"
         ) as! [[String: Any]]

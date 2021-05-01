@@ -134,12 +134,12 @@ class PlayerManager: ObservableObject {
 
     // MARK: Playlists
 
-    @Published var playlists: [Playlist<PlaylistsItemsReference>] = []
+    @Published var playlists: [Playlist<PlaylistItemsReference>] = []
     
     /// Sorted based on the last time they were played or an item was added to
     /// them, whichever was later.
     @Published var playlistsSortedByLastModifiedDate:
-            [Playlist<PlaylistsItemsReference>] = []
+        [Playlist<PlaylistItemsReference>] = []
     
     private let playlistsLastModifiedDatesKey = "playlistsLastModifiedDates"
     
@@ -616,7 +616,7 @@ class PlayerManager: ObservableObject {
     // MARK: Playlists
     
     func playPlaylist(
-        _ playlist: Playlist<PlaylistsItemsReference>
+        _ playlist: Playlist<PlaylistItemsReference>
     ) -> AnyPublisher<Void, Error> {
         
         let playbackRequest = PlaybackRequest(
@@ -650,7 +650,7 @@ class PlayerManager: ObservableObject {
             .map { $0.flatMap(\.items) }
             .receive(on: RunLoop.main)
             .handleAuthenticationError(spotify: self.spotify)
-            .catch { error -> Empty<[Playlist<PlaylistsItemsReference>], Never> in
+            .catch { error -> Empty<[Playlist<PlaylistItemsReference>], Never> in
                 Loggers.playerManager.error(
                     "couldn't retrieve playlists: \(error)"
                 )

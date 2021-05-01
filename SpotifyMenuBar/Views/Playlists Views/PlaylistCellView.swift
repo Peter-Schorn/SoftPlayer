@@ -9,7 +9,7 @@ struct PlaylistCellView: View {
     @EnvironmentObject var playerManager: PlayerManager
     @EnvironmentObject var spotify: Spotify
 
-    let playlist: Playlist<PlaylistsItemsReference>
+    let playlist: Playlist<PlaylistItemsReference>
 
     let isSelected: Bool
     
@@ -20,7 +20,7 @@ struct PlaylistCellView: View {
         "episode to this playlist"
 
     init(
-        playlist: Playlist<PlaylistsItemsReference>,
+        playlist: Playlist<PlaylistItemsReference>,
         isSelected: Bool
     ) {
         self.playlist = playlist

@@ -8,9 +8,9 @@ struct TouchBarPlaylistButton: View {
     @EnvironmentObject var playerManager: PlayerManager
     @EnvironmentObject var spotify: Spotify
     
-    let playlist: Playlist<PlaylistsItemsReference>
+    let playlist: Playlist<PlaylistItemsReference>
 
-    init(playlist: Playlist<PlaylistsItemsReference>) {
+    init(playlist: Playlist<PlaylistItemsReference>) {
         self.playlist = playlist
     }
     
@@ -52,7 +52,7 @@ struct TouchBarPlaylistButton: View {
 
     }
     
-    func playPlaylist(_ playlist: Playlist<PlaylistsItemsReference>) {
+    func playPlaylist(_ playlist: Playlist<PlaylistItemsReference>) {
         
         self.isMakingRequestToPlayPlaylist = true
         
