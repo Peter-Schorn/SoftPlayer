@@ -18,7 +18,7 @@ struct ShowPlaylistsButton: View {
                 .getShortcut(for: .showPlaylists) else {
             return nil
         }
-        return KeyboardShortcut(shortcut)
+        return KeyboardShortcut.init(shortcut)
     }
 
     var body: some View {
@@ -32,7 +32,7 @@ struct ShowPlaylistsButton: View {
         }, label: {
             Image(systemName: "music.note.list")
         })
-        .map(keyboardShortcut) { view, shortcut in
+        .ifLet(keyboardShortcut) { view, shortcut in
             view.keyboardShortcut(shortcut)
         }
         .help(tooltip)

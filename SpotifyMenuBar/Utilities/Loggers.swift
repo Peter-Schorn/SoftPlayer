@@ -85,6 +85,10 @@ enum Loggers {
         factory: SpotifyMenuBarLogHandler.bootstrap
     )
     
+}
+
+struct SpotifyMenuBarLogHandler: LogHandler {
+
     static func convertToOSLogLevel(_ level: Logger.Level) -> OSLogType {
         switch level {
             case .trace, .notice:
@@ -100,10 +104,6 @@ enum Loggers {
         }
     }
 
-}
-
-struct SpotifyMenuBarLogHandler: LogHandler {
-    
     private static var handlerIsInitialized = false
     
     private static let initializeHandlerDispatchQueue = DispatchQueue(
@@ -122,10 +122,10 @@ struct SpotifyMenuBarLogHandler: LogHandler {
 
     var logLevel: Logger.Level {
         get {
-            #if RELEASE
-            return .trace
-            #else
+            #if DEBUG
             return self._logLevel
+            #else
+            return .trace
             #endif
         }
         set {
@@ -181,7 +181,7 @@ struct SpotifyMenuBarLogHandler: LogHandler {
             [\(label): \(level): \(function) line \(line)] \(message)
             """
         print(logMessage)
-        let osLogLevel = Loggers.convertToOSLogLevel(level)
+        let osLogLevel = Self.convertToOSLogLevel(level)
         self.osLogger.log(level: osLogLevel, "\(logMessage, privacy: .public)")
     }
     
