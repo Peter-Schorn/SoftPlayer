@@ -42,8 +42,8 @@ struct PlayerStateNotification {
     init?(userInfo: [AnyHashable : Any]?) {
         guard let userInfo = userInfo else { return nil }
 
-        self.state = ((userInfo["Player State"] as? String)
-                        .map(State.init(rawValue:)) as? State)
+        self.state = (userInfo["Player State"] as? String)
+                        .flatMap(State.init(rawValue:))
         self.playbackPosition = userInfo["Playback Position"] as? Double
         self.durationMS = userInfo["Duration"] as? Int
 
@@ -103,9 +103,9 @@ struct PlayerStateNotification {
         case rewinding
 
         init?(rawValue: String) {
-            let lowerCasedRawValue = rawValue.lowercased()
+            let lowercasedRawValue = rawValue.lowercased()
             for state in Self.allCases {
-                if state.rawValue == lowerCasedRawValue {
+                if state.rawValue == lowercasedRawValue {
                     self = state
                     return
                 }

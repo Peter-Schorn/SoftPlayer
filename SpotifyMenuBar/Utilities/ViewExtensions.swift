@@ -31,7 +31,7 @@ extension View {
         }
     }
     
-    @ViewBuilder func map<T, Content: View>(
+    @ViewBuilder func ifLet<T, Content: View>(
         _ t: T?, _ content: (Self, T) -> Content
     ) -> some View {
         if let t = t {

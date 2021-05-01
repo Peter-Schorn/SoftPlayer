@@ -16,8 +16,7 @@ extension Publisher {
         
         return self.tryCatch { error -> Empty<Output, Error> in
             if let authError = error as? SpotifyAuthenticationError,
-                   authError.error == "invalid_grant"
-                   {
+                    authError.error == "invalid_grant" {
                 spotify.isAuthorized = false
                 return Empty()
             }
@@ -101,7 +100,8 @@ extension CGFloat {
     ) -> CGFloat {
         let oldMagnitude = old.upperBound - old.lowerBound
         let newPercent = (self - old.lowerBound) / oldMagnitude
-        return newPercent * (new.upperBound - new.lowerBound) + new.lowerBound
+        let newMagnitude = new.upperBound - new.lowerBound
+        return newPercent * newMagnitude + new.lowerBound
     }
 }
 

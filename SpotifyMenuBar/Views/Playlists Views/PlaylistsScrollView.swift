@@ -9,7 +9,7 @@ import KeyboardShortcuts
 struct PlaylistsScrollView: View {
     
     private typealias RatedPlaylist = (
-        playlist: Playlist<PlaylistsItemsReference>,
+        playlist: Playlist<PlaylistItemsReference>,
         rating: Double
     )
     
@@ -37,7 +37,7 @@ struct PlaylistsScrollView: View {
     }
 
     var filteredPlaylists:
-        [(offset: Int, element: Playlist<PlaylistsItemsReference>)] {
+        [(offset: Int, element: Playlist<PlaylistItemsReference>)] {
         
         let currentUserId = self.playerManager.currentUser?.id
         
@@ -251,7 +251,7 @@ struct PlaylistsScrollView: View {
         }
     }
 
-    func playPlaylist(_ playlist: Playlist<PlaylistsItemsReference>) {
+    func playPlaylist(_ playlist: Playlist<PlaylistItemsReference>) {
         self.playPlaylistCancellable = self.playerManager
             .playPlaylist(playlist)
             .sink(receiveCompletion: { completion in

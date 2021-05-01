@@ -14,7 +14,7 @@ struct PlayPlaylistsTouchBarView: View {
     
     @State private var cancellables: Set<AnyCancellable> = []
     
-    var playlists: ArraySlice<Playlist<PlaylistsItemsReference>> {
+    var playlists: ArraySlice<Playlist<PlaylistItemsReference>> {
 
         let playlistNames = playerManager.playlistsSortedByLastModifiedDate
             .map(\.name)

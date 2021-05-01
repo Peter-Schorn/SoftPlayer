@@ -83,11 +83,11 @@ extension CurrentlyPlayingContext {
     
     var showOrArtistIdentifier: SpotifyIdentifier? {
         do {
-            if let artist = self.artist, let uri = artist.uri {
-                return try SpotifyIdentifier(uri: uri)
+            if let artistURI = self.artist?.uri {
+                return try SpotifyIdentifier(uri: artistURI)
             }
-            else if let show = self.show {
-                return try SpotifyIdentifier(uri: show.uri)
+            else if let showURI = self.show?.uri {
+                return try SpotifyIdentifier(uri: showURI)
             }
             else {
                 return nil
@@ -110,7 +110,7 @@ extension CurrentlyPlayingContext {
 extension Track {
     
     /// Returns `true` if the name and artists are the same and if
-    /// the duration is similar within a %10 relative tolerance and a
+    /// the duration is similar within a %10 relative tolerance or a
     /// 10 second absolute tolerance.
     func isProbablyTheSameAs(_ other: Self) -> Bool {
         
@@ -119,18 +119,19 @@ extension Track {
         }
         
         if self.name != other.name { return false }
-        let artistNames = Set(self.artists.map { $0.map(\.name) } ?? [])
-        let otherArtistNames = Set(self.artists.map { $0.map(\.name) } ?? [])
+        
+        let artistNames = Set(self.artists?.map(\.name) ?? [])
+        let otherArtistNames = Set(self.artists?.map(\.name) ?? [])
         if artistNames != otherArtistNames {
             return false
         }
 
         if let duration = self.durationMS, let otherDuration = other.durationMS {
-            return Double(duration).isApproximatelyEqual(
-                to: Double(otherDuration),
-                // the duration is in milliseconds
-                absoluteTolerance: 10_000,
-                relativeTolerance: 0.1
+            return duration.isApproximatelyEqual(
+                to: otherDuration,
+                absoluteTolerance: 10_000,  // 10 seconds
+                relativeTolerance: 0.1,
+                norm: Double.init
             )
         }
         
@@ -142,22 +143,23 @@ extension Track {
 extension Episode {
     
     /// Returns `true` if the name and artists are the same and if
-    /// the duration is similar within a %10 relative tolerance and a
+    /// the duration is similar within a %10 relative tolerance or a
     /// 10 second absolute tolerance.
     func isProbablyTheSameAs(_ other: Self) -> Bool {
         
         if self.uri == other.uri { return true }
      
         if self.name != other.name { return false }
+        
         if let show = self.show, let otherShow = other.show {
             if show.name != otherShow.name { return false }
         }
         
-        return Double(self.durationMS).isApproximatelyEqual(
-            to: Double(other.durationMS),
-            // the duration is in milliseconds
-            absoluteTolerance: 10_000,
-            relativeTolerance: 0.1
+        return self.durationMS.isApproximatelyEqual(
+            to: other.durationMS,
+            absoluteTolerance: 10_000,  // 10 seconds
+            relativeTolerance: 0.1,
+            norm: Double.init
         )
         
     }
