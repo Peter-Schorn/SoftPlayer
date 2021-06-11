@@ -732,13 +732,7 @@ class PlayerManager: ObservableObject {
                         )
                         return Empty().eraseToAnyPublisher()
                     }
-                    guard let url = URL(string: image.url) else {
-                        Loggers.images.error(
-                            "couldn't conver to URL: '\(image.url)'"
-                        )
-                        return Empty().eraseToAnyPublisher()
-                    }
-                    return URLSession.shared.dataTaskPublisher(for: url)
+                    return URLSession.shared.dataTaskPublisher(for: image.url)
                         .map { data, response in data }
                         .mapError { $0 as Error }
                         .eraseToAnyPublisher()

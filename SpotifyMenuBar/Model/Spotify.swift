@@ -83,7 +83,7 @@ final class Spotify: ObservableObject {
     
     let api = SpotifyAPI(
         authorizationManager: AuthorizationCodeFlowPKCEManager(
-            clientId: Spotify.clientId, clientSecret: Spotify.clientSecret
+            clientId: Spotify.clientId
         )
     )
     
@@ -96,7 +96,9 @@ final class Spotify: ObservableObject {
 //        self.api.setupDebugging()
         
         self.codeVerifier = String.randomURLSafe(length: 128)
-        self.codeChallenge = codeVerifier.makeCodeChallenge()
+        self.codeChallenge = String.makeCodeChallenge(
+            codeVerifier: self.codeVerifier
+        )
         self.authorizationState = String.randomURLSafe(length: 128)
         
         let urlTypes = Bundle.main.object(
@@ -104,11 +106,16 @@ final class Spotify: ObservableObject {
         ) as! [[String: Any]]
         let urlScheme = (urlTypes[0]["CFBundleURLSchemes"] as! [String])[0]
         
-        self.loginCallbackURL = URL(
-            scheme: urlScheme,
-            host: "login-callback"
-        )!
-        
+        do {
+            var components = URLComponents()
+            components.scheme = urlScheme
+            components.host = "login-callback"
+            guard let url = components.url else {
+                fatalError("could not convert to URL: \(components)")
+            }
+            self.loginCallbackURL = url
+        }
+
         // MARK: Important: Subscribe to `authorizationManagerDidChange` BEFORE
         // MARK: retrieving `authorizationManager` from persistent storage
         self.api.authorizationManagerDidChange
@@ -199,7 +206,9 @@ final class Spotify: ObservableObject {
     /// and authorization state.
     func generateNewAuthorizationParameters() {
         self.codeVerifier = String.randomURLSafe(length: 128)
-        self.codeChallenge = self.codeVerifier.makeCodeChallenge()
+        self.codeChallenge = String.makeCodeChallenge(
+            codeVerifier: self.codeVerifier
+        )
         self.authorizationState = String.randomURLSafe(length: 128)
     }
     

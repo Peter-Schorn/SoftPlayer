@@ -599,7 +599,7 @@
 			repositoryURL = "https://github.com/Peter-Schorn/SpotifyAPI";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 1.2.0;
+				minimumVersion = 2.0.0;
 			};
 		};
 		47F35FAC2588844C007C754A /* XCRemoteSwiftPackageReference "KeyboardShortcuts" */ = {
