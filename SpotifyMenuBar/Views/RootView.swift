@@ -20,6 +20,10 @@ struct RootView: View {
                 LoginView()
             }
         }
+        .frame(
+            width: CGFloat(AppDelegate.popoverWidth),
+            height: CGFloat(AppDelegate.popoverHeight)
+        )
         .onReceive(
             spotify.redirectURLSubject,
             perform: handleRedirectURL(_:)
@@ -58,7 +62,7 @@ struct RootView: View {
         switch completion {
             case .finished:
                 alertTitle =
-                        "Sucessfully connected to your Spotify account"
+                        "Successfully connected to your Spotify account"
                 alertMessage = ""
                 alert.alertStyle = .informational
             case .failure(let error):

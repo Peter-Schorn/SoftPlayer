@@ -61,7 +61,7 @@ struct NotificationView: View {
                 Spacer()
             }
         }
-        .onReceive(playerManager.notificationSubjet) { title, message in
+        .onReceive(playerManager.notificationSubject) { title, message in
     
             let id = UUID()
             self.messageId = id
