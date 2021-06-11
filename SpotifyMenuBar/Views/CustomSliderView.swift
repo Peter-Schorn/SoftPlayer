@@ -2,6 +2,8 @@ import SwiftUI
 
 struct CustomSliderView: View {
     
+    @Environment(\.isEnabled) var isEnabled
+
     @Binding var value: CGFloat
     @Binding var isDragging: Bool
     
@@ -21,8 +23,6 @@ struct CustomSliderView: View {
     let knobAnimation = Animation.linear(duration: 0.1)
     let knobTransition = AnyTransition.scale
     
-    let disabled: Bool
-
     init(
         value: Binding<CGFloat>,
         isDragging: Binding<Bool>,
@@ -31,8 +31,7 @@ struct CustomSliderView: View {
         knobColor: Color,
         knobScaleEffectMagnitude: CGFloat = 1,
         leadingRectangleColor: Color,
-        onEndedDragging: ((DragGesture.Value) -> Void)? = nil,
-        disabled: Bool = false
+        onEndedDragging: ((DragGesture.Value) -> Void)? = nil
     ) {
         self._value = value
         self._isDragging = isDragging
@@ -42,7 +41,6 @@ struct CustomSliderView: View {
         self.knobScaleEffectMagnitude = knobScaleEffectMagnitude
         self.leadingRectangleColor = leadingRectangleColor
         self.onEndedDragging = onEndedDragging
-        self.disabled = disabled
     }
     
     var body: some View {
@@ -52,7 +50,7 @@ struct CustomSliderView: View {
                     // MARK: Leading Rectangle
                     Capsule()
                         .fill(leadingRectangleColor)
-                        .opacity(disabled ? 0.5 : 1)
+                        .opacity(isEnabled ? 1 : 0.25)
                         .frame(
                             width: leadingRectangleWidth(geometry),
                             height: sliderHeight
@@ -60,12 +58,13 @@ struct CustomSliderView: View {
                     // MARK: Trailing Rectangle
                     Capsule()
                         .fill(Color.primary.opacity(0.25))
+                        .opacity(isEnabled ? 1 : 0.25)
                         .frame(height: sliderHeight)
                 }
                 HStack(spacing: 0) {
                     // MARK: Knob
                     Circle()
-                        .fill(knobColor)
+                        .fill(isEnabled ? knobColor : .gray)
                         .frame(width: knobDiameter)
                         .scaleEffect(isDragging ? knobScaleEffectMagnitude : 1)
                         .shadow(radius: 5)
@@ -77,7 +76,6 @@ struct CustomSliderView: View {
             }
             .contentShape(Rectangle())
             .gesture(knobPositionDragGesture(geometry))
-            .disabled(disabled)
         }
         .frame(height: knobDiameter + 7)
         .padding(.horizontal, 5)
