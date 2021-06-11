@@ -254,7 +254,7 @@ final class Spotify: ObservableObject {
     /**
      Removes `api.authorizationManager` from the keychain.
      
-     This method is called everytime `api.authorizationManager.deauthorize` is
+     This method is called every time `api.authorizationManager.deauthorize` is
      called.
      */
     func removeAuthorizationManagerFromKeychain() {

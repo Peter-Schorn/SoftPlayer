@@ -38,6 +38,25 @@ struct LoginView: View {
     
     var body: some View {
         VStack {
+
+            loginButton
+            
+            if spotify.isRetrievingTokens {
+                HStack {
+                    ProgressView()
+                        .scaleEffect(0.5)
+                    Text("Authenticating")
+                }
+                .padding(.bottom, 20)
+            }
+        }
+        .background(FocusView(isFirstResponder: .constant(true)))
+        
+    }
+    
+    var loginButton: some View {
+        
+        Button(action: self.spotify.authorize, label: {
             HStack {
                 Image(spotifyLogo)
                     .interpolation(.high)
@@ -51,26 +70,14 @@ struct LoginView: View {
             .background(backgroundGradient)
             .clipShape(Capsule())
             .shadow(radius: 5)
-            // MARK: Authorize The Application
-            .onTapGesture(perform: self.spotify.authorize)
-            .disabled(spotify.isRetrievingTokens)
-            .padding(.bottom, 5)
-            
-            if spotify.isRetrievingTokens {
-                HStack {
-                    ProgressView()
-                        .scaleEffect(0.5)
-                    Text("Authenticating")
-                }
-                .padding(.bottom, 20)
-            }
-        }
-        .frame(minWidth: 175)
-        .padding()
-        .background(FocusView(isFirstResponder: .constant(true)))
-        
+        })
+        .buttonStyle(PlainButtonStyle())
+        .disabled(spotify.isRetrievingTokens)
+        .padding(.bottom, 5)
+
+
     }
-    
+
 }
 
 struct LoginView_Previews: PreviewProvider {
@@ -84,10 +91,11 @@ struct LoginView_Previews: PreviewProvider {
                 .environmentObject(spotify)
                 .preferredColorScheme(colorScheme)
                 .onAppear(perform: onAppear)
-//                .frame(
-//                    width: CGFloat(AppDelegate.popoverWidth),
-//                    height: CGFloat(AppDelegate.popoverHeight)
-//                )
+                .frame(
+                    width: CGFloat(AppDelegate.popoverWidth),
+                    height: CGFloat(AppDelegate.popoverHeight)
+                )
+                .previewDisplayName("\(colorScheme)")
         }
         
     }
