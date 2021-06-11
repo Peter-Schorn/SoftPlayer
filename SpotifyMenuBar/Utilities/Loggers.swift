@@ -91,9 +91,9 @@ struct SpotifyMenuBarLogHandler: LogHandler {
 
     static func convertToOSLogLevel(_ level: Logger.Level) -> OSLogType {
         switch level {
-            case .trace, .notice:
+            case .trace:
                 return .default
-            case .info, .warning:
+            case .info, .notice, .warning:
                 return .info
             case .debug:
                 return .debug
@@ -178,10 +178,10 @@ struct SpotifyMenuBarLogHandler: LogHandler {
         line: UInt
     ) {
         let logMessage = """
-            [\(label): \(level): \(function) line \(line)] \(message)
+            [\(label): \(self._logLevel): \(function) line \(line)] \(message)
             """
         print(logMessage)
-        let osLogLevel = Self.convertToOSLogLevel(level)
+        let osLogLevel = Self.convertToOSLogLevel(self._logLevel)
         self.osLogger.log(level: osLogLevel, "\(logMessage, privacy: .public)")
     }
     
