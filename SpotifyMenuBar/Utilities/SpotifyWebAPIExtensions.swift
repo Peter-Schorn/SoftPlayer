@@ -9,7 +9,7 @@ extension SpotifyAPI where AuthorizationManager: SpotifyScopeAuthorizationManage
      active device if one exists. Else, plays content on the first available
      device.
      
-     See [Using the Player Endpints][1].
+     See [Using the Player Endpoints][1].
 
      - Parameter playbackRequest: A request to play content.
 
@@ -24,7 +24,7 @@ extension SpotifyAPI where AuthorizationManager: SpotifyScopeAuthorizationManage
     
             let deviceId: String
             
-            // If there is an actice device, then it's usually a good idea
+            // If there is an active device, then it's usually a good idea
             // to use that one.
             if let activeDeviceId = devices.first(where: { device in
                 device.isActive && !device.isRestricted && device.id != nil
@@ -40,7 +40,7 @@ extension SpotifyAPI where AuthorizationManager: SpotifyScopeAuthorizationManage
                 deviceId = nonActiveDeviceId
             }
             else {
-                return SpotifyLocalError.other(
+                return SpotifyGeneralError.other(
                     "no active or available devices",
                     localizedDescription: "There are no devices " +
                                           "available to play content on"
