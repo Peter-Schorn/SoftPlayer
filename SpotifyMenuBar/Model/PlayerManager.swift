@@ -161,7 +161,7 @@ class PlayerManager: ObservableObject {
     
     // MARK: Notification
     
-    let notificationSubjet = PassthroughSubject<(title: String, message: String), Never>()
+    let notificationSubject = PassthroughSubject<(title: String, message: String), Never>()
     
     // MARK: Publishers
     
@@ -230,6 +230,7 @@ class PlayerManager: ObservableObject {
                 if !self.isShowingPlaylistsView && self.spotify.isAuthorized {
                     Loggers.soundVolumeAndPlayerPosition.trace("timer fired")
                     self.updateSoundVolumeAndPlayerPosition(fromTimer: true)
+                    self.retrieveAvailableDevices()
                 }
             }
         }
@@ -344,8 +345,8 @@ class PlayerManager: ObservableObject {
             // if the player position was adjusted by the user three seconds ago
             // or less, then don't update it here.
             if let lastAdjusted = self.lastAdjustedPlayerPositionDate,
-               fromTimer,
-               lastAdjusted.addingTimeInterval(3) >= Date() {
+                   fromTimer,
+                   lastAdjusted.addingTimeInterval(3) >= Date() {
                 Loggers.soundVolumeAndPlayerPosition.notice(
                     "player position was adjusted three seconds ago or less"
                 )
@@ -417,7 +418,7 @@ class PlayerManager: ObservableObject {
                 receiveCompletion: { completion in
                     if case .failure(let error) = completion {
                         Loggers.playerManager.error(
-                            "couldn't retreive available devices: \(error)"
+                            "couldn't retrieve available devices: \(error)"
                         )
                     }
                 },
@@ -910,7 +911,7 @@ class PlayerManager: ObservableObject {
     // MARK: Notification
     
     func presentNotification(title: String, message: String) {
-        self.notificationSubjet.send(
+        self.notificationSubject.send(
             (title: title, message: message)
         )
     }
