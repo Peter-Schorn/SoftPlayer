@@ -82,9 +82,13 @@ class PlayerManager: ObservableObject {
     /// track/episode.
     @Published var artworkImage = Image(.spotifyAlbumPlaceholder)
     
+    // MARK: Devices
+
     /// Devices with `nil` for `id` and/or are restricted are filtered out.
     @Published var availableDevices: [Device] = []
     
+    @Published var isUpdatingAvailableDevices = false
+
     /// Whether or not there is an in-progress request to transfer playback to
     /// a different device.
     @Published var isTransferringPlayback = false
@@ -188,7 +192,7 @@ class PlayerManager: ObservableObject {
     // MARK: Cancellables
     private var cancellables: Set<AnyCancellable> = []
     private var retrieveAvailableDevicesCancellable: AnyCancellable? = nil
-    private var loadArtworkImageCancellanble: AnyCancellable? = nil
+    private var loadArtworkImageCancellable: AnyCancellable? = nil
     private var retrieveCurrentlyPlayingContextCancellable: AnyCancellable? = nil
     private var retrievePlaylistsCancellable: AnyCancellable? = nil
     private var retrieveCurrentUserCancellable: AnyCancellable? = nil
@@ -379,7 +383,7 @@ class PlayerManager: ObservableObject {
             return
         }
 //        Loggers.playerManager.trace("loading artwork image from '\(url)'")
-        self.loadArtworkImageCancellanble = URLSession.shared
+        self.loadArtworkImageCancellable = URLSession.shared
             .dataTaskPublisher(for: url)
             .receive(on: RunLoop.main)
             .sink(
@@ -423,11 +427,27 @@ class PlayerManager: ObservableObject {
                     }
                 },
                 receiveValue: { devices in
-                    self.availableDevices = devices
-                        .filter { $0.id != nil && !$0.isRestricted }
-//                    Loggers.playerManager.trace(
-//                        "available devices: \(self.availableDevices)"
-//                    )
+                    let newDevices = devices.filter {
+                        $0.id != nil && !$0.isRestricted
+                    }
+                    if newDevices == self.availableDevices {
+                        return  // exit early if the devices haven't changed
+                    }
+                    
+                    Loggers.availableDevices.trace(
+                        """
+                        will update availableDevices from \
+                        \(self.availableDevices.map(\.name)) to \
+                        \(newDevices.map(\.name))
+                        """
+                    )
+                    self.isUpdatingAvailableDevices = true
+                    self.availableDevices = newDevices
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        self.isUpdatingAvailableDevices = false
+                    }
+                    
+                    
                 }
             )
     }
@@ -506,6 +526,11 @@ class PlayerManager: ObservableObject {
         
     }
     
+    func availableDevicesButtonIsDisabled() -> Bool {
+        return !self.allowedActions.contains(.transferPlayback) &&
+                !self.isUpdatingAvailableDevices
+    }
+
     // MARK: Player Controls
     
     func cycleRepeatMode() {
@@ -634,7 +659,7 @@ class PlayerManager: ObservableObject {
             .eraseToAnyPublisher()
     }
     
-    /// Retreives the user's playlists.
+    /// Retrieves the user's playlists.
     func retrievePlaylists() {
         
         Loggers.playerManager.trace("")

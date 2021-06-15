@@ -31,8 +31,14 @@ struct CancelButton: View {
 
 struct CancelButton_Previews: PreviewProvider {
     static var previews: some View {
-        CancelButton(action: { })
-            .padding(20)
-            .background(Rectangle().fill(BackgroundStyle()))
+        Self.withAllColorSchemes(
+            previewDisplayName: nil // "Cancel Button"
+        ) {
+            CancelButton(action: { })
+                .padding(20)
+                .background(
+                    Rectangle().fill(BackgroundStyle())
+                )
+        }
     }
 }
