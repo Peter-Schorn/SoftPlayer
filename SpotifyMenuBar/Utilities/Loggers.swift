@@ -39,7 +39,7 @@ enum Loggers {
     
     static let availableDevices = Logger(
         label: "AvailableDevices",
-        level: .warning,
+        level: .trace,
         factory: SpotifyMenuBarLogHandler.bootstrap
     )
     

@@ -56,7 +56,7 @@ extension View {
     }
 
     /**
-     A gesture that recognizs a tap and a long press.
+     A gesture that recognizes a tap and a long press.
      
      - Parameters:
        - onTap: Called in response to a tap gesture.
@@ -103,8 +103,29 @@ struct AdaptiveShadow: ViewModifier {
 
 extension Color {
     
-    /// The defult color for the `shadow` `View` modifier:
+    /// The default color for the `shadow` `View` modifier:
     /// `Color(.sRGBLinear, white: 0, opacity: 0.33)`.
     static let defaultShadow = Color(.sRGBLinear, white: 0, opacity: 0.33)
 
+}
+
+extension PreviewProvider {
+    
+    static func withAllColorSchemes<Content: View>(
+        previewDisplayName: String? = nil,
+        @ViewBuilder _ content: @escaping () -> Content
+    ) -> some View {
+        
+        let prefix = previewDisplayName.map { "\($0) - " } ?? ""
+        
+        return ForEach(ColorScheme.allCases, id: \.self) { colorScheme in
+            content()
+                .preferredColorScheme(colorScheme)
+                .previewDisplayName(
+                    "\(prefix)\(colorScheme)"
+                )
+        }
+        
+    }
+    
 }

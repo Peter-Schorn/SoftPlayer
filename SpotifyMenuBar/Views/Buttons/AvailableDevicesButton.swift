@@ -33,7 +33,7 @@ struct AvailableDevicesButton: View {
             Image(systemName: "hifispeaker.2.fill")
         }
         .menuStyle(BorderlessButtonMenuStyle())
-        .disabled(!playerManager.allowedActions.contains(.transferPlayback))
+        .disabled(playerManager.availableDevicesButtonIsDisabled())
         .help("Transfer playback to a different device")
         .scaleEffect(1.2)
         .frame(width: 33)
@@ -56,7 +56,7 @@ struct AvailableDevicesButton: View {
         }
         
         self.playerManager.isTransferringPlayback = true
-        Loggers.availableDevices.trace("tranferring playback to '\(device.name)'")
+        Loggers.availableDevices.trace("transferring playback to '\(device.name)'")
         self.transferPlaybackCancellable = self.spotify.api
             .transferPlayback(to: id, play: true)
             .receive(on: RunLoop.main)
