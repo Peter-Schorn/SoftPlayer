@@ -9,7 +9,7 @@ import SpotifyWebAPI
  A helper class that wraps around an instance of `SpotifyAPI`
  and provides convenience methods for authorizing your application.
  
- Its most important role is to handle changes to the authorzation
+ Its most important role is to handle changes to the authorization
  information and save them to persistent storage in the keychain.
  */
 final class Spotify: ObservableObject {
@@ -70,7 +70,7 @@ final class Spotify: ObservableObject {
      This property is updated by `handleChangesToAuthorizationManager()`,
      which is called every time the authorization information changes,
      and `removeAuthorizationManagerFromKeychain()`, which is called
-     everytime `SpotifyAPI.authorizationManager.deauthorize()` is called.
+     every time `SpotifyAPI.authorizationManager.deauthorize()` is called.
      */
     @Published var isAuthorized = false
 
@@ -191,8 +191,8 @@ final class Spotify: ObservableObject {
             scopes: [
                 .userReadPlaybackState,
                 .userModifyPlaybackState,
-                .userReadCurrentlyPlaying,
                 .playlistReadPrivate,
+                .playlistReadCollaborative,
                 .playlistModifyPublic,
                 .playlistModifyPrivate
             ]
