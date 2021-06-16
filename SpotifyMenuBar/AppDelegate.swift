@@ -11,8 +11,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     static let popoverWidth: CGFloat = 250
     static let popoverHeight: CGFloat = 460
     
-//    var window: NSWindow!
-    
     var settingsWindow: NSWindow? = nil
     
     var popover: NSPopover!
@@ -26,12 +24,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         
         self.initializeKeyboardShortcutNames()
         
-        SpotifyAPILogHandler.bootstrap()
+        SpotifyMenuBarLogHandler.bootstrap()
 
         self.spotify = Spotify()
         
         self.playerManager = PlayerManager(spotify: spotify)
-        
         
         let rootView = RootView()
             .environmentObject(spotify)
@@ -153,7 +150,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
 extension AppDelegate: NSPopoverDelegate {
     
-
     func popoverDidClose(_ notification: Notification) {
         self.playerManager.popoverDidClose.send()
     }

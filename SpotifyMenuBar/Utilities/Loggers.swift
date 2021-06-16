@@ -9,80 +9,72 @@ enum Loggers {
     
     static let playerManager = Logger(
         label: "PlayerManager",
-        level: .trace,
-        factory: SpotifyMenuBarLogHandler.bootstrap
+        level: .trace
     )
     
     static let playerState = Logger(
         label: "PlayerState",
-        level: .trace,
-        factory: SpotifyMenuBarLogHandler.bootstrap
+        level: .warning
     )
     
     static let artwork = Logger(
         label: "Artwork",
-        level: .trace,
-        factory: SpotifyMenuBarLogHandler.bootstrap
+        level: .warning
     )
 
     static let shuffle = Logger(
         label: "Shuffle",
-        level: .warning,
-        factory: SpotifyMenuBarLogHandler.bootstrap
+        level: .warning
     )
     
     static let repeatMode = Logger(
         label: "RepeatMode",
-        level: .warning,
-        factory: SpotifyMenuBarLogHandler.bootstrap
+        level: .warning
     )
     
     static let availableDevices = Logger(
         label: "AvailableDevices",
-        level: .trace,
-        factory: SpotifyMenuBarLogHandler.bootstrap
+        level: .trace
     )
     
     static let images = Logger(
         label: "Images",
-        level: .error,
-        factory: SpotifyMenuBarLogHandler.bootstrap
+        level: .error
     )
     
     static let syncContext = Logger(
         label: "SyncContext",
-        level: .error,
-        factory: SpotifyMenuBarLogHandler.bootstrap
+        level: .error
     )
     
     static let keyEvent = Logger(
         label: "KeyEvent",
-        level: .trace,
-        factory: SpotifyMenuBarLogHandler.bootstrap
+        level: .warning
     )
     
     static let playlistsScrollView = Logger(
         label: "PlaylistsScrollView",
-        level: .warning,
-        factory: SpotifyMenuBarLogHandler.bootstrap
+        level: .warning
     )
     
     static let playlistCellView = Logger(
         label: "PlaylistCellView",
-        level: .warning,
-        factory: SpotifyMenuBarLogHandler.bootstrap
+        level: .warning
     )
     
     static let touchBarView = Logger(
         label: "TouchBarView",
-        level: .warning,
-        factory: SpotifyMenuBarLogHandler.bootstrap
+        level: .warning
     )
     
     static let soundVolumeAndPlayerPosition = Logger(
         label: "SoundVolumeAndPlayerPosition",
-        level: .warning,
-        factory: SpotifyMenuBarLogHandler.bootstrap
+        level: .warning
+    )
+    
+    static let appKitMenu = Logger(
+        label: "appKitMenu",
+        level: .trace
     )
     
 }
@@ -110,8 +102,11 @@ struct SpotifyMenuBarLogHandler: LogHandler {
         label: "SpotifyAPILogHandler.initializeHandler"
     )
     
-    static func bootstrap(label: String) -> Self {
-        return Self.init(label: label, logLevel: .trace)
+    /// Configures this type as the global logging backend.
+    static func bootstrap() {
+        LoggingSystem.bootstrap { label in
+            Self(label: label, logLevel: .trace)
+        }
     }
     
     
