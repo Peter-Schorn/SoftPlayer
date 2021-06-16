@@ -87,8 +87,6 @@ class PlayerManager: ObservableObject {
     /// Devices with `nil` for `id` and/or are restricted are filtered out.
     @Published var availableDevices: [Device] = []
     
-    @Published var isUpdatingAvailableDevices = false
-
     /// Whether or not there is an in-progress request to transfer playback to
     /// a different device.
     @Published var isTransferringPlayback = false
@@ -227,7 +225,7 @@ class PlayerManager: ObservableObject {
                 self.updatePlayerState()
             }
             self.updateSoundVolumeAndPlayerPositionCancellable = Timer.publish(
-                every: 1, on: .main, in: .common
+                every: 2, on: .main, in: .common
             )
             .autoconnect()
             .sink { _ in
@@ -414,6 +412,7 @@ class PlayerManager: ObservableObject {
     }
     
     func retrieveAvailableDevices() {
+//        Loggers.playerManager.trace("")
         self.retrieveAvailableDevicesCancellable = self.spotify.api
             .availableDevices()
             .receive(on: RunLoop.main)
@@ -430,10 +429,6 @@ class PlayerManager: ObservableObject {
                     let newDevices = devices.filter {
                         $0.id != nil && !$0.isRestricted
                     }
-                    if newDevices == self.availableDevices {
-                        return  // exit early if the devices haven't changed
-                    }
-                    
                     Loggers.availableDevices.trace(
                         """
                         will update availableDevices from \
@@ -441,12 +436,7 @@ class PlayerManager: ObservableObject {
                         \(newDevices.map(\.name))
                         """
                     )
-                    self.isUpdatingAvailableDevices = true
                     self.availableDevices = newDevices
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                        self.isUpdatingAvailableDevices = false
-                    }
-                    
                     
                 }
             )
@@ -526,11 +516,6 @@ class PlayerManager: ObservableObject {
         
     }
     
-    func availableDevicesButtonIsDisabled() -> Bool {
-        return !self.allowedActions.contains(.transferPlayback) &&
-                !self.isUpdatingAvailableDevices
-    }
-
     // MARK: Player Controls
     
     func cycleRepeatMode() {
