@@ -1,4 +1,6 @@
 import SwiftUI
+import Foundation
+import Cocoa
 import Combine
 import Logging
 import SpotifyWebAPI
@@ -16,7 +18,10 @@ struct AvailableDevicesButton: View {
                 Text("No Devices Found")
             }
             else {
-                ForEach(playerManager.availableDevices, id: \.id) { device in
+                ForEach(
+                    Array(playerManager.availableDevices.enumerated()),
+                    id: \.offset
+                ) { (offset, device) in
                     Button(action: {
                         transferPlayback(to: device)
                     }, label: {
@@ -33,7 +38,6 @@ struct AvailableDevicesButton: View {
             Image(systemName: "hifispeaker.2.fill")
         }
         .menuStyle(BorderlessButtonMenuStyle())
-        .disabled(playerManager.availableDevicesButtonIsDisabled())
         .help("Transfer playback to a different device")
         .scaleEffect(1.2)
         .frame(width: 33)
