@@ -141,6 +141,7 @@ struct PlayerView: View {
                     .onTapGesture(
                         perform: playerManager.openCurrentPlaybackInSpotify
                     )
+                    .help(playerManager.currentTrack?.name ?? "")
 
                 Text(playerManager.albumArtistTitle)
                     // MARK: Matched Geometry Effect
@@ -154,6 +155,7 @@ struct PlayerView: View {
                     .onTapGesture(
                         perform: playerManager.openArtistOrShowInSpotify
                     )
+                    .help(playerManager.albumArtistTitle)
                 
             }
             .padding(.horizontal, 10)
@@ -399,7 +401,7 @@ struct PlayerView_Previews: PreviewProvider {
     static let playerManager = PlayerManager(spotify: Spotify())
     
     static var previews: some View {
-        ForEach(ColorScheme.allCases, id: \.self) { colorScheme in
+        Self.withAllColorSchemes {
             PlayerView()
                 .environmentObject(playerManager.spotify)
                 .environmentObject(playerManager)
@@ -407,7 +409,6 @@ struct PlayerView_Previews: PreviewProvider {
                     width: AppDelegate.popoverWidth,
                     height: AppDelegate.popoverHeight
                 )
-                .preferredColorScheme(colorScheme)
                 .onAppear(perform: onAppear)
         }
     }
