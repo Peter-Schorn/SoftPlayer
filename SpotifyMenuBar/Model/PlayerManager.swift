@@ -852,12 +852,14 @@ class PlayerManager: ObservableObject {
     func removePlaylistImagesCache() {
         do {
             if let folder = self.imagesFolder {
-                print("will delete folder: \(folder)")
+                Loggers.playerManager.trace("will delete folder: \(folder)")
                 try FileManager.default.removeItem(at: folder)
             }
             
         } catch {
-            print("couldn't remove image cache: \(error)")
+            Loggers.playerManager.error(
+                "couldn't remove image cache: \(error)"
+            )
         }
     }
     
@@ -865,11 +867,13 @@ class PlayerManager: ObservableObject {
     func openCurrentPlaybackInSpotify() {
         
         guard let identifier = self.currentTrack?.identifier else {
-            print("no id for current track/episode")
+            Loggers.playerManager.warning("no id for current track/episode")
             return
         }
         guard let uriURL = URL(string: identifier.uri) else {
-            print("couldn't convert '\(identifier.uri)' to URL")
+            Loggers.playerManager.error(
+                "couldn't convert '\(identifier.uri)' to URL"
+            )
             return
         }
         
@@ -893,7 +897,9 @@ class PlayerManager: ObservableObject {
             .sink(
                 receiveCompletion: { completion in
                     if case .failure(let error) = completion {
-                        print("openArtistOrShowInBrowser error: \(error)")
+                        Loggers.playerManager.error(
+                            "openArtistOrShowInBrowser error: \(error)"
+                        )
                     }
                 },
                 receiveValue: { url in
@@ -1079,8 +1085,7 @@ private extension PlayerManager {
 //        else {
 //            Loggers.playerManager.warning("no current show or artist")
 //        }
-//        print("\n\n")
-//
+
         let allowedActionsString = context.allowedActions.map(\.rawValue)
         Loggers.playerState.notice(
             "allowed actions: \(allowedActionsString)"

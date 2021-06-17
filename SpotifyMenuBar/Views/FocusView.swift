@@ -22,13 +22,13 @@ struct FocusView: NSViewRepresentable {
 
         // Delay making the view the first responder to avoid SwiftUI errors.
         if self.isFirstResponder {
-//            print("FocusView: makeFirstResponder")
+//            Loggers.general.trace("FocusView: makeFirstResponder")
             DispatchQueue.main.async {
                 nsView.window?.makeFirstResponder(nsView)
             }
         }
         else {
-//            print("FocusView: resignFirstResponder")
+//            Loggers.general.trace("FocusView: resignFirstResponder")
             nsView.window?.makeFirstResponder(nil)
         }
     }

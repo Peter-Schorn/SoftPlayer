@@ -80,12 +80,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     func application(_ application: NSApplication, open urls: [URL]) {
         
         guard let url = urls.first else {
-            print("application open urls: urls was empty")
+            Loggers.general.trace("application open urls: urls was empty")
             return
         }
         
         guard url.scheme == spotify.loginCallbackURL.scheme else {
-            print("unsupported URL:", url)
+            Loggers.general.trace("unsupported URL: \(url)")
             return
         }
         

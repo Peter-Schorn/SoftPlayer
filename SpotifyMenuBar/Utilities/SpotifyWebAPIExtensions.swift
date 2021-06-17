@@ -94,7 +94,7 @@ extension CurrentlyPlayingContext {
             }
             
         } catch {
-            print(
+            Loggers.general.trace(
                 """
                 CurrentlyPlayingContext.showOrArtistIdentifier: \
                 error: \(error)
