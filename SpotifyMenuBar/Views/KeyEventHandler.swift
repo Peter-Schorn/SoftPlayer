@@ -24,7 +24,9 @@ struct KeyEventHandler: NSViewRepresentable {
         override var acceptsFirstResponder: Bool { true }
         
         override func keyDown(with event: NSEvent) {
-//            print("keyDown: \(event.charactersIgnoringModifiers ?? "")")
+//            Loggers.keyEvent.trace(
+//                "keyDown: \(event.charactersIgnoringModifiers ?? "")"
+//            )
             
             // key code 53 = escape key
             if event.keyCode != 53 {

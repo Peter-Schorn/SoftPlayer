@@ -13,19 +13,28 @@ struct GeneralSettingsView: View {
                 "Show Images Cache Folder",
                 action: showImagesCacheFolder
             )
+            
             Text(
                 "You can safely remove files from " +
                 "this folder to free up space"
             )
             .font(.footnote)
             .foregroundColor(.secondary)
+            
             Button(
                 "Logout from Spotify",
                 action: spotify.api.authorizationManager.deauthorize
             )
+            Text(
+                "All personal data will be removed"
+            )
+            .font(.footnote)
+            .foregroundColor(.secondary)
+
             Button("Quit Application") {
                 NSApplication.shared.terminate(nil)
             }
+            
         }
         .padding(20)
         

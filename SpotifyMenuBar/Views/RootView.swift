@@ -33,7 +33,7 @@ struct RootView: View {
     
     func handleRedirectURL(_ url: URL) {
 
-        print("LoginView received redirect URL:", url)
+        Loggers.general.trace("LoginView received redirect URL: \(url)")
         
         self.spotify.isRetrievingTokens = true
         
@@ -53,7 +53,7 @@ struct RootView: View {
     func receiveRequestTokensCompletion(
         _ completion: Subscribers.Completion<Error>
     ) {
-        print("request tokens completion:", completion)
+        Loggers.general.trace("request tokens completion: \(completion)")
         self.spotify.isRetrievingTokens = false
         let alert = NSAlert()
         let alertTitle: String
