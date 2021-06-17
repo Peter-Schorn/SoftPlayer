@@ -29,6 +29,7 @@ struct PlaybackPositionView: View {
                 knobDiameter: 10,
                 knobColor: .white,
                 knobScaleEffectMagnitude: 1.3,
+                knobAnimation: .linear(duration: 0.1),
                 leadingRectangleColor: .playbackPositionLeadingRectangle,
                 onEndedDragging: { _ in self.updatePlaybackPosition() }
             )
@@ -62,21 +63,24 @@ struct PlaybackPositionView: View {
         if self.playerManager.player.playerPosition == nil {
             return self.noPositionPlaceholder
         }
-        let formatter: DateComponentsFormatter = duration >= 3600 ?
-                .playbackTimeWithHours : .playbackTime
-        return formatter.string(from: Double(self.playerManager.playerPosition))
-                ?? self.noPositionPlaceholder
+        return self.formattedTimestamp(
+            self.playerManager.playerPosition
+        )
     }
     
     var formattedDuration: String {
         if self.playerManager.currentTrack?.duration == nil {
             return self.noPositionPlaceholder
         }
-        let formatter: DateComponentsFormatter = duration >= 3600 ?
-                .playbackTimeWithHours : .playbackTime
-        return formatter.string(from: Double(duration))
-                ?? self.noPositionPlaceholder
-        
+        return self.formattedTimestamp(duration)
+    }
+
+    /// Returns the formatted timestamp for the duration or player position.
+    func formattedTimestamp(_ number: CGFloat) -> String {
+        let formatter: DateComponentsFormatter = number >= 3600 ?
+            .playbackTimeWithHours : .playbackTime
+        return formatter.string(from: Double(number))
+            ?? self.noPositionPlaceholder
     }
     
     func updatePlaybackPosition() {

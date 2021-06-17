@@ -14,7 +14,7 @@ enum Loggers {
     
     static let playerState = Logger(
         label: "PlayerState",
-        level: .warning
+        level: .trace
     )
     
     static let artwork = Logger(
@@ -34,7 +34,7 @@ enum Loggers {
     
     static let availableDevices = Logger(
         label: "AvailableDevices",
-        level: .trace
+        level: .warning
     )
     
     static let images = Logger(
@@ -69,11 +69,6 @@ enum Loggers {
     
     static let soundVolumeAndPlayerPosition = Logger(
         label: "SoundVolumeAndPlayerPosition",
-        level: .warning
-    )
-    
-    static let appKitMenu = Logger(
-        label: "appKitMenu",
         level: .trace
     )
     
@@ -175,9 +170,12 @@ struct SpotifyMenuBarLogHandler: LogHandler {
         let logMessage = """
             [\(label): \(self._logLevel): \(function) line \(line)] \(message)
             """
+        #if DEBUG
         print(logMessage)
+        #else
         let osLogLevel = Self.convertToOSLogLevel(self._logLevel)
         self.osLogger.log(level: osLogLevel, "\(logMessage, privacy: .public)")
+        #endif
     }
     
 }

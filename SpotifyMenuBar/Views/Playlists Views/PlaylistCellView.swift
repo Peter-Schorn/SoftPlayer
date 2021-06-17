@@ -1,6 +1,7 @@
 import SwiftUI
 import Combine
 import SpotifyWebAPI
+import SpotifyExampleContent
 
 struct PlaylistCellView: View {
     
@@ -159,7 +160,19 @@ struct PlaylistCellView: View {
 }
 
 struct PlaylistCellView_Previews: PreviewProvider {
+    
+    static let playerManager = PlayerManager(spotify: Spotify())
+
     static var previews: some View {
+        
+        Self.withAllColorSchemes {
+            PlaylistCellView(playlist: .menITrust, isSelected: false)
+                .environmentObject(playerManager.spotify)
+                .environmentObject(playerManager)
+                .frame(width: AppDelegate.popoverWidth)
+                .padding()
+        }
+
         PlayerView_Previews.previews
             .onAppear {
                 PlayerView.debugIsShowingPlaylistsView = true
