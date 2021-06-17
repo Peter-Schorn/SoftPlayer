@@ -103,20 +103,6 @@ class PlayerManager: ObservableObject {
     }
     
     @Published var currentUser: SpotifyUser? = nil
-    private var currentUserPublisher: AnyPublisher<SpotifyUser, Never>? = nil
-    var synchedCurrentUser: Future<SpotifyUser, Never> {
-        Future { promise in
-            if let currentUser = self.currentUser {
-                promise(.success(currentUser))
-            }
-            else {
-                self.retrieveCurrentUserCancellable =
-                    self.retrieveCurrentUser().sink { currentUser in
-                        promise(.success(currentUser))
-                    }
-            }
-        }
-    }
 
     var imagesFolder: URL? {
         guard let applicationSupportFolder = FileManager.default.urls(
@@ -250,6 +236,7 @@ class PlayerManager: ObservableObject {
                 "spotify.$isAuthorized.sink: \(isAuthorized)"
             )
             if isAuthorized {
+                self.retrieveCurrentUser()
                 self.updatePlayerState()
                 self.retrievePlaylists()
             }
@@ -262,7 +249,6 @@ class PlayerManager: ObservableObject {
                 self.currentlyPlayingContext = nil
                 self.availableDevices = []
                 self.currentUser = nil
-                self.currentUserPublisher = nil
                 self.playlistsLastModifiedDates = [:]
                 self.playlists = []
                 self.playlistsSortedByLastModifiedDate = []
@@ -474,6 +460,10 @@ class PlayerManager: ObservableObject {
                             Loggers.playerManager.error(
                                 "couldn't get currently playing context: \(error)"
                             )
+                            self.presentNotification(
+                                title: "Couldn't retrieve playback state",
+                                message: error.customizedLocalizedDescription
+                            )
                             self.currentlyPlayingContext = nil
                             self.isUpdatingCurrentlyPlayingContext = false
                         }
@@ -534,7 +524,7 @@ class PlayerManager: ObservableObject {
                             "Couldn't set repeat mode to \(repeatModeString)"
                         self.presentNotification(
                             title: alertTitle,
-                            message: error.localizedDescription
+                            message: error.customizedLocalizedDescription
                         )
                         Loggers.repeatMode.error(
                             "RepeatButton: \(alertTitle): \(error)"
@@ -647,46 +637,47 @@ class PlayerManager: ObservableObject {
             .eraseToAnyPublisher()
     }
     
-    /// Retrieves the user's playlists.
+    /// Retrieve the current user's playlists.
     func retrievePlaylists() {
         
-        Loggers.playerManager.trace("")
-        
-        let retrievePlaylistsPublisher = self.spotify.api
+        self.retrievePlaylistsCancellable = self.spotify.api
             .currentUserPlaylists(limit: 50)
-            .extendPages(self.spotify.api)
-//            .handleEvents(receiveOutput: { page in
-//                Loggers.playerManager.trace(
-//                    "received playlist page at offset \(page.offset)"
-//                )
-//            })
-            .collect()
-            .map { $0.flatMap(\.items) }
+            .extendPagesConcurrently(self.spotify.api)
+            .collectAndSortByOffset()
             .receive(on: RunLoop.main)
             .handleAuthenticationError(spotify: self.spotify)
-            .catch { error -> Empty<[Playlist<PlaylistItemsReference>], Never> in
-                Loggers.playerManager.error(
-                    "couldn't retrieve playlists: \(error)"
-                )
-                return Empty()
-            }
-        
-        self.retrievePlaylistsCancellable = Publishers.Zip(
-            synchedCurrentUser, retrievePlaylistsPublisher
-        )
-        .sink { currentUser, playlists in
-            self.playlists = playlists
-            self.retrievePlaylistImages()
-            self.updatePlaylistsSortedByLastModifiedDate()
-        }
-           
+            .sink(
+                receiveCompletion: { completion in
+                    Loggers.playerManager.trace(
+                        "retrievePlaylists completion: \(completion)"
+                    )
+                    guard case .failure(let error) = completion else {
+                        return
+                    }
+                    let title = "Couldn't Retrieve Playlists"
+                    Loggers.playerManager.error(
+                        "\(title): \(error)"
+                    )
+                    self.presentNotification(
+                        title: title,
+                        message: error.customizedLocalizedDescription
+                    )
+                    
+                },
+                receiveValue: { playlists in
+                    self.playlists = playlists
+                    self.retrievePlaylistImages()
+                    self.updatePlaylistsSortedByLastModifiedDate()
+                }
+            )
+
     }
-    
+
     /// Re-sorts the playlists by the last date they were played or items
     /// were added to them, whichever was more recent.
     func updatePlaylistsSortedByLastModifiedDate() {
         Loggers.playerManager.notice(
-            "updatePlaylistsSOrtedByLastPlayedOrLastAddedDate"
+            "updatePlaylistsSortedByLastPlayedOrLastAddedDate"
         )
         DispatchQueue.global().async {
             let sortedPlaylists = self.playlists.enumerated().sorted {
@@ -709,6 +700,37 @@ class PlayerManager: ObservableObject {
         }
     }
     
+    // MARK: User
+    
+    func retrieveCurrentUser() {
+        
+        self.retrieveCurrentUserCancellable = self.spotify.api
+            .currentUserProfile()
+            .receive(on: RunLoop.main)
+            .handleAuthenticationError(spotify: self.spotify)
+            .sink(
+                receiveCompletion: { completion in
+                    if case .failure(let error) = completion {
+                        let title = "Couldn't Retrieve User Profile"
+                        Loggers.playerManager.error(
+                            "\(title): \(error)"
+                        )
+                        self.presentNotification(
+                            title: title,
+                            message: error.customizedLocalizedDescription
+                        )
+                    }
+                },
+                receiveValue: { user in
+                    Loggers.playerManager.notice(
+                        "received current user: \(user)"
+                    )
+                    self.currentUser = user
+                }
+            )
+
+    }
+
     // MARK: Images
     
     func retrievePlaylistImages() {
@@ -1092,37 +1114,6 @@ private extension PlayerManager {
         )
         
         
-    }
-    
-    private func retrieveCurrentUser() -> AnyPublisher<SpotifyUser, Never> {
-        
-        if let currentUserPublisher = self.currentUserPublisher {
-            Loggers.playerManager.notice("using previous current user publisher")
-            return currentUserPublisher
-        }
-        
-        let currentUserPublisher = self.spotify.api.currentUserProfile()
-            .receive(on: RunLoop.main)
-            .handleAuthenticationError(spotify: self.spotify)
-            .catch { error -> Empty<SpotifyUser, Never> in
-                Loggers.playerManager.error(
-                    "couldn't retrieve current user: \(error)"
-                )
-                return Empty()
-            }
-            .handleEvents(
-                receiveOutput: { currentUser in
-                    Loggers.playerManager.notice("received current user")
-                    self.currentUser = currentUser
-                },
-                receiveCompletion: { _ in
-                    self.currentUserPublisher = nil
-                }
-            )
-            .share()
-            .eraseToAnyPublisher()
-        
-        return currentUserPublisher
     }
     
     private func areInDecreasingOrderByDateThenIncreasingOrderByIndex(
