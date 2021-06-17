@@ -77,7 +77,7 @@ struct AvailableDevicesButton: View {
                             #"to "\#(device.name)""#
                         self.playerManager.presentNotification(
                             title: alertTitle,
-                            message: error.localizedDescription
+                            message: error.customizedLocalizedDescription
                         )
                         Loggers.availableDevices.error(
                             "\(alertTitle): \(error)"

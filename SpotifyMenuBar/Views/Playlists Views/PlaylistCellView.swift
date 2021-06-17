@@ -125,7 +125,7 @@ struct PlaylistCellView: View {
                             #"to "\#(playlist.name)""#
                         self.playerManager.presentNotification(
                             title: alertTitle,
-                            message: error.localizedDescription
+                            message: error.customizedLocalizedDescription
                         )
                         Loggers.playlistCellView.error(
                             "\(alertTitle): \(error)"
@@ -147,7 +147,7 @@ struct PlaylistCellView: View {
                     let alertTitle = #"Couldn't play "\#(playlist.name)""#
                     self.playerManager.presentNotification(
                         title: alertTitle,
-                        message: error.localizedDescription
+                        message: error.customizedLocalizedDescription
                     )
                     Loggers.playlistCellView.error(
                         "\(alertTitle): \(error)"
