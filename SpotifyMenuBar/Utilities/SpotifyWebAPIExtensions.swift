@@ -190,17 +190,17 @@ extension Collection where Element == SpotifyImage {
         
         return self.min { lhs, rhs in
             
-            let lhsDimensions = lhs.width.map { width in
+            let lhsDimensions = lhs.width.flatMap { width in
                 return lhs.height.map { height in
                     width * height
                 }
-            } as? Int
+            }
             
-            let rhsDimensions = rhs.width.map { width in
+            let rhsDimensions = rhs.width.flatMap { width in
                 return rhs.height.map { height in
                     width * height
                 }
-            } as? Int
+            }
             
             switch (lhsDimensions, rhsDimensions) {
                 case (nil, .some(_)):
