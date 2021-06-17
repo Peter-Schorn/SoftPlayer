@@ -13,6 +13,7 @@ struct GeneralSettingsView: View {
                 "Show Images Cache Folder",
                 action: showImagesCacheFolder
             )
+            .disabled(!spotify.isAuthorized)
             
             Text(
                 "You can safely remove files from " +
@@ -25,6 +26,8 @@ struct GeneralSettingsView: View {
                 "Logout from Spotify",
                 action: spotify.api.authorizationManager.deauthorize
             )
+            .disabled(!spotify.isAuthorized)
+            
             Text(
                 "All personal data will be removed"
             )
