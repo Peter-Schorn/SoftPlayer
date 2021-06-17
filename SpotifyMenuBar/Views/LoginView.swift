@@ -47,7 +47,6 @@ struct LoginView: View {
                         .scaleEffect(0.5)
                     Text("Authenticating")
                 }
-                .padding(.bottom, 20)
             }
         }
         .background(FocusView(isFirstResponder: .constant(true)))
@@ -59,21 +58,22 @@ struct LoginView: View {
         Button(action: self.spotify.authorize, label: {
             HStack {
                 Image(spotifyLogo)
-                    .interpolation(.high)
                     .resizable()
                     .aspectRatio(contentMode: .fit)
-                    .frame(height: 30)
+                    .frame(height: 60)
                 Text("Log in with Spotify")
-                    .font(.callout)
+                    .font(.title2)
+                    .lineLimit(1)
             }
-            .padding()
+            .padding(.horizontal, 10)
+            .padding(.vertical, 15)
             .background(backgroundGradient)
             .clipShape(Capsule())
             .shadow(radius: 5)
         })
         .buttonStyle(PlainButtonStyle())
-        .disabled(spotify.isRetrievingTokens)
-        .padding(.bottom, 5)
+        .allowsHitTesting(!spotify.isRetrievingTokens)
+        .padding(5)
 
 
     }
@@ -101,7 +101,7 @@ struct LoginView_Previews: PreviewProvider {
     }
     
     static func onAppear() {
-//        spotify.isRetrievingTokens = true
+        spotify.isRetrievingTokens = true
     }
     
 }

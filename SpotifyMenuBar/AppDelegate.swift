@@ -22,9 +22,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         
-        self.initializeKeyboardShortcutNames()
-        
         SpotifyMenuBarLogHandler.bootstrap()
+
+        self.initializeKeyboardShortcutNames()
 
         self.spotify = Spotify()
         
@@ -121,8 +121,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         self.settingsWindow?.makeKeyAndOrderFront(nil)
     }
     
-    /// Global variables are lazily initialized, but this program relies
-    /// on the keyboard shortcut names being initialized immediately.
+    /// Global variables are lazily initialized, but this program relies on the
+    /// keyboard shortcut names being initialized immediately.
     func initializeKeyboardShortcutNames() {
         typealias Name = KeyboardShortcuts.Name
         var sink = ""

@@ -20,7 +20,7 @@ struct CustomSliderView: View {
 
     let sliderHeight: CGFloat = 5
 
-    let knobAnimation = Animation.linear(duration: 0.1)
+    let knobAnimation: Animation?   // Animation.linear(duration: 0.1)
     let knobTransition = AnyTransition.scale
     
     init(
@@ -30,6 +30,7 @@ struct CustomSliderView: View {
         knobDiameter: CGFloat,
         knobColor: Color,
         knobScaleEffectMagnitude: CGFloat = 1,
+        knobAnimation: Animation? = nil,
         leadingRectangleColor: Color,
         onEndedDragging: ((DragGesture.Value) -> Void)? = nil
     ) {
@@ -39,6 +40,7 @@ struct CustomSliderView: View {
         self.knobDiameter = knobDiameter
         self.knobColor = knobColor
         self.knobScaleEffectMagnitude = knobScaleEffectMagnitude
+        self.knobAnimation = knobAnimation
         self.leadingRectangleColor = leadingRectangleColor
         self.onEndedDragging = onEndedDragging
     }
@@ -95,7 +97,12 @@ struct CustomSliderView: View {
         return DragGesture(minimumDistance: 0)
             .onChanged { dragValue in
 
-                withAnimation(knobAnimation) {
+                if let animation = self.knobAnimation {
+                    withAnimation(animation) {
+                        self.isDragging = true
+                    }
+                }
+                else {
                     self.isDragging = true
                 }
                 
@@ -116,7 +123,14 @@ struct CustomSliderView: View {
                 
             }
             .onEnded { dragValue in
-                self.isDragging = false
+                if let animation = self.knobAnimation {
+                    withAnimation(animation) {
+                        self.isDragging = false
+                    }
+                }
+                else {
+                    self.isDragging = false
+                }
                 self.onEndedDragging?(dragValue)
             }
     }
@@ -125,10 +139,15 @@ struct CustomSliderView: View {
         return DragGesture(minimumDistance: 0)
             .onChanged { dragValue in
                 
-                withAnimation(knobAnimation) {
+                if let animation = self.knobAnimation {
+                    withAnimation(animation) {
+                        self.isDragging = true
+                    }
+                }
+                else {
                     self.isDragging = true
                 }
-                
+
                 let knobOffsetMin = knobDiameter / 2
                 let knobOffsetMax = geometry.size.width - knobDiameter / 2
                 let knobOffsetRange = knobOffsetMin...knobOffsetMax
@@ -143,7 +162,14 @@ struct CustomSliderView: View {
 
             }
             .onEnded { dragValue in
-                self.isDragging = false
+                if let animation = self.knobAnimation {
+                    withAnimation(animation) {
+                        self.isDragging = false
+                    }
+                }
+                else {
+                    self.isDragging = false
+                }
                 self.onEndedDragging?(dragValue)
             }
     }

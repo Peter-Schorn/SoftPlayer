@@ -313,6 +313,8 @@ class PlayerManager: ObservableObject {
     
     func updateSoundVolumeAndPlayerPosition(fromTimer: Bool = false) {
         Loggers.soundVolumeAndPlayerPosition.trace("")
+        
+        // MARK: Sound Volume
         if let intSoundVolume = self.player.soundVolume {
             if self.isDraggingSoundVolumeSlider {
                 return
@@ -342,6 +344,7 @@ class PlayerManager: ObservableObject {
             )
         }
         
+        // MARK: Player Position
         if let playerPosition = self.player.playerPosition,
                 !self.isDraggingPlaybackPositionView {
             // if the player position was adjusted by the user three seconds ago

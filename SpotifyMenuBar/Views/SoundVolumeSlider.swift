@@ -16,22 +16,23 @@ struct SoundVolumeSlider: View {
                 knobDiameter: 15,
                 knobColor: .white,
                 leadingRectangleColor: .green,
-                onEndedDragging: onEndedDragging
+                onEndedDragging: { _ in onEndedDragging() }
             )
             Image(systemName: "speaker.wave.3.fill")
         }
         .onChange(of: playerManager.soundVolume, perform: { newVolume in
-            let currentVolume = CGFloat(
-                self.playerManager.player.soundVolume ?? 100
-            )
-            if abs(newVolume - currentVolume) >= 2 {
-                self.playerManager.player.setSoundVolume?(Int(newVolume))
+            
+            let currentVolume = self.playerManager.player.soundVolume ?? 100
+            let intNewVolume = Int(newVolume)
+            
+            if abs(intNewVolume - currentVolume) >= 2 {
+                self.playerManager.player.setSoundVolume?(intNewVolume)
             }
+            
         })
-        
     }
     
-    func onEndedDragging(_ value: DragGesture.Value) {
+    func onEndedDragging() {
         self.playerManager.lastAdjustedSoundVolumeSliderDate = Date()
     }
 }

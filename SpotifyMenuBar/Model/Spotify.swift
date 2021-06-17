@@ -15,7 +15,7 @@ import SpotifyWebAPI
 final class Spotify: ObservableObject {
     
     private static let clientId: String = {
-        let __clientId__ = ""
+        let __clientId__ = "***REMOVED***"
         if __clientId__.isEmpty {
             fatalError(
                 "failed to inject value for client id in pre-build script"
@@ -25,7 +25,7 @@ final class Spotify: ObservableObject {
     }()
     
     private static let clientSecret: String = {
-        let __clientSecret__ = ""
+        let __clientSecret__ = "e3c2fe3a32e048739ed3ab724a00580f"
         if __clientSecret__.isEmpty {
             fatalError(
                 "failed to inject value for client secret in pre-build script"
