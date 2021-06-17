@@ -373,7 +373,7 @@ class PlayerManager: ObservableObject {
     /// Loads the image from the artwork URL of the current track.
     func loadArtworkImage() {
         guard let url = self.currentTrack?.artworkUrl
-                .map(URL.init(string:)) as? URL else {
+                .flatMap(URL.init(string:)) else {
             Loggers.playerManager.warning(
                 "no artwork URL or couldn't convert from String"
             )
