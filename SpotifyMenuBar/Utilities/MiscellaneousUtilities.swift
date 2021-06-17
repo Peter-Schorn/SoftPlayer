@@ -202,3 +202,18 @@ extension NSImage {
         
     }
 }
+
+extension Error {
+    
+    var customizedLocalizedDescription: String {
+        if
+            case .httpError(let data, _) = self as? SpotifyGeneralError,
+            let dataString = String(data: data, encoding: .utf8),
+            dataString.lowercased().starts(with: "user not approved for app")
+        {
+            return dataString
+        }
+        return self.localizedDescription
+    }
+    
+}

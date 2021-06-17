@@ -75,7 +75,7 @@ struct TouchBarPlaylistButton: View {
                             #"Couldn't play "\#(playlist.name)""#
                         self.playerManager.presentNotification(
                             title: alertTitle,
-                            message: error.localizedDescription
+                            message: error.customizedLocalizedDescription
                         )
                         Loggers.touchBarView.trace(
                             "TouchBarPlaylistButton: \(alertTitle): \(error)"

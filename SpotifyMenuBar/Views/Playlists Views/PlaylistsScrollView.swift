@@ -131,10 +131,18 @@ struct PlaylistsScrollView: View {
                 
                 LazyVStack {
                     if self.filteredPlaylists.isEmpty {
-                        Text("No Playlists Found")
-                            .foregroundColor(.secondary)
-                            .font(.headline)
-                            .padding(.top, 150)
+                        VStack {
+                            Text("No Playlists Found")
+                                .foregroundColor(.secondary)
+                                .font(.headline)
+                            if onlyShowMyPlaylists {
+                                Button("Remove Filters") {
+                                    onlyShowMyPlaylists = false
+                                }
+                                .padding(.top, 5)
+                            }
+                        }
+                        .padding(.top, 135)
                     }
                     else {
                         ForEach(
@@ -259,7 +267,7 @@ struct PlaylistsScrollView: View {
                     let alertTitle = #"Couldn't play "\#(playlist.name)""#
                     self.playerManager.presentNotification(
                         title: alertTitle,
-                        message: error.localizedDescription
+                        message: error.customizedLocalizedDescription
                     )
                     Loggers.playlistsScrollView.error(
                         "\(alertTitle): \(error)"

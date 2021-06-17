@@ -76,7 +76,7 @@ struct RootView: View {
                         "You denied the authorization request (:"
                 }
                 else {
-                    alertMessage = error.localizedDescription
+                    alertMessage = error.customizedLocalizedDescription
                 }
         }
 
