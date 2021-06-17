@@ -15,7 +15,12 @@ import SpotifyWebAPI
 final class Spotify: ObservableObject {
     
     private static let clientId: String = {
-        let __clientId__ = "***REMOVED***"
+        
+        if let clientId = ProcessInfo.processInfo.environment["CLIENT_ID"] {
+            return clientId
+        }
+
+        let __clientId__ = ""
         if __clientId__.isEmpty {
             fatalError(
                 "failed to inject value for client id in pre-build script"
@@ -25,7 +30,12 @@ final class Spotify: ObservableObject {
     }()
     
     private static let clientSecret: String = {
-        let __clientSecret__ = "e3c2fe3a32e048739ed3ab724a00580f"
+        
+        if let clientSecret = ProcessInfo.processInfo.environment["CLIENT_SECRET"] {
+            return clientSecret
+        }
+
+        let __clientSecret__ = ""
         if __clientSecret__.isEmpty {
             fatalError(
                 "failed to inject value for client secret in pre-build script"
@@ -67,9 +77,9 @@ final class Spotify: ObservableObject {
      Spotify account yet. For example, you could use this property disable
      UI elements that require the user to be logged in.
      
-     This property is updated by `handleChangesToAuthorizationManager()`,
+     This property is updated by `authorizationManagerDidChange()`,
      which is called every time the authorization information changes,
-     and `removeAuthorizationManagerFromKeychain()`, which is called
+     and `authorizationManagerDidDeauthorize()`, which is called
      every time `SpotifyAPI.authorizationManager.deauthorize()` is called.
      */
     @Published var isAuthorized = false
@@ -122,12 +132,12 @@ final class Spotify: ObservableObject {
             // We must receive on the main thread because we are
             // updating the @Published `isAuthorized` property.
             .receive(on: RunLoop.main)
-            .sink(receiveValue: handleChangesToAuthorizationManager)
+            .sink(receiveValue: authorizationManagerDidChange)
             .store(in: &cancellables)
         
         self.api.authorizationManagerDidDeauthorize
             .receive(on: RunLoop.main)
-            .sink(receiveValue: removeAuthorizationManagerFromKeychain)
+            .sink(receiveValue: authorizationManagerDidDeauthorize)
             .store(in: &cancellables)
         
         // Check to see if the authorization information is saved in
@@ -140,21 +150,23 @@ final class Spotify: ObservableObject {
                     AuthorizationCodeFlowPKCEManager.self,
                     from: authManagerData
                 )
-//                print("found authorization information in keychain")
+                Loggers.spotify.trace(
+                    "found authorization information in keychain"
+                )
 
                 /*
                  This assignment causes `authorizationManagerDidChange`
                  to emit a signal, meaning that
-                 `handleChangesToAuthorizationManager()` will be called.
+                 `authorizationManagerDidChange()` will be called.
 
                  Note that if you had subscribed to
                  `authorizationManagerDidChange` after this line,
-                 then `handleChangesToAuthorizationManager()` would not
+                 then `authorizationManagerDidChange()` would not
                  have been called and the @Published `isAuthorized` property
                  would not have been properly updated.
 
                  We do not need to update `isAuthorized` here because it
-                 is already done in `handleChangesToAuthorizationManager()`.
+                 is already done in `authorizationManagerDidChange()`.
                  */
                 self.api.authorizationManager = authorizationManager
 
@@ -163,11 +175,15 @@ final class Spotify: ObservableObject {
 //                self.api.authorizationManager.deauthorize()
 
             } catch {
-                print("could not decode authorizationManager from data:\n\(error)")
+                Loggers.spotify.error(
+                    "could not decode authorizationManager from data:\n\(error)"
+                )
             }
         }
         else {
-//            print("did NOT find authorization information in keychain")
+            Loggers.spotify.notice(
+                "did NOT find authorization information in keychain"
+            )
         }
         
     }
@@ -226,7 +242,7 @@ final class Spotify: ObservableObject {
      
      [1]: https://peter-schorn.github.io/SpotifyAPI/Classes/SpotifyAPI.html#/s:13SpotifyWebAPI0aC0C29authorizationManagerDidChange7Combine18PassthroughSubjectCyyts5NeverOGvp
      */
-    func handleChangesToAuthorizationManager() {
+    func authorizationManagerDidChange() {
         
         // Update the @Published `isAuthorized` property.
         // When set to `true`, `LoginView` is dismissed, allowing the
@@ -243,9 +259,11 @@ final class Spotify: ObservableObject {
             keychain[data: authorizationManagerKey] = authManagerData
 
         } catch {
-            print(
-                "couldn't encode authorizationManager for storage " +
-                "in keychain:\n\(error)"
+            Loggers.spotify.error(
+                """
+                couldn't encode authorizationManager for storage in keychain:
+                \(error)
+                """
             )
         }
         
@@ -257,7 +275,7 @@ final class Spotify: ObservableObject {
      This method is called every time `api.authorizationManager.deauthorize` is
      called.
      */
-    func removeAuthorizationManagerFromKeychain() {
+    func authorizationManagerDidDeauthorize() {
         
         withAnimation {
             self.isAuthorized = false
@@ -275,9 +293,8 @@ final class Spotify: ObservableObject {
             try keychain.remove(authorizationManagerKey)
 
         } catch {
-            print(
-                "couldn't remove authorization manager " +
-                "from keychain: \(error)"
+            Loggers.spotify.error(
+                "couldn't remove authorization manager from keychain: \(error)"
             )
         }
     }

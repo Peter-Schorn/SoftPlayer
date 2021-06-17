@@ -7,6 +7,16 @@ typealias OSLogger = os.Logger
 
 enum Loggers {
     
+    static let general = Logger(
+        label: "General",
+        level: .trace
+    )
+    
+    static let spotify = Logger(
+        label: "spotify",
+        level: .warning
+    )
+
     static let playerManager = Logger(
         label: "PlayerManager",
         level: .trace

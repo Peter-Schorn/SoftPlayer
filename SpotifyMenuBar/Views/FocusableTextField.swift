@@ -69,7 +69,9 @@ struct FocusableTextField: NSViewRepresentable {
             guard notification.object is CustomNSSearchField else {
                 return
             }
-//            print("controlTextDidEndEditing: \(notification.userInfo as Any)")
+//            Loggers.keyEvent.trace(
+//                "controlTextDidEndEditing: \(notification.userInfo as Any)"
+//            )
             
             let textMovement = notification.userInfo?["NSTextMovement"] as? Int
             
@@ -90,7 +92,7 @@ class CustomNSSearchField: NSSearchField {
     var receiveKeyEvent: ((NSEvent) -> Bool)? = nil
     
     override func keyDown(with event: NSEvent) {
-        print("CustomNSSearchField: keyDown: \(event)")
+        Loggers.keyEvent.trace("CustomNSSearchField: keyDown: \(event)")
     }
     
     override func performKeyEquivalent(with event: NSEvent) -> Bool {
