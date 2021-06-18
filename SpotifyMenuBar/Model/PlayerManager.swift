@@ -16,7 +16,7 @@ class PlayerManager: ObservableObject {
     @Published var isDraggingPlaybackPositionView = false
     @Published var isDraggingSoundVolumeSlider = false
     
-    // MARK: Player State
+    // MARK: - Player State -
     
     /// Retrieved from the Spotify desktop application using AppleScript.
     @Published var currentTrack: SpotifyTrack? = nil
@@ -82,7 +82,7 @@ class PlayerManager: ObservableObject {
     /// track/episode.
     @Published var artworkImage = Image(.spotifyAlbumPlaceholder)
     
-    // MARK: Devices
+    // MARK: - Devices -
 
     /// Devices with `nil` for `id` and/or are restricted are filtered out.
     @Published var availableDevices: [Device] = []
@@ -120,7 +120,7 @@ class PlayerManager: ObservableObject {
             )
     }
 
-    // MARK: Playlists
+    // MARK: - Playlists -
 
     @Published var playlists: [Playlist<PlaylistItemsReference>] = []
     
@@ -147,11 +147,11 @@ class PlayerManager: ObservableObject {
         }
     }
     
-    // MARK: Notification
+    // MARK: - Notification -
     
     let notificationSubject = PassthroughSubject<(title: String, message: String), Never>()
     
-    // MARK: Publishers
+    // MARK: - Publishers -
     
     let artworkURLDidChange = PassthroughSubject<Void, Never>()
     
@@ -173,7 +173,7 @@ class PlayerManager: ObservableObject {
     private var isUpdatingCurrentlyPlayingContext = false
     private var didUpdateCurrentlyPlayingContext = PassthroughSubject<Void, Never>()
     
-    // MARK: Cancellables
+    // MARK: - Cancellables -
     private var cancellables: Set<AnyCancellable> = []
     private var retrieveAvailableDevicesCancellable: AnyCancellable? = nil
     private var loadArtworkImageCancellable: AnyCancellable? = nil
@@ -258,7 +258,7 @@ class PlayerManager: ObservableObject {
 
     }
     
-    // MARK: Playback State
+    // MARK: - Playback State -
     
     func updatePlayerState() {
         
@@ -509,7 +509,7 @@ class PlayerManager: ObservableObject {
         
     }
     
-    // MARK: Player Controls
+    // MARK: - Player Controls -
     
     func cycleRepeatMode() {
         self.repeatMode.cycle()
@@ -617,7 +617,7 @@ class PlayerManager: ObservableObject {
         self.setPlayerPosition(to: CGFloat(newPosition))
     }
 
-    // MARK: Playlists
+    // MARK: - Playlists -
     
     func playPlaylist(
         _ playlist: Playlist<PlaylistItemsReference>
@@ -700,7 +700,7 @@ class PlayerManager: ObservableObject {
         }
     }
     
-    // MARK: User
+    // MARK: - User -
     
     func retrieveCurrentUser() {
         
@@ -731,7 +731,7 @@ class PlayerManager: ObservableObject {
 
     }
 
-    // MARK: Images
+    // MARK: - Images -
     
     func retrievePlaylistImages() {
         for playlist in self.playlists {
@@ -949,7 +949,7 @@ class PlayerManager: ObservableObject {
     }
 
 
-    // MARK: Notification
+    // MARK: - Notification -
     
     func presentNotification(title: String, message: String) {
         self.notificationSubject.send(
@@ -957,7 +957,7 @@ class PlayerManager: ObservableObject {
         )
     }
 
-    // MARK: Key Events
+    // MARK: - Key Events -
     
     /// Returns `true` if the key event was handled; else, `false`.
     func receiveKeyEvent(
@@ -1066,7 +1066,7 @@ class PlayerManager: ObservableObject {
     
 }
 
-// MARK: Private Members
+// MARK: - - Private Members - -
 
 private extension PlayerManager {
     
