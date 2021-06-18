@@ -1030,11 +1030,7 @@ class PlayerManager: ObservableObject {
                     "onlyShowMyPlaylists = \(self.onlyShowMyPlaylists)"
                 )
             case .settings:
-                NSApp.sendAction(
-                    #selector(AppDelegate.openSettingsWindow),
-                    to: nil,
-                    from: nil
-                )
+                AppDelegate.shared.openSettingsWindow()
             default:
                 return false
         }
