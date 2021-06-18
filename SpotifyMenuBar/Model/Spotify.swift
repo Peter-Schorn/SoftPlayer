@@ -221,7 +221,7 @@ final class Spotify: ObservableObject {
      */
     func authorize() {
 
-        let url = self.api.authorizationManager.makeAuthorizationURL(
+        guard let url = self.api.authorizationManager.makeAuthorizationURL(
             redirectURI: loginCallbackURL,
             codeChallenge: codeChallenge,
             state: authorizationState,
@@ -233,8 +233,11 @@ final class Spotify: ObservableObject {
                 .playlistModifyPublic,
                 .playlistModifyPrivate
             ]
-        )!
+        ) else {
+            fatalError("could not create authorization URL")
+        }
         
+        AppDelegate.shared.closePopover()
         NSWorkspace.shared.open(url)
         
     }

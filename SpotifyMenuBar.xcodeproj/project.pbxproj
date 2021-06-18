@@ -186,6 +186,32 @@
 			path = "Settings Views";
 			sourceTree = "<group>";
 		};
+		47CE919E267C7A40009BFF1C /* Main */ = {
+			isa = PBXGroup;
+			children = (
+				47832F492566474300AADEA3 /* RootView.swift */,
+				47FD3DF2256FA726000E2346 /* LoginView.swift */,
+				47FD3E02256FB031000E2346 /* PlayerView.swift */,
+			);
+			path = Main;
+			sourceTree = "<group>";
+		};
+		47CE919F267C7A47009BFF1C /* Other */ = {
+			isa = PBXGroup;
+			children = (
+				4789987725747F0F00866EE1 /* PlaybackPositionView.swift */,
+				47F6EC63257C96D7007079D2 /* SoundVolumeSlider.swift */,
+				4789987A25749FD500866EE1 /* CustomSliderView.swift */,
+				4712E603257FB1A100A881D5 /* NotificationView.swift */,
+				475878CD258731F1007EB435 /* CancelButton.swift */,
+				4703151D2583BEA800B2BDF2 /* FocusableTextField.swift */,
+				47038543257E801100D0E79A /* BlurView.swift */,
+				470315222583EED900B2BDF2 /* FocusView.swift */,
+				47891C942583128900063460 /* KeyEventHandler.swift */,
+			);
+			path = Other;
+			sourceTree = "<group>";
+		};
 		47D8CF7D256662FB0034FA1E /* Utilities */ = {
 			isa = PBXGroup;
 			children = (
@@ -232,18 +258,8 @@
 				47343A662582C90F00EF6750 /* Playlists Views */,
 				47343A672582C92200EF6750 /* Touchbar Views */,
 				4789A5B125885EB700A5E1E3 /* Settings Views */,
-				47832F492566474300AADEA3 /* RootView.swift */,
-				47FD3DF2256FA726000E2346 /* LoginView.swift */,
-				47FD3E02256FB031000E2346 /* PlayerView.swift */,
-				4789987725747F0F00866EE1 /* PlaybackPositionView.swift */,
-				47F6EC63257C96D7007079D2 /* SoundVolumeSlider.swift */,
-				4789987A25749FD500866EE1 /* CustomSliderView.swift */,
-				4712E603257FB1A100A881D5 /* NotificationView.swift */,
-				475878CD258731F1007EB435 /* CancelButton.swift */,
-				4703151D2583BEA800B2BDF2 /* FocusableTextField.swift */,
-				47038543257E801100D0E79A /* BlurView.swift */,
-				470315222583EED900B2BDF2 /* FocusView.swift */,
-				47891C942583128900063460 /* KeyEventHandler.swift */,
+				47CE919E267C7A40009BFF1C /* Main */,
+				47CE919F267C7A47009BFF1C /* Other */,
 			);
 			path = Views;
 			sourceTree = "<group>";

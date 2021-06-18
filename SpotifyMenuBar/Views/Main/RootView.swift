@@ -34,7 +34,20 @@ struct RootView: View {
     func handleRedirectURL(_ url: URL) {
 
         Loggers.general.trace("LoginView received redirect URL: \(url)")
-        
+
+        if self.spotify.isAuthorized {
+            self.showAlert(
+                title: "Your Spotify Account is Already Connected",
+                message: """
+                    If you would like to use another account, please log out \
+                    first.
+                    """
+            )
+            return
+        }
+
+        AppDelegate.shared.openPopover()
+
         self.spotify.isRetrievingTokens = true
         
         self.requestTokensCancellable = self.spotify.api.authorizationManager
@@ -55,6 +68,7 @@ struct RootView: View {
     ) {
         Loggers.general.trace("request tokens completion: \(completion)")
         self.spotify.isRetrievingTokens = false
+
         let alert = NSAlert()
         let alertTitle: String
         let alertMessage: String
@@ -63,7 +77,7 @@ struct RootView: View {
             case .finished:
                 alertTitle =
                         "Successfully connected to your Spotify account"
-                alertMessage = ""
+                alertMessage = "You may close the authorization page in your browser."
                 alert.alertStyle = .informational
             case .failure(let error):
                 alert.alertStyle = .warning
@@ -83,9 +97,20 @@ struct RootView: View {
         alert.messageText = alertTitle
         alert.informativeText = alertMessage
         alert.runModal()
+        
     }
     
-    
+    func showAlert(
+        title: String,
+        message: String
+    ) {
+        
+        let alert = NSAlert()
+        alert.messageText = title
+        alert.informativeText = message
+        alert.runModal()
+
+    }
 }
 
 struct RootView_Previews: PreviewProvider {
@@ -94,9 +119,8 @@ struct RootView_Previews: PreviewProvider {
     
     static var previews: some View {
 
-        ForEach(ColorScheme.allCases, id: \.self) { colorScheme in
+        Self.withAllColorSchemes {
             RootView()
-                .preferredColorScheme(colorScheme)
                 .environmentObject(playerManager)
                 .environmentObject(playerManager.spotify)
                 .onAppear(perform: onAppear)
