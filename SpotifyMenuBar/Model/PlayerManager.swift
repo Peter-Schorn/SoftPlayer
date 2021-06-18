@@ -252,7 +252,7 @@ class PlayerManager: ObservableObject {
                 self.playlistsLastModifiedDates = [:]
                 self.playlists = []
                 self.playlistsSortedByLastModifiedDate = []
-                self.removePlaylistImagesCache()
+                self.removeImagesCache()
             }
             .store(in: &cancellables)
 
@@ -760,45 +760,43 @@ class PlayerManager: ObservableObject {
                 "will retrieve image for playlist '\(playlist.name)'"
             )
             
-            self.spotify.api.playlistImage(playlist)
-                .flatMap { images -> AnyPublisher<Data, Error> in
-                    guard let image = images.smallest else {
-                        Loggers.images.warning(
-                            "images array was empty for '\(playlist.name)'"
-                        )
-                        return Empty().eraseToAnyPublisher()
-                    }
-                    return URLSession.shared.dataTaskPublisher(for: image.url)
-                        .map { data, response in data }
-                        .mapError { $0 as Error }
-                        .eraseToAnyPublisher()
-                }
-                .receive(on: RunLoop.main)
-                .sink(
-                    receiveCompletion: { completion in
-                        if case .failure(let error) = completion {
-                            Loggers.images.error(
-                                "couldn't retrieve playlist image: \(error)"
-                            )
+            if let image = playlist.images.smallest {
+                URLSession.shared.dataTaskPublisher(for: image.url)
+                    .receive(on: RunLoop.main)
+                    .sink(
+                        receiveCompletion: { completion in
+                            if case .failure(let error) = completion {
+                                Loggers.images.error(
+                                    "couldn't retrieve playlist image: \(error)"
+                                )
+                            }
+                        },
+                        receiveValue: { imageData, urlResponse in
+                            do {
+                                let identifier = try SpotifyIdentifier(
+                                    uri: playlist
+                                )
+                                self.saveImageToFile(
+                                    imageData: imageData,
+                                    identifier: identifier
+                                )
+                                
+                            } catch {
+                                
+                                Loggers.images.error(
+                                    """
+                                    couldn't get identifier for \
+                                    '\(playlist.name)': \(error)"
+                                    """
+                                )
+                                
+                            }
                         }
-                    },
-                    receiveValue: { imageData in
-                        do {
-                            self.saveImageToFile(
-                                imageData: imageData,
-                                identifier: try SpotifyIdentifier(uri: playlist)
-                            )
-                            
-                            
-                        } catch {
-                            Loggers.images.error(
-                                "couldn't convert to identifier: \(error)"
-                            )
-                        }
-                    }
-                )
-                .store(in: &cancellables)
-        }
+                    )
+                    .store(in: &cancellables)
+            }
+            
+        }  // for playlist in self.playlists
     }
 
     func image(for identifier: SpotifyIdentifier) -> Image? {
@@ -807,7 +805,7 @@ class PlayerManager: ObservableObject {
             return nil
         }
         let imageURL = categoryFolder.appendingPathComponent(
-            identifier.id, isDirectory: false
+            "\(identifier.id).tiff", isDirectory: false
         )
         guard FileManager.default.fileExists(atPath: imageURL.path) else {
             return nil
@@ -833,7 +831,7 @@ class PlayerManager: ObservableObject {
     
     /// Returns the folder in which the image is stored, not the full path.
     func imageFolderURL(for identifier: SpotifyIdentifier) -> URL? {
-        return imagesFolder?.appendingPathComponent(
+        return self.imagesFolder?.appendingPathComponent(
             identifier.idCategory.rawValue, isDirectory: true
         )
     }
@@ -845,9 +843,9 @@ class PlayerManager: ObservableObject {
         }
         
         let imageURL = categoryFolder.appendingPathComponent(
-            identifier.id, isDirectory: false
+            "\(identifier.id).tiff", isDirectory: false
         )
-        // imagePath = Library/Application Support/images/category/id
+        // imagePath = Library/Application Support/images/category/id.tiff
         
         do {
             try FileManager.default.createDirectory(
@@ -871,7 +869,8 @@ class PlayerManager: ObservableObject {
 
     }
     
-    func removePlaylistImagesCache() {
+    /// Removes the folder containing the images.
+    func removeImagesCache() {
         do {
             if let folder = self.imagesFolder {
                 Loggers.playerManager.trace("will delete folder: \(folder)")
