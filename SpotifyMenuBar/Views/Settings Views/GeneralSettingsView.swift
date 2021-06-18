@@ -10,7 +10,7 @@ struct GeneralSettingsView: View {
     var body: some View {
         Form {
             Button(
-                "Show Images Cache Folder",
+                "Show Images Folder",
                 action: showImagesCacheFolder
             )
             .disabled(!spotify.isAuthorized)

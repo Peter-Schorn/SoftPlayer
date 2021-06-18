@@ -29,20 +29,37 @@ final class Spotify: ObservableObject {
         return __clientId__
     }()
     
-    private static let clientSecret: String = {
-        
-        if let clientSecret = ProcessInfo.processInfo.environment["CLIENT_SECRET"] {
-            return clientSecret
-        }
-
-        let __clientSecret__ = ""
-        if __clientSecret__.isEmpty {
+    private static let tokensURL: URL = {
+       
+        let __tokensURL__ = ""
+        if __tokensURL__.isEmpty {
             fatalError(
-                "failed to inject value for client secret in pre-build script"
+                "failed to inject value for tokens URL in pre-build script"
             )
         }
-        return __clientSecret__
+        if let url = URL(string: __tokensURL__) {
+            return url
+        }
+        fatalError("could not convert to URL: '\(__tokensURL__)'")
+
     }()
+    
+    private static let tokensRefreshURL: URL = {
+        
+        let __tokensRefreshURL__ = ""
+        if __tokensRefreshURL__.isEmpty {
+            fatalError(
+                "failed to inject value for tokens refresh URL in pre-build script"
+            )
+        }
+        if let url = URL(string: __tokensRefreshURL__) {
+            return url
+        }
+        fatalError("could not convert to URL: '\(__tokensRefreshURL__)'")
+        
+    }()
+    
+
     
     /// The key in the keychain that is used to store the authorization
     /// information: "authorizationManager".
@@ -92,8 +109,12 @@ final class Spotify: ObservableObject {
     let keychain = Keychain(service: "com.Peter-Schorn.SpotifyMenuBar")
     
     let api = SpotifyAPI(
-        authorizationManager: AuthorizationCodeFlowPKCEManager(
-            clientId: Spotify.clientId
+        authorizationManager: AuthorizationCodeFlowPKCEBackendManager(
+            backend: AuthorizationCodeFlowPKCEProxyBackend(
+                clientId: Spotify.clientId,
+                tokensURL: Spotify.tokensURL,
+                tokenRefreshURL: Spotify.tokensRefreshURL
+            )
         )
     )
     
@@ -147,7 +168,7 @@ final class Spotify: ObservableObject {
             do {
                 // Try to decode the data.
                 let authorizationManager = try JSONDecoder().decode(
-                    AuthorizationCodeFlowPKCEManager.self,
+                    AuthorizationCodeFlowPKCEBackendManager<AuthorizationCodeFlowPKCEProxyBackend>.self,
                     from: authManagerData
                 )
                 Loggers.spotify.trace(
