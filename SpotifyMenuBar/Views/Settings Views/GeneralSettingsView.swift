@@ -29,7 +29,7 @@ struct GeneralSettingsView: View {
             .disabled(!spotify.isAuthorized)
             
             Text(
-                "All personal data will be removed"
+                "All user data will be removed"
             )
             .font(.footnote)
             .foregroundColor(.secondary)

@@ -8,11 +8,15 @@ import KeyboardShortcuts
 @NSApplicationMain
 class AppDelegate: NSObject, NSApplicationDelegate {
 
+    static var shared: AppDelegate {
+        NSApplication.shared.delegate as! AppDelegate
+    }
+
     static let popoverWidth: CGFloat = 250
     static let popoverHeight: CGFloat = 460
     
     var settingsWindow: NSWindow? = nil
-    
+
     var popover: NSPopover!
     var statusBarItem: NSStatusItem!
     
@@ -53,6 +57,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
              button.image = NSImage(named: "music.note")
              button.action = #selector(togglePopover(_:))
         }
+        else {
+            Loggers.general.critical(
+                "AppDelegate.statusBarItem.button was nil"
+            )
+        }
         
     }
 
@@ -60,23 +69,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Insert code here to tear down your application
     }
 
-    @objc func togglePopover(_ sender: AnyObject?) {
-        if let button = self.statusBarItem.button {
-            if self.popover.isShown {
-                self.popover.performClose(sender)
-            }
-            else {
-                self.playerManager.popoverWillShow.send()
-                self.popover.show(
-                    relativeTo: button.bounds,
-                    of: button,
-                    preferredEdge: NSRectEdge.minY
-                )
-                self.popover.contentViewController?.view.window?.becomeKey()
-            }
-        }
-    }
-    
     func application(_ application: NSApplication, open urls: [URL]) {
         
         guard let url = urls.first else {
@@ -92,12 +84,27 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         spotify.redirectURLSubject.send(url)
         
     }
-    
-    @objc func openSettingsWindow() {
+
+    func applicationShouldTerminate(
+        _ sender: NSApplication
+    ) -> NSApplication.TerminateReply {
+        
+        return .terminateNow
+        
+    }
+
+    // MARK: - Manage Windows -
+
+    func openSettingsWindow() {
+        
+        self.closePopover()
+        
         if self.settingsWindow == nil {
+            
             let settingsView = SettingsView()
-                .environmentObject(spotify)
-                .environmentObject(playerManager)
+                .environmentObject(self.spotify)
+                .environmentObject(self.playerManager)
+            
             self.settingsWindow = NSWindow(
                 contentRect: NSRect(x: 0, y: 0, width: 400, height: 450),
                 styleMask: [
@@ -110,15 +117,25 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 backing: .buffered,
                 defer: false
             )
+            
             self.settingsWindow?.center()
             self.settingsWindow?.setFrameAutosaveName("Settings")
             self.settingsWindow?.title = "Settings"
             self.settingsWindow?.isReleasedWhenClosed = false
-            self.settingsWindow?.contentView = NSHostingView(rootView: settingsView)
+            self.settingsWindow?.contentView = NSHostingView(
+                rootView: settingsView
+            )
             
         }
-        assert(self.settingsWindow != nil)
-        self.settingsWindow?.makeKeyAndOrderFront(nil)
+        
+        assert(
+            self.settingsWindow != nil,
+            "AppDelegate.settingsWindow was nil"
+        )
+        
+        self.settingsWindow?.orderFrontRegardless()
+        self.settingsWindow?.makeKey()
+            
     }
     
     /// Global variables are lazily initialized, but this program relies on the
@@ -138,18 +155,46 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         print(Name.settings, to: &sink)
     }
 
-    func applicationShouldTerminate(
-        _ sender: NSApplication
-    ) -> NSApplication.TerminateReply {
-        
-        return .terminateNow
-
-    }
-
 }
+
+// MARK: - Popover -
 
 extension AppDelegate: NSPopoverDelegate {
     
+    @objc func togglePopover(_ sender: AnyObject?) {
+        if self.popover.isShown {
+            self.closePopover()
+        }
+        else {
+            self.openPopover()
+        }
+    }
+    
+    func openPopover() {
+        
+        guard let button = self.statusBarItem.button else {
+            Loggers.general.critical(
+                "AppDelegate.statusBarItem.button was nil"
+            )
+            return
+        }
+
+        self.popover.show(
+            relativeTo: button.bounds,
+            of: button,
+            preferredEdge: NSRectEdge.minY
+        )
+        self.popover.contentViewController?.view.window?.becomeKey()
+    }
+
+    func closePopover() {
+        self.popover.performClose(nil)
+    }
+    
+    func popoverWillShow(_ notification: Notification) {
+        self.playerManager.popoverWillShow.send()
+    }
+
     func popoverDidClose(_ notification: Notification) {
         self.playerManager.popoverDidClose.send()
     }

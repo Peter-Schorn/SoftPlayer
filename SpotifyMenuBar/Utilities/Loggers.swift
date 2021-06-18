@@ -9,7 +9,7 @@ enum Loggers {
     
     static let general = Logger(
         label: "General",
-        level: .trace
+        level: .warning
     )
     
     static let spotify = Logger(
@@ -19,12 +19,12 @@ enum Loggers {
 
     static let playerManager = Logger(
         label: "PlayerManager",
-        level: .trace
+        level: .warning
     )
     
     static let playerState = Logger(
         label: "PlayerState",
-        level: .trace
+        level: .warning
     )
     
     static let artwork = Logger(
@@ -79,7 +79,7 @@ enum Loggers {
     
     static let soundVolumeAndPlayerPosition = Logger(
         label: "SoundVolumeAndPlayerPosition",
-        level: .trace
+        level: .warning
     )
     
 }

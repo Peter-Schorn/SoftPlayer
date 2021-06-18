@@ -233,11 +233,8 @@ struct PlayerView: View {
 
                     // MARK: Show SettingsView Button
                     Button(action: {
-                        NSApp.sendAction(
-                            #selector(AppDelegate.openSettingsWindow),
-                            to: nil,
-                            from: nil
-                        )
+                        AppDelegate.shared.openSettingsWindow()
+                        
                     }, label: {
                         Image(systemName: "gearshape.fill")
                     })
