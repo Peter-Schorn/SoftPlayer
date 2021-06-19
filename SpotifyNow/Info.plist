@@ -24,10 +24,10 @@
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
 			<key>CFBundleURLName</key>
-			<string>com.Peter-Schorn.SpotifyMenuBar</string>
+			<string>com.Peter-Schorn.SpotifyNow</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>peter-schorn-spotifymenubar</string>
+				<string>peter-schorn-spotify-now</string>
 			</array>
 		</dict>
 	</array>

@@ -26,7 +26,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         
-        SpotifyMenuBarLogHandler.bootstrap()
+        SpotifyNowLogHandler.bootstrap()
 
         self.initializeKeyboardShortcutNames()
 
@@ -54,7 +54,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             withLength: NSStatusItem.squareLength
         )
         if let button = self.statusBarItem.button {
-             button.image = NSImage(named: "music.note")
+             button.image = NSImage(.musicNote)
              button.action = #selector(togglePopover(_:))
         }
         else {
