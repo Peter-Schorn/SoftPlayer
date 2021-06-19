@@ -1,5 +1,5 @@
 cd $PROJECT_DIR
-cd SpotifyMenuBar/Model
+cd SpotifyNow/Model
 
 sed -r -i '' 's~(let __clientId__ = )".*"~\1""~' 'Spotify.swift'
 
