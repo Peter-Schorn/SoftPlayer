@@ -106,7 +106,7 @@ final class Spotify: ObservableObject {
     @Published var isRetrievingTokens = false
     
     /// The keychain to store the authorization information in.
-    let keychain = Keychain(service: "com.Peter-Schorn.SpotifyMenuBar")
+    let keychain = Keychain(service: "com.Peter-Schorn.SpotifyNow")
     
     let api = SpotifyAPI(
         authorizationManager: AuthorizationCodeFlowPKCEBackendManager(
