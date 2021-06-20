@@ -18,7 +18,7 @@ struct PlayPauseButton: View {
 
     var body: some View {
         Button(action: playerManager.playPause, label: {
-            if self.playerManager.player.playerState == .playing {
+            if self.playerManager.spotifyApplication?.playerState == .playing {
                 Image(systemName: "pause.circle.fill")
                     .resizable()
             }

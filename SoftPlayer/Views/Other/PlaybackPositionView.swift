@@ -46,7 +46,7 @@ struct PlaybackPositionView: View {
         }
         .onReceive(timer) { _ in
             if self.playerManager.isDraggingPlaybackPositionView ||
-                    self.playerManager.player.playerState != .playing {
+                self.playerManager.spotifyApplication?.playerState != .playing {
                 return
             }
             if playerManager.playerPosition + CGFloat(timerInterval) >= duration {
@@ -60,7 +60,7 @@ struct PlaybackPositionView: View {
     }
     
     var formattedPlaybackPosition: String {
-        if self.playerManager.player.playerPosition == nil {
+        if self.playerManager.spotifyApplication?.playerPosition == nil {
             return self.noPositionPlaceholder
         }
         return self.formattedTimestamp(
@@ -91,7 +91,7 @@ struct PlaybackPositionView: View {
             \(self.playerManager.playerPosition)
             """
         )
-        self.playerManager.player.setPlayerPosition?(
+        self.playerManager.spotifyApplication?.setPlayerPosition?(
             Double(self.playerManager.playerPosition)
         )
     }
