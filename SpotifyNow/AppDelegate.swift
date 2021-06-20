@@ -54,8 +54,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             withLength: NSStatusItem.squareLength
         )
         if let button = self.statusBarItem.button {
-             button.image = NSImage(.musicNote)
-             button.action = #selector(togglePopover(_:))
+            // MARK: Menu Bar Icon Image
+            let menuBarIcon = NSImage(.musicNoteCircle)
+            menuBarIcon.size = NSSize(width: 18, height: 18)
+            button.image = menuBarIcon
+            button.action = #selector(togglePopover(_:))
         }
         else {
             Loggers.general.critical(
