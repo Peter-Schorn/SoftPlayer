@@ -1,5 +1,5 @@
 cd $SRCROOT
-cd SpotifyNow/Model
+cd MusicNow/Model
 
 source ~/.local/spotify_now_credentials.sh
 

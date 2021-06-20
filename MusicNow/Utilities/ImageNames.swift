@@ -10,6 +10,7 @@ enum ImageName: String {
     case spotifyAlbumPlaceholder = "spotify album placeholder"
     case musicNote = "music.note"
     case musicNoteCircle = "music.note.circle"
+    case musicNoteCircleWhite = "music.note.circle.white"
     case vinyl = "vinyl"
     case vinylSmall = "vinyl_small_png"
     
