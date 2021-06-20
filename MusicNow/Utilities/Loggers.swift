@@ -84,7 +84,7 @@ enum Loggers {
     
 }
 
-struct SpotifyNowLogHandler: LogHandler {
+struct MusicNowLogHandler: LogHandler {
 
     static func convertToOSLogLevel(_ level: Logger.Level) -> OSLogType {
         switch level {
