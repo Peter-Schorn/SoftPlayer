@@ -165,9 +165,9 @@ class PlayerManager: ObservableObject {
     let playerStateDidChange = DistributedNotificationCenter
         .default().publisher(for: .spotifyPlayerStateDidChange)
 
-    let player: SpotifyApplication = SBApplication(
+    let spotifyApplication: SpotifyApplication? = SBApplication(
         bundleIdentifier: "com.spotify.client"
-    )!
+    )
     
     private var previousArtworkURL: String? = nil
     private var isUpdatingCurrentlyPlayingContext = false
@@ -256,8 +256,27 @@ class PlayerManager: ObservableObject {
             }
             .store(in: &cancellables)
 
+        if self.spotifyApplication == nil {
+            self.showSpotifyNotInstalledAlert()
+        }
+
     }
     
+    func showSpotifyNotInstalledAlert() {
+        
+        let alert = NSAlert()
+        alert.messageText = "Could not Connect to the Spotify Application"
+        alert.informativeText = """
+            The Spotify Desktop Application is not installed or could not be \
+            found. Therefore, most of the functions of this app will not work.
+            If the Spotify Application is installed, try moving it to the \
+            applications folder; then, restart this app.
+            """
+        
+        alert.runModal()
+
+    }
+
     // MARK: - Playback State -
     
     func updatePlayerState() {
@@ -277,11 +296,11 @@ class PlayerManager: ObservableObject {
         Loggers.playerState.trace(
             """
             player state updated from '\(self.currentTrack?.name ?? "nil")' \
-            to '\(self.player.currentTrack?.name ?? "nil")'
+            to '\(self.spotifyApplication?.currentTrack?.name ?? "nil")'
             """
         )
-        self.currentTrack = self.player.currentTrack
-        self.shuffleIsOn = player.shuffling ?? false
+        self.currentTrack = self.spotifyApplication?.currentTrack
+        self.shuffleIsOn = spotifyApplication?.shuffling ?? false
         Loggers.shuffle.trace("self.shuffleIsOn = \(self.shuffleIsOn)")
         
         Loggers.artwork.trace("URL: '\(self.currentTrack?.artworkUrl ?? "nil")'")
@@ -294,14 +313,14 @@ class PlayerManager: ObservableObject {
             )
             self.artworkURLDidChange.send()
         }
-        self.previousArtworkURL = self.player.currentTrack?.artworkUrl
+        self.previousArtworkURL = self.spotifyApplication?.currentTrack?.artworkUrl
     }
     
     func updateSoundVolumeAndPlayerPosition(fromTimer: Bool = false) {
         Loggers.soundVolumeAndPlayerPosition.trace("")
         
         // MARK: Sound Volume
-        if let intSoundVolume = self.player.soundVolume {
+        if let intSoundVolume = self.spotifyApplication?.soundVolume {
             if self.isDraggingSoundVolumeSlider {
                 return
             }
@@ -331,7 +350,7 @@ class PlayerManager: ObservableObject {
         }
         
         // MARK: Player Position
-        if let playerPosition = self.player.playerPosition,
+        if let playerPosition = self.spotifyApplication?.playerPosition,
                 !self.isDraggingPlaybackPositionView {
             // if the player position was adjusted by the user three seconds ago
             // or less, then don't update it here.
@@ -396,7 +415,7 @@ class PlayerManager: ObservableObject {
     }
     
     func setPlayerPosition(to position: CGFloat) {
-        self.player.setPlayerPosition?(Double(position))
+        self.spotifyApplication?.setPlayerPosition?(Double(position))
         self.playerPosition = position
     }
     
@@ -470,12 +489,12 @@ class PlayerManager: ObservableObject {
                     },
                     receiveValue: { context in
                         guard let uriFromContext = context?.item?.uri,
-                              let uriFromAppleScript = self.player.currentTrack?.id?()
+                              let uriFromAppleScript = self.spotifyApplication?.currentTrack?.id?()
                         else {
                             return
                         }
                         let contextName = context?.item?.name ?? "nil"
-                        let appleScriptName = self.player.currentTrack?.name ?? "nil"
+                        let appleScriptName = self.spotifyApplication?.currentTrack?.name ?? "nil"
                         if uriFromContext == uriFromAppleScript {
                             Loggers.syncContext.trace(
                                 """
@@ -544,7 +563,7 @@ class PlayerManager: ObservableObject {
         Loggers.shuffle.trace(
             "will set shuffle to \(self.shuffleIsOn)"
         )
-        self.player.setShuffling?(
+        self.spotifyApplication?.setShuffling?(
             self.shuffleIsOn
         )
     }
@@ -573,14 +592,14 @@ class PlayerManager: ObservableObject {
     
     func skipToPreviousTrack() {
         Loggers.playerState.trace("")
-        self.player.previousTrack?()
+        self.spotifyApplication?.previousTrack?()
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             self.updatePlayerState()
         }
     }
     
     func seekBackwards15Seconds() {
-        guard let currentPosition = self.player.playerPosition else {
+        guard let currentPosition = self.spotifyApplication?.playerPosition else {
             Loggers.soundVolumeAndPlayerPosition.error(
                 "couldn't get player position"
             )
@@ -591,16 +610,16 @@ class PlayerManager: ObservableObject {
     }
     
     func playPause() {
-        self.player.playpause?()
+        self.spotifyApplication?.playpause?()
     }
 
     func skipToNextTrack() {
         Loggers.playerState.trace("")
-        self.player.nextTrack?()
+        self.spotifyApplication?.nextTrack?()
     }
     
     func seekForwards15Seconds() {
-        guard let currentPosition = self.player.playerPosition else {
+        guard let currentPosition = self.spotifyApplication?.playerPosition else {
             Loggers.soundVolumeAndPlayerPosition.error(
                 "couldn't get player position"
             )
@@ -1002,7 +1021,7 @@ class PlayerManager: ObservableObject {
                 let newSoundVolume = (self.soundVolume + 5)
                     .clamped(to: 0...100)
                 self.soundVolume = newSoundVolume
-                self.player.setSoundVolume?(
+                self.spotifyApplication?.setSoundVolume?(
                     Int(newSoundVolume)
                 )
             case .volumeDown:
@@ -1010,7 +1029,7 @@ class PlayerManager: ObservableObject {
                 let newSoundVolume = (self.soundVolume - 5)
                     .clamped(to: 0...100)
                 self.soundVolume = newSoundVolume
-                self.player.setSoundVolume?(
+                self.spotifyApplication?.setSoundVolume?(
                     Int(newSoundVolume)
                 )
             case .showPlaylists:

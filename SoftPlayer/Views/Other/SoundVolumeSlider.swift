@@ -22,11 +22,11 @@ struct SoundVolumeSlider: View {
         }
         .onChange(of: playerManager.soundVolume, perform: { newVolume in
             
-            let currentVolume = self.playerManager.player.soundVolume ?? 100
+            let currentVolume = self.playerManager.spotifyApplication?.soundVolume ?? 100
             let intNewVolume = Int(newVolume)
             
             if abs(intNewVolume - currentVolume) >= 2 {
-                self.playerManager.player.setSoundVolume?(intNewVolume)
+                self.playerManager.spotifyApplication?.setSoundVolume?(intNewVolume)
             }
             
         })
