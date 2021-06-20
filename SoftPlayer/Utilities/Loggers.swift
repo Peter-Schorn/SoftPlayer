@@ -84,7 +84,7 @@ enum Loggers {
     
 }
 
-struct MusicNowLogHandler: LogHandler {
+struct SoftPlayerLogHandler: LogHandler {
 
     static func convertToOSLogLevel(_ level: Logger.Level) -> OSLogType {
         switch level {
