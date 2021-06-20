@@ -9,6 +9,7 @@ enum ImageName: String {
     case spotifyLogoBlack = "spotify logo black"
     case spotifyAlbumPlaceholder = "spotify album placeholder"
     case musicNote = "music.note"
+    case musicNoteCircle = "music.note.circle"
     case vinyl = "vinyl"
     case vinylSmall = "vinyl_small_png"
     
@@ -28,8 +29,8 @@ extension NSImage {
     
     /// Creates an image using `ImageName`, an enum which contains the
     /// names of all the image assets.
-    convenience init?(_ name: ImageName) {
-        self.init(named: name.rawValue)
+    convenience init(_ name: ImageName) {
+        self.init(named: name.rawValue)!
     }
     
 }
