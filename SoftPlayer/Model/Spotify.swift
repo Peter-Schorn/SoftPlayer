@@ -20,7 +20,7 @@ final class Spotify: ObservableObject {
             return clientId
         }
 
-        let __clientId__ = "f9b05de1274c4851a2293a540cb8705e"
+        let __clientId__ = ""
         if __clientId__.isEmpty {
             fatalError(
                 "failed to inject value for client id in pre-build script"
@@ -31,7 +31,7 @@ final class Spotify: ObservableObject {
     
     private static let tokensURL: URL = {
        
-        let __tokensURL__ = "https://spotify-now-backend.herokuapp.com/authorization-code-flow-pkce/retrieve-tokens"
+        let __tokensURL__ = ""
         if __tokensURL__.isEmpty {
             fatalError(
                 "failed to inject value for tokens URL in pre-build script"
@@ -46,7 +46,7 @@ final class Spotify: ObservableObject {
     
     private static let tokensRefreshURL: URL = {
         
-        let __tokensRefreshURL__ = "https://spotify-now-backend.herokuapp.com/authorization-code-flow-pkce/refresh-tokens"
+        let __tokensRefreshURL__ = ""
         if __tokensRefreshURL__.isEmpty {
             fatalError(
                 "failed to inject value for tokens refresh URL in pre-build script"
@@ -106,7 +106,7 @@ final class Spotify: ObservableObject {
     @Published var isRetrievingTokens = false
     
     /// The keychain to store the authorization information in.
-    let keychain = Keychain(service: "com.Peter-Schorn.MusicNow")
+    let keychain = Keychain(service: "com.Peter-Schorn.SoftPlayer")
     
     let api = SpotifyAPI(
         authorizationManager: AuthorizationCodeFlowPKCEBackendManager(

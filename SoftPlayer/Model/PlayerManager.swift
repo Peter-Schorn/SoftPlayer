@@ -486,7 +486,7 @@ class PlayerManager: ObservableObject {
                             self.receiveCurrentlyPlayingContext(context)
                         }
                         else {
-                            let asyncDelay = 0.2 * Double(level) * 2
+                            let asyncDelay = 0.4 * Double(level)
                             Loggers.syncContext.warning(
                                 """
                                 uriFromContext != uriFromAppleScript
