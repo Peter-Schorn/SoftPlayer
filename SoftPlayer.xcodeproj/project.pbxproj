@@ -69,14 +69,14 @@
 		47699874257DDE8400B7D6F5 /* ViewExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewExtensions.swift; sourceTree = "<group>"; };
 		477560DF2580083200B7FFED /* SpotifyWebAPIExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotifyWebAPIExtensions.swift; sourceTree = "<group>"; };
 		477560E52580140D00B7FFED /* TouchBarPlaylistButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TouchBarPlaylistButton.swift; sourceTree = "<group>"; };
-		47832F442566474300AADEA3 /* MusicNow.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MusicNow.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		47832F442566474300AADEA3 /* Soft Player.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Soft Player.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		47832F472566474300AADEA3 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		47832F492566474300AADEA3 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		47832F4E2566474600AADEA3 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		47832F512566474600AADEA3 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		47832F542566474600AADEA3 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		47832F562566474600AADEA3 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		47832F572566474600AADEA3 /* MusicNow.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MusicNow.entitlements; sourceTree = "<group>"; };
+		47832F572566474600AADEA3 /* SoftPlayer.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SoftPlayer.entitlements; sourceTree = "<group>"; };
 		47891C942583128900063460 /* KeyEventHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyEventHandler.swift; sourceTree = "<group>"; };
 		4789987725747F0F00866EE1 /* PlaybackPositionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaybackPositionView.swift; sourceTree = "<group>"; };
 		4789987A25749FD500866EE1 /* CustomSliderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomSliderView.swift; sourceTree = "<group>"; };
@@ -139,7 +139,7 @@
 		47832F3B2566474300AADEA3 = {
 			isa = PBXGroup;
 			children = (
-				47832F462566474300AADEA3 /* MusicNow */,
+				47832F462566474300AADEA3 /* SoftPlayer */,
 				47832F452566474300AADEA3 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -147,12 +147,12 @@
 		47832F452566474300AADEA3 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				47832F442566474300AADEA3 /* MusicNow.app */,
+				47832F442566474300AADEA3 /* Soft Player.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		47832F462566474300AADEA3 /* MusicNow */ = {
+		47832F462566474300AADEA3 /* SoftPlayer */ = {
 			isa = PBXGroup;
 			children = (
 				47832F472566474300AADEA3 /* AppDelegate.swift */,
@@ -162,10 +162,10 @@
 				47832F4E2566474600AADEA3 /* Assets.xcassets */,
 				47832F532566474600AADEA3 /* Main.storyboard */,
 				47832F562566474600AADEA3 /* Info.plist */,
-				47832F572566474600AADEA3 /* MusicNow.entitlements */,
+				47832F572566474600AADEA3 /* SoftPlayer.entitlements */,
 				47832F502566474600AADEA3 /* Preview Content */,
 			);
-			path = MusicNow;
+			path = SoftPlayer;
 			sourceTree = "<group>";
 		};
 		47832F502566474600AADEA3 /* Preview Content */ = {
@@ -267,9 +267,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		47832F432566474300AADEA3 /* MusicNow */ = {
+		47832F432566474300AADEA3 /* Soft Player */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 47832F5A2566474600AADEA3 /* Build configuration list for PBXNativeTarget "MusicNow" */;
+			buildConfigurationList = 47832F5A2566474600AADEA3 /* Build configuration list for PBXNativeTarget "Soft Player" */;
 			buildPhases = (
 				47832F402566474300AADEA3 /* Sources */,
 				47832F412566474300AADEA3 /* Frameworks */,
@@ -279,7 +279,7 @@
 			);
 			dependencies = (
 			);
-			name = MusicNow;
+			name = "Soft Player";
 			packageProductDependencies = (
 				47D8CF882566679C0034FA1E /* SpotifyAPI */,
 				47FD3DED256FA52B000E2346 /* KeychainAccess */,
@@ -288,7 +288,7 @@
 				47F35FAD2588844C007C754A /* KeyboardShortcuts */,
 			);
 			productName = SpotifyMenuBar;
-			productReference = 47832F442566474300AADEA3 /* MusicNow.app */;
+			productReference = 47832F442566474300AADEA3 /* Soft Player.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -305,7 +305,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 47832F3F2566474300AADEA3 /* Build configuration list for PBXProject "MusicNow" */;
+			buildConfigurationList = 47832F3F2566474300AADEA3 /* Build configuration list for PBXProject "SoftPlayer" */;
 			compatibilityVersion = "Xcode 9.3";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -325,7 +325,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				47832F432566474300AADEA3 /* MusicNow */,
+				47832F432566474300AADEA3 /* Soft Player */,
 			);
 		};
 /* End PBXProject section */
@@ -523,22 +523,22 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = MusicNow/MusicNow.entitlements;
+				CODE_SIGN_ENTITLEMENTS = SoftPlayer/SoftPlayer.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				DEVELOPMENT_ASSET_PATHS = "\"MusicNow/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = "\"SoftPlayer/Preview Content\"";
 				DEVELOPMENT_TEAM = NB77K8UB8Y;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
-				INFOPLIST_FILE = MusicNow/Info.plist;
+				INFOPLIST_FILE = SoftPlayer/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "Peter-Schorn.MusicNow";
+				PRODUCT_BUNDLE_IDENTIFIER = "Peter-Schorn.SoftPlayer";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_VERSION = 5.0;
@@ -550,22 +550,22 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = MusicNow/MusicNow.entitlements;
+				CODE_SIGN_ENTITLEMENTS = SoftPlayer/SoftPlayer.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				DEVELOPMENT_ASSET_PATHS = "\"MusicNow/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = "\"SoftPlayer/Preview Content\"";
 				DEVELOPMENT_TEAM = NB77K8UB8Y;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
-				INFOPLIST_FILE = MusicNow/Info.plist;
+				INFOPLIST_FILE = SoftPlayer/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "Peter-Schorn.MusicNow";
+				PRODUCT_BUNDLE_IDENTIFIER = "Peter-Schorn.SoftPlayer";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_VERSION = 5.0;
@@ -575,7 +575,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		47832F3F2566474300AADEA3 /* Build configuration list for PBXProject "MusicNow" */ = {
+		47832F3F2566474300AADEA3 /* Build configuration list for PBXProject "SoftPlayer" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				47832F582566474600AADEA3 /* Debug */,
@@ -584,7 +584,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		47832F5A2566474600AADEA3 /* Build configuration list for PBXNativeTarget "MusicNow" */ = {
+		47832F5A2566474600AADEA3 /* Build configuration list for PBXNativeTarget "Soft Player" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				47832F5B2566474600AADEA3 /* Debug */,

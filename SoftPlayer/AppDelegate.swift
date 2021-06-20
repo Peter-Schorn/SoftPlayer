@@ -26,7 +26,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         
-        MusicNowLogHandler.bootstrap()
+        SoftPlayerLogHandler.bootstrap()
 
         self.initializeKeyboardShortcutNames()
 

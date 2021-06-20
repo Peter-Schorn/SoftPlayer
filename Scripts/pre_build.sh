@@ -1,7 +1,7 @@
 cd $SRCROOT
-cd MusicNow/Model
+cd SoftPlayer/Model
 
-source ~/.local/spotify_now_credentials.sh
+source ~/.local/soft_player_credentials.sh
 
 sed -r -i '' "s~(let __clientId__ = )\".*\"~\1\"$CLIENT_ID\"~" 'Spotify.swift'
 
