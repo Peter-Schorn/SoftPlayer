@@ -48,7 +48,6 @@ class PlayerManager: ObservableObject {
     /// app.
     var lastAdjustedSoundVolumeSliderDate: Date? = nil
     
-    
     /// Retrieved from the Spotify web API.
     @Published var currentlyPlayingContext: CurrentlyPlayingContext? = nil
 
