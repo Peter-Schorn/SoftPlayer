@@ -16,16 +16,8 @@ struct PlayerView: View {
     
     @Namespace var namespace
     
-    @State private var isShowingMiniPlayerViewBackground = false
-    
-    @State private var isFirstResponder = false
-    
     @State private var cancellables: Set<AnyCancellable> = []
 
-    var appDelegate: AppDelegate {
-        NSApplication.shared.delegate as! AppDelegate
-    }
-    
     // MARK: Geometry Effect Constants
     
     var playerViewIsSource: Bool {
@@ -85,24 +77,12 @@ struct PlayerView: View {
             width: AppDelegate.popoverWidth,
             height: AppDelegate.popoverHeight
         )
-        .onChange(of: playerManager.isShowingPlaylistsView) { isShowing in
-            if isShowing {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                    withAnimation(.linear(duration: 0.2)) {
-                        self.isShowingMiniPlayerViewBackground = true
-                    }
-                }
-            }
-            else {
-                self.isShowingMiniPlayerViewBackground = false
-            }
-        }
         .onExitCommand {
             if self.playerManager.isShowingPlaylistsView {
                 self.playerManager.dismissPlaylistsView(animated: true)
             }
             else {
-                appDelegate.popover.performClose(nil)
+                AppDelegate.shared.closePopover()
             }
         }
 
@@ -259,7 +239,7 @@ struct PlayerView: View {
             }
             .touchBar(content: PlayPlaylistsTouchBarView.init)
         )
-//        .border(Color.green, width: 5)
+        
     }
     
     var miniPlayerView: some View {
@@ -384,9 +364,7 @@ struct PlayerView: View {
         .background(
             Rectangle()
                 .fill(BackgroundStyle())
-                .if(isShowingMiniPlayerViewBackground) {
-                    $0.adaptiveShadow(radius: 3, y: 2)
-                }
+                .adaptiveShadow(radius: 3, y: 2)
         )
         
     }
