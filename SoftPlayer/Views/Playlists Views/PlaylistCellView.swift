@@ -80,7 +80,6 @@ struct PlaylistCellView: View {
         .disabled(isSelected)
         .padding(.leading, 8)
         .padding(.trailing, 15)
-//        .padding(.trailing, 5)
         
     }
     
