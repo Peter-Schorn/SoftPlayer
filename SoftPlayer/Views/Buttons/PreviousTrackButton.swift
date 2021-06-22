@@ -34,7 +34,7 @@ struct PreviousTrackButton: View {
                     .font(size == .large ? .title : .body)
             })
             .buttonStyle(PlainButtonStyle())
-            .help("Seek backwords 15 seconds\(shortcutName)")
+            .help("Seek backwards 15 seconds\(shortcutName)")
         }
         else {
             Image(systemName: "backward.end.fill")
