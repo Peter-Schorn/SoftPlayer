@@ -86,11 +86,13 @@ struct CustomSliderView: View {
     
     func knobOffset(_ geometry: GeometryProxy) -> CGFloat {
         let maxKnobOffset = geometry.size.width - self.knobDiameter
-        return max(0, self.value.map(from: self.range, to: 0...maxKnobOffset))
+        let result = max(0, self.value.map(from: self.range, to: 0...maxKnobOffset))
+        return result
     }
     
     func leadingRectangleWidth(_ geometry: GeometryProxy) -> CGFloat {
-        return max(0, knobOffset(geometry) + knobDiameter / 2)
+        let result = max(0, knobOffset(geometry) + knobDiameter / 2)
+        return result
     }
     
     func knobDragGesture(_ geometry: GeometryProxy) -> some Gesture {

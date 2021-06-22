@@ -5,8 +5,14 @@ import ScriptingBridge
 import Logging
 import SpotifyWebAPI
 import KeyboardShortcuts
+import os
 
 class PlayerManager: ObservableObject {
+
+    static let osLog = OSLog(
+        subsystem: Bundle.main.bundleIdentifier!,
+        category: .pointsOfInterest
+    )
 
     let spotify: Spotify
     
@@ -16,26 +22,17 @@ class PlayerManager: ObservableObject {
     @Published var isDraggingPlaybackPositionView = false
     @Published var isDraggingSoundVolumeSlider = false
     
+    // MARK: - Images -
+    
+    var images: [SpotifyIdentifier: Image] = [:]
+
     // MARK: - Player State -
     
     /// Retrieved from the Spotify desktop application using AppleScript.
-    @Published var currentTrack: SpotifyTrack? = nil
+    var currentTrack: SpotifyTrack? = nil
+    var albumArtistTitle = ""
     
-    var albumArtistTitle: String {
-        let albumName = self.currentTrack?.album
-        if let artistName = self.currentTrack?.artist, !artistName.isEmpty {
-            if let albumName = albumName, !albumName.isEmpty {
-                return "\(artistName) - \(albumName)"
-            }
-            return artistName
-        }
-        if let albumName = albumName, !albumName.isEmpty {
-            return albumName
-        }
-        return ""
-    }
-    
-    @Published var shuffleIsOn = false
+    var shuffleIsOn = false
     @Published var repeatMode = RepeatMode.off
     @Published var playerPosition: CGFloat = 0
     @Published var soundVolume: CGFloat = 100
@@ -278,6 +275,25 @@ class PlayerManager: ObservableObject {
 
     // MARK: - Playback State -
     
+    func setAlbumArtistTitle() {
+        let currentTrack = self.currentTrack
+        let albumName = currentTrack?.album
+        if let artistName = currentTrack?.artist, !artistName.isEmpty {
+            if let albumName = albumName, !albumName.isEmpty {
+                self.albumArtistTitle = "\(artistName) - \(albumName)"
+            }
+            else {
+                self.albumArtistTitle = artistName
+            }
+        }
+        else if let albumName = albumName, !albumName.isEmpty {
+            self.albumArtistTitle = albumName
+        }
+        else {
+            self.albumArtistTitle = ""
+        }
+    }
+
     func updatePlayerState() {
         
         Loggers.playerState.trace("will update player state")
@@ -299,6 +315,7 @@ class PlayerManager: ObservableObject {
             """
         )
         self.currentTrack = self.spotifyApplication?.currentTrack
+        self.setAlbumArtistTitle()
         self.shuffleIsOn = spotifyApplication?.shuffling ?? false
         Loggers.shuffle.trace("self.shuffleIsOn = \(self.shuffleIsOn)")
         
@@ -313,6 +330,7 @@ class PlayerManager: ObservableObject {
             self.artworkURLDidChange.send()
         }
         self.previousArtworkURL = self.spotifyApplication?.currentTrack?.artworkUrl
+        self.objectWillChange.send()
     }
     
     func updateSoundVolumeAndPlayerPosition(fromTimer: Bool = false) {
@@ -752,72 +770,71 @@ class PlayerManager: ObservableObject {
     // MARK: - Images -
     
     func retrievePlaylistImages() {
+        
         for playlist in self.playlists {
             
-            // check to see if the image has already been downloaded.
+            let playlistIdentifier: SpotifyIdentifier
             do {
-                let identifier = try SpotifyIdentifier(uri: playlist.uri)
-                if let imageFolder = self.imageFolderURL(for: identifier) {
-                    let imageURL = imageFolder.appendingPathComponent(
-                        identifier.id, isDirectory: false
-                    )
-                    if FileManager.default.fileExists(atPath: imageURL.path) {
-                        // don't download the image again if it has already
-                        // been downloaded.
-                        continue
-                    }
-                }
+                playlistIdentifier = try SpotifyIdentifier(uri: playlist)
                 
             } catch {
                 Loggers.images.error(
-                    "couldn't get identifier for '\(playlist.name)': \(error)"
+                    """
+                    couldn't get identifier for '\(playlist.name)': \(error)
+                    """
                 )
+                continue
+            }
+            
+            guard self.images[playlistIdentifier] == nil else {
+                // the image already exists in the cache, so we don't need
+                // to retrieve it again
+                continue
             }
 
+            guard let spotifyImage = playlist.images.smallest else {
+                Loggers.images.warning(
+                    "no images exist for '\(playlist.name)'"
+                )
+                continue
+            }
+            
             Loggers.images.notice(
                 "will retrieve image for playlist '\(playlist.name)'"
             )
             
-            if let image = playlist.images.smallest {
-                URLSession.shared.dataTaskPublisher(for: image.url)
-                    .receive(on: RunLoop.main)
-                    .sink(
-                        receiveCompletion: { completion in
-                            if case .failure(let error) = completion {
-                                Loggers.images.error(
-                                    "couldn't retrieve playlist image: \(error)"
-                                )
-                            }
-                        },
-                        receiveValue: { imageData, urlResponse in
-                            do {
-                                let identifier = try SpotifyIdentifier(
-                                    uri: playlist
-                                )
-                                self.saveImageToFile(
-                                    imageData: imageData,
-                                    identifier: identifier
-                                )
-                                
-                            } catch {
-                                
-                                Loggers.images.error(
-                                    """
-                                    couldn't get identifier for \
-                                    '\(playlist.name)': \(error)"
-                                    """
-                                )
-                                
-                            }
+            // we need to download the playlist image again
+            URLSession.shared.dataTaskPublisher(for: spotifyImage.url)
+                .sink(
+                    receiveCompletion: { completion in
+                        if case .failure(let error) = completion {
+                            Loggers.images.error(
+                                "couldn't retrieve playlist image: \(error)"
+                            )
                         }
-                    )
-                    .store(in: &cancellables)
-            }
+                    },
+                    receiveValue: { imageData, urlResponse in
+                        self.saveImageToFile(
+                            imageData: imageData,
+                            identifier: playlistIdentifier
+                        )
+                    }
+                )
+                .store(in: &self.cancellables)
             
         }  // for playlist in self.playlists
+            
     }
 
     func image(for identifier: SpotifyIdentifier) -> Image? {
+        
+        if let image = self.images[identifier] {
+            return image
+        }
+        
+        Loggers.images.notice(
+            "could not find image in cache for \(identifier.uri)"
+        )
         
         guard let categoryFolder = self.imageFolderURL(for: identifier) else {
             return nil
@@ -833,13 +850,13 @@ class PlayerManager: ObservableObject {
             if let nsImage = NSImage(data: imageData) {
                 return Image(nsImage: nsImage)
             }
-            Loggers.playerManager.error(
+            Loggers.images.error(
                 "couldn't convert data to image for \(identifier.uri)"
             )
             return nil
             
         } catch {
-            Loggers.playerManager.error(
+            Loggers.images.error(
                 "couldn't get image for \(identifier.uri): \(error)"
             )
             return nil
@@ -856,33 +873,46 @@ class PlayerManager: ObservableObject {
     
     func saveImageToFile(imageData: Data, identifier: SpotifyIdentifier) {
         
-        guard let categoryFolder = self.imageFolderURL(for: identifier) else {
-            return
-        }
-        
-        let imageURL = categoryFolder.appendingPathComponent(
-            "\(identifier.id).tiff", isDirectory: false
-        )
-        // imagePath = Library/Application Support/images/category/id.tiff
-        
-        do {
-            try FileManager.default.createDirectory(
-                at: categoryFolder,
-                withIntermediateDirectories: true
+        DispatchQueue.global().async {
+            
+            guard let categoryFolder = self.imageFolderURL(for: identifier) else {
+                return
+            }
+            
+            let imageURL = categoryFolder.appendingPathComponent(
+                "\(identifier.id).tiff", isDirectory: false
             )
-            guard let nsImage = NSImage(data: imageData) else {
-                return
-            }
-            let resizedImage = nsImage.resized(width: 30, height: 30)
-            guard let newImageData = resizedImage.tiffRepresentation else {
-                return
-            }
-            try newImageData.write(to: imageURL)
-            Loggers.images.trace("did save \(identifier.uri) to file")
-            self.objectWillChange.send()
+            // imagePath = Library/Application Support/images/category/id.tiff
+            
+            do {
+                try FileManager.default.createDirectory(
+                    at: categoryFolder,
+                    withIntermediateDirectories: true
+                )
+                guard let nsImage = NSImage(data: imageData) else {
+                    return
+                }
+                let resizedImage = nsImage.resized(width: 30, height: 30)
+                let swiftUIImage = Image(nsImage: resizedImage)
 
-        } catch {
-            Loggers.playerManager.error("couldn't save image to file: \(error)")
+                guard let newImageData = resizedImage.tiffRepresentation else {
+                    return
+                }
+                try newImageData.write(to: imageURL)
+                Loggers.images.trace("did save \(identifier.uri) to file")
+                
+                DispatchQueue.main.async {
+                    // MARK: Save image to cache
+                    self.images[identifier] = swiftUIImage
+                    self.objectWillChange.send()
+                }
+                
+            } catch {
+                Loggers.playerManager.error(
+                    "couldn't save image to file: \(error)"
+                )
+            }
+            
         }
 
     }
@@ -1057,12 +1087,26 @@ class PlayerManager: ObservableObject {
 
     func presentPlaylistsView() {
         self.retrievePlaylists()
+        
+        os_signpost(
+            .event,
+            log: Self.osLog,
+            name: "present playlists view"
+        )
+
         withAnimation(PlayerView.animation) {
             self.isShowingPlaylistsView = true
         }
     }
 
     func dismissPlaylistsView(animated: Bool) {
+        
+        os_signpost(
+            .event,
+            log: Self.osLog,
+            name: "dismiss playlists view"
+        )
+
         if animated {
             withAnimation(PlayerView.animation) {
                 self.isShowingPlaylistsView = false
