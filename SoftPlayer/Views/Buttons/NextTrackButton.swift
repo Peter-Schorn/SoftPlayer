@@ -27,7 +27,7 @@ struct NextTrackButton: View {
     
     var body: some View {
         
-        if playerManager.currentlyPlayingContext?.context?.type == .show {
+        if playerManager.currentTrack?.identifier?.idCategory == .episode {
             // MARK: Seek Forwards 15 Seconds
             Button(action: playerManager.seekForwards15Seconds, label: {
                 Image(systemName: "goforward.15")
@@ -41,6 +41,9 @@ struct NextTrackButton: View {
             // MARK: Next Track
             
             Image(systemName: "forward.end.fill")
+                .customDisabled(
+                    !playerManager.allowedActions.contains(.skipToNext)
+                )
                 .tapAndLongPressAndHoldGesture(
                     onTap: self.playerManager.skipToNextTrack,
                     isLongPressing: $isLongPressing

@@ -28,7 +28,7 @@ struct PreviousTrackButton: View {
     var body: some View {
         
         // MARK: Seek Backwards 15 Seconds
-        if playerManager.currentlyPlayingContext?.context?.type == .show {
+        if playerManager.currentTrack?.identifier?.idCategory == .episode {
             Button(action: playerManager.seekBackwards15Seconds, label: {
                 Image(systemName: "gobackward.15")
                     .font(size == .large ? .title : .body)
@@ -38,6 +38,9 @@ struct PreviousTrackButton: View {
         }
         else {
             Image(systemName: "backward.end.fill")
+                .customDisabled(
+                    !playerManager.allowedActions.contains(.skipToPrevious)
+                )
                 .tapAndLongPressAndHoldGesture(
                     onTap: playerManager.skipToPreviousTrack,
                     isLongPressing: $isLongPressing
