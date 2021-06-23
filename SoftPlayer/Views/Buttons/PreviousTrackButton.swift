@@ -28,7 +28,7 @@ struct PreviousTrackButton: View {
     var body: some View {
         
         // MARK: Seek Backwards 15 Seconds
-        if playerManager.currentTrack?.identifier?.idCategory == .episode {
+        if playerManager.currentlyPlayingContext?.context?.type == .show {
             Button(action: playerManager.seekBackwards15Seconds, label: {
                 Image(systemName: "gobackward.15")
                     .font(size == .large ? .title : .body)
