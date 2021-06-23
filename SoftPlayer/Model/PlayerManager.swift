@@ -34,8 +34,20 @@ class PlayerManager: ObservableObject {
     
     var shuffleIsOn = false
     @Published var repeatMode = RepeatMode.off
-    @Published var playerPosition: CGFloat = 0
+    @Published var playerPosition: CGFloat = 0 {
+        didSet {
+            self.updateFormattedPlaybackPosition()
+        }
+    }
     @Published var soundVolume: CGFloat = 100
+    
+    // MARK: Player Position
+    
+    static let noPlaybackPositionPlaceholder = "- : -"
+    
+    var formattedPlaybackPosition = PlayerManager.noPlaybackPositionPlaceholder
+    
+    var formattedDuration = PlayerManager.noPlaybackPositionPlaceholder
     
     /// The last date that the user adjusted the player position from this
     /// app.
@@ -275,6 +287,40 @@ class PlayerManager: ObservableObject {
 
     // MARK: - Playback State -
     
+    func updateFormattedPlaybackPosition() {
+        
+        // var formattedPlaybackPosition: String {
+            if self.spotifyApplication?.playerPosition == nil {
+                self.formattedPlaybackPosition =
+                        Self.noPlaybackPositionPlaceholder
+            }
+            self.formattedPlaybackPosition = self.formattedTimestamp(
+                self.playerPosition
+            )
+        // }
+        
+        // var formattedDuration: String {
+            if self.currentTrack?.duration == nil {
+                self.formattedDuration = Self.noPlaybackPositionPlaceholder
+            }
+            let durationSeconds = CGFloat(
+                (self.currentTrack?.duration ?? 1) / 1000
+            )
+            self.formattedDuration = self.formattedTimestamp(durationSeconds)
+        // }
+        
+        self.objectWillChange.send()
+        
+    }
+
+    /// Returns the formatted timestamp for the duration or player position.
+    private func formattedTimestamp(_ number: CGFloat) -> String {
+        let formatter: DateComponentsFormatter = number >= 3600 ?
+            .playbackTimeWithHours : .playbackTime
+        return formatter.string(from: Double(number))
+            ?? Self.noPlaybackPositionPlaceholder
+    }
+    
     func setAlbumArtistTitle() {
         let currentTrack = self.currentTrack
         let albumName = currentTrack?.album
@@ -315,6 +361,7 @@ class PlayerManager: ObservableObject {
             """
         )
         self.currentTrack = self.spotifyApplication?.currentTrack
+        self.updateFormattedPlaybackPosition()
         self.setAlbumArtistTitle()
         self.shuffleIsOn = spotifyApplication?.shuffling ?? false
         Loggers.shuffle.trace("self.shuffleIsOn = \(self.shuffleIsOn)")
@@ -505,14 +552,16 @@ class PlayerManager: ObservableObject {
                         }
                     },
                     receiveValue: { context in
-                        guard let uriFromContext = context?.item?.uri,
-                              let uriFromAppleScript = self.spotifyApplication?.currentTrack?.id?()
-                        else {
-                            return
-                        }
-                        let contextName = context?.item?.name ?? "nil"
-                        let appleScriptName = self.spotifyApplication?.currentTrack?.name ?? "nil"
-                        if uriFromContext == uriFromAppleScript {
+                        
+                        if
+                            let uriFromContext = context?.item?.uri,
+                            let uriFromAppleScript = self.spotifyApplication?
+                                    .currentTrack?.id?(),
+                            uriFromContext == uriFromAppleScript
+                        {
+                            let contextName = context?.item?.name ?? "nil"
+                            let appleScriptName = self.spotifyApplication?
+                                    .currentTrack?.name ?? "nil"
                             Loggers.syncContext.trace(
                                 """
                                 uriFromContext == uriFromAppleScript
@@ -520,14 +569,23 @@ class PlayerManager: ObservableObject {
                                 """
                             )
                             self.receiveCurrentlyPlayingContext(context)
+
+                        }
+                        else if context?.itemType == .ad,
+                            self.spotifyApplication?.currentTrack?.identifier?
+                                    .idCategory == .ad
+                        {
+                            Loggers.playerState.notice(
+                                "playing ad"
+                            )
+                            self.receiveCurrentlyPlayingContext(context)
                         }
                         else {
                             let asyncDelay = 0.4 * Double(level)
                             Loggers.syncContext.warning(
                                 """
-                                uriFromContext != uriFromAppleScript
-                                \(uriFromContext) != \(uriFromAppleScript)
-                                '\(contextName)' != '\(appleScriptName)'
+                                uriFromContext != uriFromAppleScript \
+                                or ad for only one source; \
                                 asyncDelay: \(asyncDelay)
                                 """
                             )
@@ -539,6 +597,7 @@ class PlayerManager: ObservableObject {
                                 )
                             }
                         }
+                       
                     }
                 )
         }
@@ -588,7 +647,7 @@ class PlayerManager: ObservableObject {
     /// If a track is playing, skips to the previous track;
     /// if an episode is playing, seeks backwards 15 seconds.
     func previousTrackOrSeekBackwards() {
-        if self.currentTrack?.identifier?.idCategory == .episode {
+        if self.currentlyPlayingContext?.context?.type == .show {
             self.seekBackwards15Seconds()
         }
         else {
@@ -599,7 +658,7 @@ class PlayerManager: ObservableObject {
     /// If a track is playing, skips to the next track;
     /// if an episode is playing, seeks forwards 15 seconds.
     func nextTrackOrSeekForwards() {
-        if self.currentTrack?.identifier?.idCategory == .episode {
+        if self.currentlyPlayingContext?.context?.type == .show {
             self.seekForwards15Seconds()
         }
         else {

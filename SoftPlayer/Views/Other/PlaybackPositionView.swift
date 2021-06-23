@@ -36,10 +36,10 @@ struct PlaybackPositionView: View {
             .padding(.bottom, 5)
             
             HStack {
-                Text(formattedPlaybackPosition)
+                Text(playerManager.formattedPlaybackPosition)
                     .font(.caption)
                 Spacer()
-                Text(formattedDuration)
+                Text(playerManager.formattedDuration)
                     .font(.caption)
             }
             .padding(.horizontal, 5)
@@ -57,30 +57,6 @@ struct PlaybackPositionView: View {
                 playerManager.playerPosition += CGFloat(timerInterval)
             }
         }
-    }
-    
-    var formattedPlaybackPosition: String {
-        if self.playerManager.spotifyApplication?.playerPosition == nil {
-            return self.noPositionPlaceholder
-        }
-        return self.formattedTimestamp(
-            self.playerManager.playerPosition
-        )
-    }
-    
-    var formattedDuration: String {
-        if self.playerManager.currentTrack?.duration == nil {
-            return self.noPositionPlaceholder
-        }
-        return self.formattedTimestamp(duration)
-    }
-
-    /// Returns the formatted timestamp for the duration or player position.
-    func formattedTimestamp(_ number: CGFloat) -> String {
-        let formatter: DateComponentsFormatter = number >= 3600 ?
-            .playbackTimeWithHours : .playbackTime
-        return formatter.string(from: Double(number))
-            ?? self.noPositionPlaceholder
     }
     
     func updatePlaybackPosition() {

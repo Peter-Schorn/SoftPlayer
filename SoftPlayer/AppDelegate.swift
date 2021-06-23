@@ -4,6 +4,7 @@ import SwiftUI
 import Combine
 import SpotifyWebAPI
 import KeyboardShortcuts
+import Logging
 
 @NSApplicationMain
 class AppDelegate: NSObject, NSApplicationDelegate {
@@ -27,6 +28,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         
         SoftPlayerLogHandler.bootstrap()
+        // spotifyDecodeLogger.logLevel = .trace
+        // SwiftLogNoOpLogHandler.bootstrap()
 
         self.initializeKeyboardShortcutNames()
 
