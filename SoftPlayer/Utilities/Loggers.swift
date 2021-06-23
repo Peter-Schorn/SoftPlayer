@@ -189,3 +189,15 @@ struct SoftPlayerLogHandler: LogHandler {
     }
     
 }
+
+extension SwiftLogNoOpLogHandler {
+    
+    /// Calls through to `LoggingSystem.bootstrap(_:)` and configures this type
+    /// as the global logging backend.
+    static func bootstrap() {
+        LoggingSystem.bootstrap { _ in
+            Self()
+        }
+    }
+
+}

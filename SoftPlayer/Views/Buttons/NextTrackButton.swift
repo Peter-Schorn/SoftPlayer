@@ -27,7 +27,7 @@ struct NextTrackButton: View {
     
     var body: some View {
         
-        if playerManager.currentTrack?.identifier?.idCategory == .episode {
+        if playerManager.currentlyPlayingContext?.context?.type == .show {
             // MARK: Seek Forwards 15 Seconds
             Button(action: playerManager.seekForwards15Seconds, label: {
                 Image(systemName: "goforward.15")
