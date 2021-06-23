@@ -101,7 +101,8 @@ extension CGFloat {
         let oldMagnitude = old.upperBound - old.lowerBound
         let newPercent = (self - old.lowerBound) / oldMagnitude
         let newMagnitude = new.upperBound - new.lowerBound
-        return newPercent * newMagnitude + new.lowerBound
+        let result = newPercent * newMagnitude + new.lowerBound
+        return result.isFinite ? result : 0
     }
 }
 

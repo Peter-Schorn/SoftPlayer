@@ -647,7 +647,7 @@ class PlayerManager: ObservableObject {
     /// If a track is playing, skips to the previous track;
     /// if an episode is playing, seeks backwards 15 seconds.
     func previousTrackOrSeekBackwards() {
-        if self.currentlyPlayingContext?.context?.type == .show {
+        if self.currentTrack?.identifier?.idCategory == .episode {
             self.seekBackwards15Seconds()
         }
         else {
@@ -658,7 +658,7 @@ class PlayerManager: ObservableObject {
     /// If a track is playing, skips to the next track;
     /// if an episode is playing, seeks forwards 15 seconds.
     func nextTrackOrSeekForwards() {
-        if self.currentlyPlayingContext?.context?.type == .show {
+        if self.currentTrack?.identifier?.idCategory == .episode {
             self.seekForwards15Seconds()
         }
         else {
