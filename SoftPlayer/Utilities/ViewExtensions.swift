@@ -79,6 +79,18 @@ extension View {
                 })
         )
     }
+    
+    @ViewBuilder func customDisabled(_ disabled: Bool) -> some View {
+        if disabled {
+            self
+                .foregroundColor(.secondary)
+                .allowsHitTesting(false)
+        }
+        else {
+            self
+        }
+    }
+        
 
 }
 
