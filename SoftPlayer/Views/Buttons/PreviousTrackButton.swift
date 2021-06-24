@@ -38,9 +38,6 @@ struct PreviousTrackButton: View {
         }
         else {
             Image(systemName: "backward.end.fill")
-                .customDisabled(
-                    !playerManager.allowedActions.contains(.skipToPrevious)
-                )
                 .tapAndLongPressAndHoldGesture(
                     onTap: playerManager.skipToPreviousTrack,
                     isLongPressing: $isLongPressing
