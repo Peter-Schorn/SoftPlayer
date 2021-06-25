@@ -978,9 +978,10 @@ class PlayerManager: ObservableObject {
     
     /// Removes the folder containing the images.
     func removeImagesCache() {
+        self.images = [:]
         do {
             if let folder = self.imagesFolder {
-                Loggers.playerManager.trace("will delete folder: \(folder)")
+                Loggers.playerManager.notice("will delete folder: \(folder)")
                 try FileManager.default.removeItem(at: folder)
             }
             
