@@ -36,6 +36,11 @@ class PlayerManager: ObservableObject {
     @Published var repeatMode = RepeatMode.off
     @Published var playerPosition: CGFloat = 0 {
         didSet {
+            os_signpost(
+                .event,
+                log: Self.osLog,
+                name: "did set playerPosition"
+            )
             self.updateFormattedPlaybackPosition()
         }
     }
