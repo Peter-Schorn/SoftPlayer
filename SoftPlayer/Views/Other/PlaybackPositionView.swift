@@ -8,7 +8,6 @@ struct PlaybackPositionView: View {
     
     let timerInterval: Double
     let timer: Publishers.Autoconnect<Timer.TimerPublisher>
-    let noPositionPlaceholder = "- : -"
     
     var duration: CGFloat {
         return CGFloat((playerManager.currentTrack?.duration ?? 1) / 1000)
@@ -45,6 +44,11 @@ struct PlaybackPositionView: View {
             .padding(.horizontal, 5)
         }
         .onReceive(timer) { _ in
+            
+            guard AppDelegate.shared.popover.isShown else {
+                return
+            }
+
             if self.playerManager.isDraggingPlaybackPositionView ||
                 self.playerManager.spotifyApplication?.playerState != .playing {
                 return
