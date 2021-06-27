@@ -34,7 +34,7 @@ struct PreviousTrackButton: View {
                     .font(size == .large ? .title : .body)
             })
             .buttonStyle(PlainButtonStyle())
-            .help("Seek backwards 15 seconds\(shortcutName)")
+            .help(Text("Seek backwards 15 seconds\(shortcutName)"))
         }
         else {
             Image(systemName: "backward.end.fill")
@@ -58,7 +58,7 @@ struct PreviousTrackButton: View {
                         self.seekBackwardsTimerCancellable?.cancel()
                     }
                 }
-                .help("Skip to the previous track\(shortcutName)")
+                .help(Text("Skip to the previous track\(shortcutName)"))
 
         }
     }

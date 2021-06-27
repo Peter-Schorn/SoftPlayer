@@ -10,12 +10,11 @@ struct RepeatModeButton: View {
 
     @State private var cycleRepeatModeCancellable: AnyCancellable? = nil
     
-    var tooltip: String {
-        var tooltip = "Change the repeat mode"
+    var shortcutName: String {
         if let name = KeyboardShortcuts.getShortcut(for: .repeatMode) {
-            tooltip += " \(name)"
+            return " \(name)"
         }
-        return tooltip
+        return ""
     }
 
     var body: some View {
@@ -37,7 +36,7 @@ struct RepeatModeButton: View {
         })
         .buttonStyle(PlainButtonStyle())
         .disabled(repeatModeIsDisabled())
-        .help(tooltip)
+        .help(Text("Change the repeat mode\(shortcutName)"))
     }
     
     func repeatModeIsDisabled() -> Bool {

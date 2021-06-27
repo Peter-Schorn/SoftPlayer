@@ -9,12 +9,11 @@ struct ShuffleButton: View {
     @EnvironmentObject var spotify: Spotify
     @EnvironmentObject var playerManager: PlayerManager
 
-    var tooltip: String {
-        var tooltip = "Toggle shuffle"
+    var shortcutName: String {
         if let name = KeyboardShortcuts.getShortcut(for: .shuffle) {
-            tooltip += " \(name)"
+            return " \(name)"
         }
-        return tooltip
+        return ""
     }
 
     var body: some View {
@@ -27,7 +26,7 @@ struct ShuffleButton: View {
         })
         .buttonStyle(PlainButtonStyle())
         .disabled(!playerManager.allowedActions.contains(.toggleShuffle))
-        .help(tooltip)
+        .help(Text("Toggle Shuffle\(shortcutName)"))
     }
     
 }

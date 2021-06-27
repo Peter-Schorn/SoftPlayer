@@ -8,12 +8,11 @@ struct PlayPauseButton: View {
     @EnvironmentObject var spotify: Spotify
     @EnvironmentObject var playerManager: PlayerManager
     
-    var tooltip: String {
-        var tooltip = "Play or pause playback"
+    var shortcutName: String {
         if let name = KeyboardShortcuts.getShortcut(for: .playPause) {
-            tooltip += " \(name)"
+            return " \(name)"
         }
-        return tooltip
+        return ""
     }
 
     var body: some View {
@@ -28,7 +27,7 @@ struct PlayPauseButton: View {
             }
         })
         .buttonStyle(PlainButtonStyle())
-        .help(tooltip)
+        .help(Text("Play or pause playback\(shortcutName)"))
     }
     
 }

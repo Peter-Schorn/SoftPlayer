@@ -162,7 +162,7 @@ class PlayerManager: ObservableObject {
     
     // MARK: - Notification -
     
-    let notificationSubject = PassthroughSubject<(title: String, message: String), Never>()
+    let notificationSubject = PassthroughSubject<AlertItem, Never>()
     
     // MARK: - Publishers -
     
@@ -278,13 +278,19 @@ class PlayerManager: ObservableObject {
     func showSpotifyNotInstalledAlert() {
         
         let alert = NSAlert()
-        alert.messageText = "Could not Connect to the Spotify Application"
-        alert.informativeText = """
+        alert.messageText = NSLocalizedString(
+            "Could not Connect to the Spotify Application",
+            comment: ""
+        )
+        alert.informativeText = NSLocalizedString(
+            """
             The Spotify Desktop Application is not installed or could not be \
-            found. Therefore, most of the functions of this app will not work.
+            found. Therefore, most of the functions of this app will not work. \
             If the Spotify Application is installed, try moving it to the \
             applications folder; then, restart this app.
-            """
+            """,
+            comment: ""
+        )
         
         alert.runModal()
 
@@ -548,10 +554,15 @@ class PlayerManager: ObservableObject {
                             Loggers.playerManager.error(
                                 "couldn't get currently playing context: \(error)"
                             )
-                            self.presentNotification(
-                                title: "Couldn't retrieve playback state",
+                            let alertTitle = NSLocalizedString(
+                                "Couldn't Retrieve Playback State",
+                                comment: ""
+                            )
+                            let alert = AlertItem(
+                                title: alertTitle,
                                 message: error.customizedLocalizedDescription
                             )
+                            self.notificationSubject.send(alert)
                             self.currentlyPlayingContext = nil
                             self.isUpdatingCurrentlyPlayingContext = false
                         }
@@ -617,15 +628,21 @@ class PlayerManager: ObservableObject {
             .setRepeatMode(to: self.repeatMode)
             .receive(on: RunLoop.main)
             .sink(receiveCompletion: { completion in
-                let repeatModeString = self.repeatMode.rawValue
+                let repeatModeString = self.repeatMode.localizedDescription
                 switch completion {
                     case .failure(let error):
-                        let alertTitle =
-                            "Couldn't set repeat mode to \(repeatModeString)"
-                        self.presentNotification(
+                        let alertTitle = String.localizedStringWithFormat(
+                            NSLocalizedString(
+                                "Couldn't Set the Repeat Mode to %@",
+                                comment: ""
+                            ),
+                            repeatModeString
+                        )
+                        let alert = AlertItem(
                             title: alertTitle,
                             message: error.customizedLocalizedDescription
                         )
+                        self.notificationSubject.send(alert)
                         Loggers.repeatMode.error(
                             "RepeatButton: \(alertTitle): \(error)"
                         )
@@ -721,7 +738,7 @@ class PlayerManager: ObservableObject {
     
     func playPlaylist(
         _ playlist: Playlist<PlaylistItemsReference>
-    ) -> AnyPublisher<Void, Error> {
+    ) -> AnyPublisher<Void, AlertItem> {
         
         let playbackRequest = PlaybackRequest(
             context: .contextURI(playlist),
@@ -734,7 +751,20 @@ class PlayerManager: ObservableObject {
             .getAvailableDeviceThenPlay(playbackRequest)
             .receive(on: RunLoop.main)
             .handleAuthenticationError(spotify: self.spotify)
+            .mapError { error -> AlertItem in
+                let title = String.localizedStringWithFormat(
+                    NSLocalizedString(
+                        "Couldn't Play \"%@\"",
+                        comment: "Couldn't Play [playlist name]"
+                    ),
+                    playlist.name
+                )
+                let message = error.customizedLocalizedDescription
+                Loggers.playerManager.error("\(title): \(error)")
+                return AlertItem(title: title, message: message)
+            }
             .eraseToAnyPublisher()
+        
     }
     
     /// Retrieve the current user's playlists.
@@ -754,14 +784,18 @@ class PlayerManager: ObservableObject {
                     guard case .failure(let error) = completion else {
                         return
                     }
-                    let title = "Couldn't Retrieve Playlists"
-                    Loggers.playerManager.error(
-                        "\(title): \(error)"
+                    let alertTitle = NSLocalizedString(
+                        "Couldn't Retrieve Playlists",
+                        comment: ""
                     )
-                    self.presentNotification(
-                        title: title,
+                    Loggers.playerManager.error(
+                        "\(alertTitle): \(error)"
+                    )
+                    let alert = AlertItem(
+                        title: alertTitle,
                         message: error.customizedLocalizedDescription
                     )
+                    self.notificationSubject.send(alert)
                     
                 },
                 receiveValue: { playlists in
@@ -811,14 +845,18 @@ class PlayerManager: ObservableObject {
             .sink(
                 receiveCompletion: { completion in
                     if case .failure(let error) = completion {
-                        let title = "Couldn't Retrieve User Profile"
-                        Loggers.playerManager.error(
-                            "\(title): \(error)"
+                        let alertTitle = NSLocalizedString(
+                            "Couldn't Retrieve User Profile",
+                            comment: ""
                         )
-                        self.presentNotification(
-                            title: title,
+                        Loggers.playerManager.error(
+                            "\(alertTitle): \(error)"
+                        )
+                        let alert = AlertItem(
+                            title: alertTitle,
                             message: error.customizedLocalizedDescription
                         )
+                        self.notificationSubject.send(alert)
                     }
                 },
                 receiveValue: { user in
@@ -1058,15 +1096,6 @@ class PlayerManager: ObservableObject {
             completionHandler: completionHandler
         )
 
-    }
-
-
-    // MARK: - Notification -
-    
-    func presentNotification(title: String, message: String) {
-        self.notificationSubject.send(
-            (title: title, message: message)
-        )
     }
 
     // MARK: - Key Events -

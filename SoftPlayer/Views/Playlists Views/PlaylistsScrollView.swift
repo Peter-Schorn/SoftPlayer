@@ -136,9 +136,11 @@ struct PlaylistsScrollView: View {
                                 .foregroundColor(.secondary)
                                 .font(.headline)
                             if onlyShowMyPlaylists {
-                                Button("Remove Filters") {
+                                Button(action: {
                                     onlyShowMyPlaylists = false
-                                }
+                                }, label: {
+                                    Text("Remove Filters")
+                                })
                                 .padding(.top, 5)
                             }
                         }
@@ -198,7 +200,7 @@ struct PlaylistsScrollView: View {
             Image(systemName: "line.horizontal.3.decrease.circle.fill")
         }
         .menuStyle(BorderlessButtonMenuStyle())
-        .help("Filters")
+        .help(Text("Filters"))
         .frame(width: 30)
     }
 
@@ -263,15 +265,8 @@ struct PlaylistsScrollView: View {
         self.playPlaylistCancellable = self.playerManager
             .playPlaylist(playlist)
             .sink(receiveCompletion: { completion in
-                if case .failure(let error) = completion {
-                    let alertTitle = #"Couldn't play "\#(playlist.name)""#
-                    self.playerManager.presentNotification(
-                        title: alertTitle,
-                        message: error.customizedLocalizedDescription
-                    )
-                    Loggers.playlistsScrollView.error(
-                        "\(alertTitle): \(error)"
-                    )
+                if case .failure(let alert) = completion {
+                    self.playerManager.notificationSubject.send(alert)
                 }
             })
 

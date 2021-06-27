@@ -37,11 +37,17 @@ struct RootView: View {
 
         if self.spotify.isAuthorized {
             self.showAlert(
-                title: "Your Spotify Account is Already Connected",
-                message: """
+                title: NSLocalizedString(
+                    "Your Spotify Account is Already Connected",
+                    comment: ""
+                ),
+                message: NSLocalizedString(
+                    """
                     If you would like to use another account, please log out \
                     first.
-                    """
+                    """,
+                    comment: ""
+                )
             )
             return
         }
@@ -75,19 +81,27 @@ struct RootView: View {
         
         switch completion {
             case .finished:
-                alertTitle =
-                        "Successfully connected to your Spotify account"
-                alertMessage = "You may close the authorization page in your browser."
+                alertTitle = NSLocalizedString(
+                    "Successfully Connected to Your Spotify Account",
+                    comment: ""
+                )
+                alertMessage = NSLocalizedString(
+                    "You may close the authorization page in your browser.",
+                    comment: ""
+                )
                 alert.alertStyle = .informational
             case .failure(let error):
                 alert.alertStyle = .warning
-                alertTitle =
-                        "Could not Authorize with your Spotify account"
-                
+                alertTitle = NSLocalizedString(
+                    "Could not Authorize with your Spotify account",
+                    comment: ""
+                )
                 if let authError = error as? SpotifyAuthorizationError,
                    authError.accessWasDenied {
-                    alertMessage =
-                        "You denied the authorization request (:"
+                    alertMessage = NSLocalizedString(
+                        "You denied the authorization request (:",
+                        comment: ""
+                    )
                 }
                 else {
                     alertMessage = error.customizedLocalizedDescription

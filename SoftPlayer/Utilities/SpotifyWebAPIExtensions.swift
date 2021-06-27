@@ -42,8 +42,10 @@ extension SpotifyAPI where AuthorizationManager: SpotifyScopeAuthorizationManage
             else {
                 return SpotifyGeneralError.other(
                     "no active or available devices",
-                    localizedDescription: "There are no devices " +
-                                          "available to play content on"
+                    localizedDescription: NSLocalizedString(
+                        "There are no devices available to play content on",
+                        comment: ""
+                    )
                 )
                 .anyFailingPublisher()
             }
@@ -218,5 +220,16 @@ extension Collection where Element == SpotifyImage {
 
     }
 
+
+}
+
+extension RepeatMode {
+    
+    var localizedDescription: String {
+        return NSLocalizedString(
+            self.rawValue,
+            comment: "RepeatMode.rawValue"
+        )
+    }
 
 }

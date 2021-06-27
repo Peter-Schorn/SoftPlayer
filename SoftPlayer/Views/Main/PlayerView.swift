@@ -220,7 +220,7 @@ struct PlayerView: View {
                     })
                     .keyboardShortcut(",")
                     .buttonStyle(PlainButtonStyle())
-                    .help("Show settings ⌘,")
+                    .help(Text("Show settings ⌘,"))
                     
                 }
                 .padding(.top, 5)
@@ -355,8 +355,7 @@ struct PlayerView: View {
                     .padding(-3)
             })
             .padding(.top, 5)
-            .keyboardShortcut("p")
-                .padding(.top, 1)
+            .padding(.top, 1)
             Spacer()
                 .frame(height: 85)
         }
