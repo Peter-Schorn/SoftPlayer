@@ -14,8 +14,7 @@ struct GeneralSettingsView: View {
                 Text("Show Images Folder")
             })
             Text(
-                "You can safely remove files from " +
-                "this folder to free up space"
+                "You can safely remove files from this folder to free up space"
             )
             .font(.footnote)
             .foregroundColor(.secondary)
