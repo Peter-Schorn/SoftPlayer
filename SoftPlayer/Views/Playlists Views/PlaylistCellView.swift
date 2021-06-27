@@ -17,9 +17,6 @@ struct PlaylistCellView: View {
     @State private var playPlaylistCancellable: AnyCancellable? = nil
     @State private var cancellables: Set<AnyCancellable> = []
 
-    let addToPlaylistTooltip = "Add the currently playing track or " +
-        "episode to this playlist"
-
     init(
         playlist: Playlist<PlaylistItemsReference>,
         isSelected: Bool
@@ -47,9 +44,7 @@ struct PlaylistCellView: View {
     var body: some View {
         HStack {
             
-            Button(action: {
-                self.playPlaylist()
-            }, label: {
+            Button(action: playPlaylist, label: {
                 HStack {
                     playlistImage
                         .resizable()
@@ -73,7 +68,11 @@ struct PlaylistCellView: View {
                     Image(systemName: "text.badge.plus")
                 })
                 .buttonStyle(PlainButtonStyle())
-                .help(addToPlaylistTooltip)
+                .help(Text(
+                    """
+                    Add the currently playing track or episode to this playlist
+                    """
+                ))
             }
             
         }
@@ -91,11 +90,12 @@ struct PlaylistCellView: View {
             Loggers.playlistCellView.error(
                 "PlaylistsView: no URI for the currently playing item"
             )
-            self.playerManager.presentNotification(
-                title: "Couldn't retrieve the currently playing " +
-                       "track or episode",
-                message: ""
+            let title = NSLocalizedString(
+                "Couldn't Retrieve the Currently Playing Track or Episode",
+                comment: ""
             )
+            let alert = AlertItem(title: title, message: "")
+            self.playerManager.notificationSubject.send(alert)
             return
         }
         
@@ -113,19 +113,30 @@ struct PlaylistCellView: View {
             receiveCompletion: { completion in
                 switch completion {
                     case .finished:
-                        let messageTitle = #"Added "\#(itemName)" "# +
-                            #"to "\#(playlist.name)""#
-                        self.playerManager.presentNotification(
-                            title: messageTitle,
-                            message: ""
+                        let alertTitle = String.localizedStringWithFormat(
+                            NSLocalizedString(
+                                "Added \"%@\" to \"%@\"",
+                                comment: "Added [song name] to [playlist name]"
+                            ),
+                            itemName, playlist.name
                         )
+                        let alert = AlertItem(title: alertTitle, message: "")
+                        self.playerManager.notificationSubject.send(alert)
                     case .failure(let error):
-                        let alertTitle = #"Couldn't add "\#(itemName)" "# +
-                            #"to "\#(playlist.name)""#
-                        self.playerManager.presentNotification(
+                        
+                        let alertTitle = String.localizedStringWithFormat(
+                            NSLocalizedString(
+                                "Couldn't Add \"%@\" to \"%@\"",
+                                comment: "Couldn't Add [song name] to [playlist name]"
+                            ),
+                            itemName, playlist.name
+                        )
+
+                        let alert = AlertItem(
                             title: alertTitle,
                             message: error.customizedLocalizedDescription
                         )
+                        self.playerManager.notificationSubject.send(alert)
                         Loggers.playlistCellView.error(
                             "\(alertTitle): \(error)"
                         )
@@ -142,15 +153,8 @@ struct PlaylistCellView: View {
         self.playPlaylistCancellable = self.playerManager
             .playPlaylist(playlist)
             .sink(receiveCompletion: { completion in
-                if case .failure(let error) = completion {
-                    let alertTitle = #"Couldn't play "\#(playlist.name)""#
-                    self.playerManager.presentNotification(
-                        title: alertTitle,
-                        message: error.customizedLocalizedDescription
-                    )
-                    Loggers.playlistCellView.error(
-                        "\(alertTitle): \(error)"
-                    )
+                if case .failure(let alert) = completion {
+                    self.playerManager.notificationSubject.send(alert)
                 }
             })
         

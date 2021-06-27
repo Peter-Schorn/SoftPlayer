@@ -9,12 +9,10 @@ struct GeneralSettingsView: View {
     
     var body: some View {
         Form {
-            Button(
-                "Show Images Folder",
-                action: showImagesCacheFolder
-            )
-            .disabled(!spotify.isAuthorized)
             
+            Button(action: showImagesCacheFolder, label: {
+                Text("Show Images Folder")
+            })
             Text(
                 "You can safely remove files from " +
                 "this folder to free up space"
@@ -22,10 +20,9 @@ struct GeneralSettingsView: View {
             .font(.footnote)
             .foregroundColor(.secondary)
             
-            Button(
-                "Logout from Spotify",
-                action: spotify.api.authorizationManager.deauthorize
-            )
+            Button(action: spotify.api.authorizationManager.deauthorize, label: {
+                Text("Logout from Spotify")
+            })
             .disabled(!spotify.isAuthorized)
             
             Text(
@@ -34,9 +31,11 @@ struct GeneralSettingsView: View {
             .font(.footnote)
             .foregroundColor(.secondary)
 
-            Button("Quit Application") {
+            Button(action: {
                 NSApplication.shared.terminate(nil)
-            }
+            }, label: {
+                Text("Quit Application")
+            })
             
         }
         .padding(20)
@@ -51,8 +50,13 @@ struct GeneralSettingsView: View {
     
 }
 
-//struct GeneralSettingsView_Previews: PreviewProvider {
-//    static var previews: some View {
-//        GeneralSettingsView()
-//    }
-//}
+struct GeneralSettingsView_Previews: PreviewProvider {
+    
+    static let playerManager = PlayerManager(spotify: Spotify())
+
+    static var previews: some View {
+        GeneralSettingsView()
+            .environmentObject(playerManager)
+            .environmentObject(playerManager.spotify)
+    }
+}

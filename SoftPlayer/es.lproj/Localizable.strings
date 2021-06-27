@@ -1,0 +1,35 @@
+/* No comment provided by engineer. */
+"Add the currently playing track or episode to this playlist" = "Añade la canción o episodio que está tocando a esta lista de reproducción";
+
+/* No comment provided by engineer. */
+"All user data will be removed" = "Toda su información estará quitado";
+
+/* No comment provided by engineer. */
+"Authenticating" = "Autenticando";
+
+/* No comment provided by engineer. */
+"Change the repeat mode%@" = "Cambia la modo de repetición%@";
+
+/* No comment provided by engineer. */
+"Filters" = "Las filtras";
+
+/* No comment provided by engineer. */
+"General" = "General";
+
+/* No comment provided by engineer. */
+"Log in with Spotify" = "Inicia sesión con Spotify";
+
+/* No comment provided by engineer. */
+"Logout from Spotify" = "Cera sesión de Spotify";
+
+/* No comment provided by engineer. */
+"Next track" = "La próxima pista";
+
+/* No comment provided by engineer. */
+"Seek backwards 15 seconds%@" = "Vaya atrás quince segundos%@";
+
+/* No comment provided by engineer. */
+"Seek forwards 15 seconds%@" = "Vaya adelante quince segundos%@";
+
+/* Added [song name] to [playlist name] */
+"Added \"%@\" to \"%@\"" = "Añadido \"%1$@\" a \"%2$@\"";

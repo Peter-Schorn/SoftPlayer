@@ -38,7 +38,7 @@ struct AvailableDevicesButton: View {
             Image(systemName: "hifispeaker.2.fill")
         }
         .menuStyle(BorderlessButtonMenuStyle())
-        .help("Transfer playback to a different device")
+        .help(Text("Transfer playback to a different device"))
         .scaleEffect(1.2)
         .frame(width: 33)
         
@@ -73,12 +73,20 @@ struct AvailableDevicesButton: View {
                             self.playerManager.updatePlayerState()
                         }
                     case .failure(let error):
-                        let alertTitle = "Couldn't Transfer Playback " +
-                            #"to "\#(device.name)""#
-                        self.playerManager.presentNotification(
+                        
+                        let alertTitle = String.localizedStringWithFormat(
+                            NSLocalizedString(
+                                "Couldn't Transfer Playback to \"%@\"",
+                                comment: ""
+                            ),
+                            device.name
+                        )
+
+                        let alert = AlertItem(
                             title: alertTitle,
                             message: error.customizedLocalizedDescription
                         )
+                        self.playerManager.notificationSubject.send(alert)
                         Loggers.availableDevices.error(
                             "\(alertTitle): \(error)"
                         )
