@@ -61,14 +61,14 @@ struct NotificationView: View {
                 Spacer()
             }
         }
-        .onReceive(playerManager.notificationSubject) { title, message in
+        .onReceive(playerManager.notificationSubject) { alert in
     
             let id = UUID()
             self.messageId = id
 
             withAnimation {
-                self.title = title
-                self.message = message
+                self.title = alert.title
+                self.message = alert.message
                 self.isPresented = true
             }
 

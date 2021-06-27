@@ -1,0 +1,6 @@
+/* Bundle name */
+"CFBundleName" = "Soft Player";
+
+/* Privacy - AppleEvents Sending Usage Description */
+"NSAppleEventsUsageDescription" = "Acceso a la aplicación Spotify de escritorio es necesario para que pueda conseguir la información sobre la reproducción actualmente.";
+

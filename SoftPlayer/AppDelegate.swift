@@ -133,7 +133,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             
             self.settingsWindow?.center()
             self.settingsWindow?.setFrameAutosaveName("Settings")
-            self.settingsWindow?.title = "Settings"
+            self.settingsWindow?.title = NSLocalizedString(
+                "Settings", comment: ""
+            )
             self.settingsWindow?.isReleasedWhenClosed = false
             self.settingsWindow?.contentView = NSHostingView(
                 rootView: settingsView

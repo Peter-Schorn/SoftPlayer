@@ -5,12 +5,11 @@ struct ShowPlaylistsButton: View {
     
     @EnvironmentObject var playerManager: PlayerManager
 
-    var tooltip: String {
-        var tooltip = "Show playlists"
+    var shortcutName: String {
         if let name = KeyboardShortcuts.getShortcut(for: .showPlaylists) {
-            tooltip += " \(name)"
+            return " \(name)"
         }
-        return tooltip
+        return ""
     }
 
     var keyboardShortcut: KeyboardShortcut? {
@@ -35,7 +34,7 @@ struct ShowPlaylistsButton: View {
         .ifLet(keyboardShortcut) { view, shortcut in
             view.keyboardShortcut(shortcut)
         }
-        .help(tooltip)
+        .help(Text("Show playlists\(shortcutName)"))
     }
 }
 

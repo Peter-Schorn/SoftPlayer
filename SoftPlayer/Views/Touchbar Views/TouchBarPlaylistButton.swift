@@ -14,13 +14,11 @@ struct TouchBarPlaylistButton: View {
         self.playlist = playlist
     }
     
-    @State private var isMakingRequestToPlayPlaylist = false
-    
     @State private var cancellables: Set<AnyCancellable> = []
     @State private var playPlaylistCancellable: AnyCancellable? = nil
     
     var playlistImage: Image {
-        if let identifier = try? SpotifyIdentifier(uri: playlist.uri),
+        if let identifier = try? SpotifyIdentifier(uri: self.playlist.uri),
                 let image = self.playerManager.image(for: identifier) {
             return image
         }
@@ -29,9 +27,7 @@ struct TouchBarPlaylistButton: View {
     
     var body: some View {
         
-        Button(action: {
-            self.playPlaylist(playlist)
-        }, label: {
+        Button(action: playPlaylist, label: {
             playlistImage
                 .resizable()
                 .aspectRatio(contentMode: .fill)
@@ -52,34 +48,14 @@ struct TouchBarPlaylistButton: View {
 
     }
     
-    func playPlaylist(_ playlist: Playlist<PlaylistItemsReference>) {
+    func playPlaylist() {
         
-        self.isMakingRequestToPlayPlaylist = true
-        
-        let playbackRequest = PlaybackRequest(
-            context: .contextURI(playlist),
-            offset: nil
-        )
-        
-        self.playerManager.playlistsLastModifiedDates[playlist.uri] = Date()
-        
-        self.playPlaylistCancellable = self.spotify.api
-            .getAvailableDeviceThenPlay(playbackRequest)
-            .receive(on: RunLoop.main)
-            .handleAuthenticationError(spotify: self.spotify)
+        self.playPlaylistCancellable = self.playerManager
+            .playPlaylist(self.playlist)
             .sink(
                 receiveCompletion: { completion in
-                    self.isMakingRequestToPlayPlaylist = false
-                    if case .failure(let error) = completion {
-                        let alertTitle =
-                            #"Couldn't play "\#(playlist.name)""#
-                        self.playerManager.presentNotification(
-                            title: alertTitle,
-                            message: error.customizedLocalizedDescription
-                        )
-                        Loggers.touchBarView.trace(
-                            "TouchBarPlaylistButton: \(alertTitle): \(error)"
-                        )
+                    if case .failure(let alert) = completion {
+                        self.playerManager.notificationSubject.send(alert)
                     }
                 },
                 receiveValue: { }

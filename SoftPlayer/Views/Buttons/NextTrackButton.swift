@@ -35,7 +35,7 @@ struct NextTrackButton: View {
 
             })
             .buttonStyle(PlainButtonStyle())
-            .help("Seek forwards 15 seconds\(shortcutName)")
+            .help(Text("Seek forwards 15 seconds\(shortcutName)"))
         }
         else {
             // MARK: Next Track
@@ -62,7 +62,7 @@ struct NextTrackButton: View {
                         
                     }
                 }
-                .help("Skip to the next track\(shortcutName)")
+                .help(Text("Skip to the next track\(shortcutName)"))
 
         }
     }

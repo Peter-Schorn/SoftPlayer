@@ -7,52 +7,56 @@ struct KeyboardShortcutsView: View {
         VStack {
             shortcutView(
                 for: .showPlaylists,
-                label: "Show playlists"
+                label: Text("Show playlists")
             )
             shortcutView(
                 for: .previousTrack,
-                label: "Previous track"
+                label: Text("Previous track")
             )
             shortcutView(
                 for: .playPause,
-                label: "Play and pause"
+                label: Text("Play and pause")
             )
             shortcutView(
                 for: .nextTrack,
-                label: "Next track"
+                label: Text("Next track")
             )
             shortcutView(
                 for: .repeatMode,
-                label: "Repeat mode"
+                label: Text("Repeat mode")
             )
             shortcutView(
                 for: .shuffle,
-                label: "Shuffle"
+                label: Text("Shuffle")
             )
             shortcutView(
                 for: .volumeDown,
-                label: "Volume down"
+                label: Text("Volume down")
             )
             shortcutView(
                 for: .volumeUp,
-                label: "Volume Up"
+                label: Text("Volume Up")
             )
             shortcutView(
                 for: .onlyShowMyPlaylists,
-                label: "Toggle only show my playlists"
+                label: Text("Toggle only show my playlists")
             )
-            Button("Restore Defaults", action: KeyboardShortcuts.resetAll)
-                .padding(.top, 10)
+            
+            Button(action: KeyboardShortcuts.resetAll, label: {
+                Text("Restore Defaults")
+            })
+            .padding(.top, 10)
+
         }
         
     }
     
     func shortcutView(
         for name: KeyboardShortcuts.Name,
-        label: String
+        label: Text
     ) -> some View {
         HStack {
-            Text(label)
+            label
                 .frame(maxWidth: .infinity, alignment: .trailing)
             KeyboardShortcuts.Recorder(for: name)
                 .frame(maxWidth: .infinity, alignment: .leading)
