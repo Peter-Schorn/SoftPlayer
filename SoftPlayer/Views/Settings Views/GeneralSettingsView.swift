@@ -54,8 +54,13 @@ struct GeneralSettingsView_Previews: PreviewProvider {
     static let playerManager = PlayerManager(spotify: Spotify())
 
     static var previews: some View {
-        GeneralSettingsView()
-            .environmentObject(playerManager)
-            .environmentObject(playerManager.spotify)
+        TabView {
+            GeneralSettingsView()
+                .environmentObject(playerManager)
+                .environmentObject(playerManager.spotify)
+//                .frame(width: 400)
+                .tabItem { Text("General") }
+            
+        }
     }
 }

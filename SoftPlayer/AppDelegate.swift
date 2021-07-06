@@ -119,12 +119,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 .environmentObject(self.playerManager)
             
             self.settingsWindow = NSWindow(
-                contentRect: NSRect(x: 0, y: 0, width: 400, height: 450),
+                contentRect: NSRect(x: 0, y: 0, width: 450, height: 400),
                 styleMask: [
                     .titled,
                     .closable,
                     .miniaturizable,
-                    .resizable,
                     .fullSizeContentView
                 ],
                 backing: .buffered,

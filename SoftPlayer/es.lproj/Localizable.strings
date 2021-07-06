@@ -1,6 +1,9 @@
 /* No comment provided by engineer. */
 "Add the currently playing track or episode to this playlist" = "Añade la canción o episodio que está tocando a esta lista de reproducción";
 
+/* Added [song name] to [playlist name] */
+"Added \"%@\" to \"%@\"" = "\"%1$@\" ha añadido \"%2$@\"";
+
 /* No comment provided by engineer. */
 "All user data will be removed" = "Toda su información estará quitado";
 
@@ -11,10 +14,43 @@
 "Change the repeat mode%@" = "Cambia la modo de repetición%@";
 
 /* No comment provided by engineer. */
+"Could not Authorize with your Spotify account" = "No se puede autorizar con su cuenta de Spotify";
+
+/* No comment provided by engineer. */
+"Could not Connect to the Spotify Application" = "No se puede conectar a la aplicación de Spotify";
+
+/* Couldn't Add [song name] to [playlist name] */
+"Couldn't Add \"%@\" to \"%@\"" = "No se puede añadir \"%1$@\" a \"%2$@\"";
+
+/* Couldn't Play [playlist name] */
+"Couldn't Play \"%@\"" = "No se puede tocar \"%@\"";
+
+/* No comment provided by engineer. */
+"Couldn't Retrieve Playback State" = "No se puede recuperar la canción";
+
+/* No comment provided by engineer. */
+"Couldn't Retrieve Playlists" = "No se puede recuperar las listas de reproducción";
+
+/* No comment provided by engineer. */
+"Couldn't Retrieve the Currently Playing Track or Episode" = "No se puede recuperar la canción o episodio";
+
+/* No comment provided by engineer. */
+"Couldn't Retrieve User Profile" = "No se puede recuperar un perfil de un usuario";
+
+/* No comment provided by engineer. */
+"Couldn't Set the Repeat Mode to %@" = "No se puede cambiar modo de repetición a %@";
+
+/* No comment provided by engineer. */
+"Couldn't Transfer Playback to \"%@\"" = "No se puede transferir la reproducción a \"%@\"";
+
+/* No comment provided by engineer. */
 "Filters" = "Las filtras";
 
 /* No comment provided by engineer. */
 "General" = "General";
+
+/* No comment provided by engineer. */
+"If you would like to use another account, please log out first." = "Si quiere usar otro cuenta, por favor cierra sesión.";
 
 /* No comment provided by engineer. */
 "Log in with Spotify" = "Inicia sesión con Spotify";
@@ -26,10 +62,101 @@
 "Next track" = "La próxima pista";
 
 /* No comment provided by engineer. */
+"No Devices Found" = "No hay ningunos aparatos";
+
+/* No comment provided by engineer. */
+"No Playlists Found" = "No hay ningunas listas de reproducción ";
+
+/* No comment provided by engineer. */
+"Only Show My Playlists%@" = "Solamente muestra mis listas de reproducción%@";
+
+/* No comment provided by engineer. */
+"Play and pause" = "Toca y pausa";
+
+/* No comment provided by engineer. */
+"Play or pause playback%@" = "Toca o pausa la reproducción%@";
+
+/* No comment provided by engineer. */
+"Previous track" = "Pista anterior";
+
+/* No comment provided by engineer. */
+"Quit Application" = "Abandona la aplicación";
+
+/* No comment provided by engineer. */
+"Remove Filters" = "Quita las filtras";
+
+/* No comment provided by engineer. */
+"Repeat mode" = "Modo de Repetición";
+
+/* No comment provided by engineer. */
+"Restore Defaults" = "Restablece los valores de defecto";
+
+/* No comment provided by engineer. */
 "Seek backwards 15 seconds%@" = "Vaya atrás quince segundos%@";
 
 /* No comment provided by engineer. */
 "Seek forwards 15 seconds%@" = "Vaya adelante quince segundos%@";
 
-/* Added [song name] to [playlist name] */
-"Added \"%@\" to \"%@\"" = "Añadido \"%1$@\" a \"%2$@\"";
+/* No comment provided by engineer. */
+"Settings" = "Las Preferencias";
+
+/* No comment provided by engineer. */
+"Shortcuts" = "Los accesos directos";
+
+/* No comment provided by engineer. */
+"Show Images Folder" = "Muestra una carpeta de imagenes";
+
+/* No comment provided by engineer. */
+"Show playlists" = "Muestra las listas de reproducción";
+
+/* No comment provided by engineer. */
+"Show playlists%@" = "Muestra las listas de reproducción%@";
+
+/* No comment provided by engineer. */
+"Show settings ⌘," = "Muestra las preferencias";
+
+/* No comment provided by engineer. */
+"Shuffle" = "Revuelve";
+
+/* No comment provided by engineer. */
+"Skip to the next track%@" = "Vaya a la próxima pista%@";
+
+/* No comment provided by engineer. */
+"Skip to the previous track%@" = "Vaya a la anterior pista%@";
+
+/* No comment provided by engineer. */
+"Successfully Connected to Your Spotify Account" = "Esta conectado con éxito a la cuenta de Spotify";
+
+/* No comment provided by engineer. */
+"The Spotify Desktop Application is not installed or could not be found. Therefore, most of the functions of this app will not work. If the Spotify Application is installed, try moving it to the applications folder; then, restart this app." = "El escritorio aplicación de Spotify no esta instalado o no se puede encontrar. Además, la mayoría de las funciones de esta aplicación no se puede funcionar. Si la aplicación de Spotify está instalado, trata de moverlo a la carpeta de aplicaciones; entonces, reinicia esta aplicación.";
+
+/* No comment provided by engineer. */
+"There are no devices available to play content on" = "No hay dispositivos disponibles para tocar contenido";
+
+/* No comment provided by engineer. */
+"Toggle only show my playlists" = "Solamente muestra mis listas de reproducción";
+
+/* No comment provided by engineer. */
+"Toggle Shuffle%@" = "Pase El Aleatorio%@";
+
+/* No comment provided by engineer. */
+"Transfer playback to a different device" = "Transfiere la reproducción a otro dispositivo ";
+
+/* No comment provided by engineer. */
+"Volume down" = "Baje Volumno";
+
+/* No comment provided by engineer. */
+"Volume Up" = "Sube Volumno";
+
+/* No comment provided by engineer. */
+"You can safely remove files from this folder to free up space" = "Se puede quitar los archivos de esta carpeta para que pueda liberar espacio";
+
+/* No comment provided by engineer. */
+"You denied the authorization request (:" = "Tu niegas el pedido autorizado ):";
+
+/* No comment provided by engineer. */
+"You may close the authorization page in your browser." = "Se puede cerrar la pagina autorizada en su navegador";
+
+/* No comment provided by engineer. */
+"Your Spotify Account is Already Connected" = "Su cuenta todavía esta conectado";
+
