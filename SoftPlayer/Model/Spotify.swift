@@ -231,7 +231,8 @@ final class Spotify: ObservableObject {
                 .playlistReadPrivate,
                 .playlistReadCollaborative,
                 .playlistModifyPublic,
-                .playlistModifyPrivate
+                .playlistModifyPrivate,
+                .userLibraryRead
             ]
         ) else {
             fatalError("could not create authorization URL")

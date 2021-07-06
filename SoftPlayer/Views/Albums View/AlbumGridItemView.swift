@@ -6,71 +6,54 @@ import SpotifyExampleContent
 struct AlbumGridItemView: View {
     
     @EnvironmentObject var spotify: Spotify
-    
-    /// The cover image for the album.
-    @State private var image = Image(.spotifyAlbumPlaceholder)
-    
-    @State private var loadImageCancellable: AnyCancellable? = nil
-    @State private var didRequestImage = false
-    
+    @EnvironmentObject var playerManager: PlayerManager
+
     let album: Album
     
+    var albumImage: Image {
+        
+        if let uri = album.uri,
+                let identifier = try? SpotifyIdentifier(uri: uri),
+                let image = self.playerManager.image(for: identifier) {
+            return image
+        }
+
+        return Image(.spotifyAlbumPlaceholder)
+        
+    }
+
     var body: some View {
-        VStack {
-            image
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .cornerRadius(5)
-            Text(album.name)
-                .font(.callout)
-                .lineLimit(3)
-                // This is necessary to ensure that the text wraps to the
-                // next line if it is too long.
-                .fixedSize(horizontal: false, vertical: true)
-        }
-        .onAppear(perform: loadImage)
+        Button(action: {
+            playerManager.playAlbum(album: album)
+        }, label: {
+            VStack {
+                albumImage
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .cornerRadius(5)
+                Text(album.name)
+                    .font(.subheadline)
+                    .lineLimit(2)
+                    // This is necessary to ensure that the text wraps to the
+                    // next line if it is too long.
+                    .fixedSize(horizontal: false, vertical: true)
+                Spacer()
+            }
+        })
         .buttonStyle(PlainButtonStyle())
-        .padding(5)
+        .padding(2)
     }
-    
-    func loadImage() {
-        
-        // Return early if the image has already been requested. We can't just
-        // check if `self.image == nil` because the image might have already
-        // been requested, but not loaded yet.
-        if self.didRequestImage { return }
-        self.didRequestImage = true
-        
-        guard let spotifyImage = album.images?.largest else {
-            return
-        }
-        
-        // print("loading image for '\(album.name)'")
-        
-        // Note that a `Set<AnyCancellable>` is NOT being used so that each time
-        // a request to load the image is made, the previous cancellable
-        // assigned to `loadImageCancellable` is deallocated, which cancels the
-        // publisher.
-        self.loadImageCancellable = spotifyImage.load()
-            .receive(on: RunLoop.main)
-            .sink(
-                receiveCompletion: { _ in },
-                receiveValue: { image in
-                    self.image = image
-                }
-            )
-    }
-    
     
 }
 
 struct AlbumGridItemView_Previews: PreviewProvider {
     
-    static let spotify = Spotify()
+    static let playerManager = PlayerManager(spotify: Spotify())
     
     static var previews: some View {
         AlbumGridItemView(album: .jinx)
-            .environmentObject(spotify)
+            .environmentObject(playerManager)
+            .environmentObject(playerManager.spotify)
             .frame(width: 100, height: 100)
     }
 }
