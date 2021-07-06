@@ -63,7 +63,6 @@ struct LoginView: View {
                     .frame(height: 60)
                 Text("Log in with Spotify")
                     .font(.title2)
-                    .lineLimit(1)
             }
             .padding(.horizontal, 10)
             .padding(.vertical, 15)
@@ -84,18 +83,22 @@ struct LoginView_Previews: PreviewProvider {
     
     static let spotify = Spotify()
     
+    static let locales: [Locale] = [
+        .init(identifier: "es"),
+        .init(identifier: "en")
+    ]
+
     static var previews: some View {
         
-        ForEach(ColorScheme.allCases, id: \.self) { colorScheme in
+        ForEach(locales, id: \.self) { locale in
             LoginView()
-                .environmentObject(spotify)
-                .preferredColorScheme(colorScheme)
                 .onAppear(perform: onAppear)
                 .frame(
                     width: CGFloat(AppDelegate.popoverWidth),
                     height: CGFloat(AppDelegate.popoverHeight)
                 )
-                .previewDisplayName("\(colorScheme)")
+                .environmentObject(spotify)
+                .environment(\.locale, locale)
         }
         
     }
