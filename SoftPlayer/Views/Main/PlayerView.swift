@@ -278,6 +278,7 @@ struct PlayerView: View {
                         .onTapGesture(
                             perform: playerManager.openCurrentPlaybackInSpotify
                         )
+                        .help(playerManager.currentTrack?.name ?? "")
                     Text(playerManager.albumArtistTitle)
                         .font(.footnote)
                         // MARK: Matched Geometry Effect
@@ -291,6 +292,7 @@ struct PlayerView: View {
                         .onTapGesture(
                             perform: playerManager.openArtistOrShowInSpotify
                         )
+                        .help(playerManager.albumArtistTitle)
                 }
                 Spacer()
                 // MARK: Small Player Controls
