@@ -35,6 +35,9 @@
 		4789A5B425885ECC00A5E1E3 /* GeneralSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4789A5B325885ECC00A5E1E3 /* GeneralSettingsView.swift */; };
 		4789A5B725885F0800A5E1E3 /* KeyboardShortcutsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4789A5B625885F0800A5E1E3 /* KeyboardShortcutsView.swift */; };
 		4789A5BA25885F1900A5E1E3 /* KeyboardShortcutsNames.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4789A5B925885F1900A5E1E3 /* KeyboardShortcutsNames.swift */; };
+		478A64642692F85700557DF3 /* SavedAlbumsGridView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 478A64632692F85700557DF3 /* SavedAlbumsGridView.swift */; };
+		478A64662692FBC600557DF3 /* AlbumGridItemView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 478A64652692FBC600557DF3 /* AlbumGridItemView.swift */; };
+		478A64682692FEF400557DF3 /* LibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 478A64672692FEF400557DF3 /* LibraryView.swift */; };
 		4795210D25744AA6000A5B82 /* MiscellaneousUtilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4795210C25744AA6000A5B82 /* MiscellaneousUtilities.swift */; };
 		47CDDC8A2582D97F00E87918 /* RegularExpressions in Frameworks */ = {isa = PBXBuildFile; productRef = 47CDDC892582D97F00E87918 /* RegularExpressions */; };
 		47D8CF7F256663080034FA1E /* NotificationNames.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47D8CF7E256663080034FA1E /* NotificationNames.swift */; };
@@ -89,6 +92,9 @@
 		4789A5B325885ECC00A5E1E3 /* GeneralSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeneralSettingsView.swift; sourceTree = "<group>"; };
 		4789A5B625885F0800A5E1E3 /* KeyboardShortcutsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardShortcutsView.swift; sourceTree = "<group>"; };
 		4789A5B925885F1900A5E1E3 /* KeyboardShortcutsNames.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardShortcutsNames.swift; sourceTree = "<group>"; };
+		478A64632692F85700557DF3 /* SavedAlbumsGridView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavedAlbumsGridView.swift; sourceTree = "<group>"; };
+		478A64652692FBC600557DF3 /* AlbumGridItemView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlbumGridItemView.swift; sourceTree = "<group>"; };
+		478A64672692FEF400557DF3 /* LibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryView.swift; sourceTree = "<group>"; };
 		4795210C25744AA6000A5B82 /* MiscellaneousUtilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MiscellaneousUtilities.swift; sourceTree = "<group>"; };
 		47B75D322687DFC6003F58A9 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/Main.strings; sourceTree = "<group>"; };
 		47D8CF7E256663080034FA1E /* NotificationNames.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationNames.swift; sourceTree = "<group>"; };
@@ -195,12 +201,22 @@
 			path = "Settings Views";
 			sourceTree = "<group>";
 		};
+		478A64602692F6CC00557DF3 /* Albums View */ = {
+			isa = PBXGroup;
+			children = (
+				478A64632692F85700557DF3 /* SavedAlbumsGridView.swift */,
+				478A64652692FBC600557DF3 /* AlbumGridItemView.swift */,
+			);
+			path = "Albums View";
+			sourceTree = "<group>";
+		};
 		47CE919E267C7A40009BFF1C /* Main */ = {
 			isa = PBXGroup;
 			children = (
 				47832F492566474300AADEA3 /* RootView.swift */,
 				47FD3DF2256FA726000E2346 /* LoginView.swift */,
 				47FD3E02256FB031000E2346 /* PlayerView.swift */,
+				478A64672692FEF400557DF3 /* LibraryView.swift */,
 			);
 			path = Main;
 			sourceTree = "<group>";
@@ -264,6 +280,7 @@
 		47FD3DF0256FA71C000E2346 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				478A64602692F6CC00557DF3 /* Albums View */,
 				47F6EC4F257C95BD007079D2 /* Buttons */,
 				47343A662582C90F00EF6750 /* Playlists Views */,
 				47343A672582C92200EF6750 /* Touchbar Views */,
@@ -389,7 +406,10 @@
 				470315232583EED900B2BDF2 /* FocusView.swift in Sources */,
 				47FD3DDA256F642F000E2346 /* PlayerStateNotification.swift in Sources */,
 				47F6EC5D257C9699007079D2 /* RepeatModeButton.swift in Sources */,
+				478A64682692FEF400557DF3 /* LibraryView.swift in Sources */,
+				478A64642692F85700557DF3 /* SavedAlbumsGridView.swift in Sources */,
 				4712E604257FB1A100A881D5 /* NotificationView.swift in Sources */,
+				478A64662692FBC600557DF3 /* AlbumGridItemView.swift in Sources */,
 				47FD3DF3256FA726000E2346 /* LoginView.swift in Sources */,
 				4789A5B725885F0800A5E1E3 /* KeyboardShortcutsView.swift in Sources */,
 				47DC18702582712400EF11BA /* PlaylistCellView.swift in Sources */,

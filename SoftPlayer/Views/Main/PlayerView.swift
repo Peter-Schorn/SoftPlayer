@@ -48,7 +48,8 @@ struct PlayerView: View {
                     
                     miniPlayerViewBackground
                     
-                    PlaylistsScrollView()
+//                    PlaylistsScrollView()
+                    LibraryView()
                     
                 }
                 .background(
