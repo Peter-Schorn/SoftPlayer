@@ -32,7 +32,7 @@ class PlayerManager: ObservableObject {
     var currentTrack: SpotifyTrack? = nil
     var albumArtistTitle = ""
     
-    var shuffleIsOn = false
+    @Published var shuffleIsOn = false
     @Published var repeatMode = RepeatMode.off
     @Published var playerPosition: CGFloat = 0 {
         didSet {
