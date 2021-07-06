@@ -93,13 +93,13 @@ struct RootView: View {
             case .failure(let error):
                 alert.alertStyle = .warning
                 alertTitle = NSLocalizedString(
-                    "Could not Authorize with your Spotify account",
+                    "Could not Authorize with your Spotify Account",
                     comment: ""
                 )
                 if let authError = error as? SpotifyAuthorizationError,
                    authError.accessWasDenied {
                     alertMessage = NSLocalizedString(
-                        "You denied the authorization request (:",
+                        "You denied the Authorization Request :(",
                         comment: ""
                     )
                 }
