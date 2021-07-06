@@ -214,7 +214,8 @@ extension Error {
         {
             return dataString
         }
-        return self.localizedDescription
+        
+        return NSLocalizedString(self.localizedDescription, comment: "")
     }
     
 }

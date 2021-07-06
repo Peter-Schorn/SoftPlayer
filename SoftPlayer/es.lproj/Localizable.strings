@@ -14,7 +14,7 @@
 "Change the repeat mode%@" = "Cambia la modo de repetición%@";
 
 /* No comment provided by engineer. */
-"Could not Authorize with your Spotify account" = "No se puede autorizar con su cuenta de Spotify";
+"Could not Authorize with your Spotify Account" = "No se puede autorizar con su cuenta de Spotify";
 
 /* No comment provided by engineer. */
 "Could not Connect to the Spotify Application" = "No se puede conectar a la aplicación de Spotify";
@@ -56,7 +56,7 @@
 "Log in with Spotify" = "Inicia sesión con Spotify";
 
 /* No comment provided by engineer. */
-"Logout from Spotify" = "Cera sesión de Spotify";
+"Logout from Spotify" = "Cierra sesión de Spotify";
 
 /* No comment provided by engineer. */
 "Next track" = "La próxima pista";
@@ -86,7 +86,7 @@
 "Remove Filters" = "Quita las filtras";
 
 /* No comment provided by engineer. */
-"Repeat mode" = "Modo de Repetición";
+"Repeat mode" = "Modo de repetición";
 
 /* No comment provided by engineer. */
 "Restore Defaults" = "Restablece los valores de defecto";
@@ -137,26 +137,37 @@
 "Toggle only show my playlists" = "Solamente muestra mis listas de reproducción";
 
 /* No comment provided by engineer. */
-"Toggle Shuffle%@" = "Pase El Aleatorio%@";
+"Toggle Shuffle%@" = "Pase el aleatorio%@";
 
 /* No comment provided by engineer. */
 "Transfer playback to a different device" = "Transfiere la reproducción a otro dispositivo ";
 
 /* No comment provided by engineer. */
-"Volume down" = "Baje Volumno";
+"Volume down" = "Baje volumno";
 
 /* No comment provided by engineer. */
-"Volume Up" = "Sube Volumno";
+"Volume Up" = "Sube volumno";
 
 /* No comment provided by engineer. */
 "You can safely remove files from this folder to free up space" = "Se puede quitar los archivos de esta carpeta para que pueda liberar espacio";
 
 /* No comment provided by engineer. */
-"You denied the authorization request (:" = "Tu niegas el pedido autorizado ):";
+"You denied the Authorization Request :(" = "Tu niegas el pedido autorizado :(";
 
 /* No comment provided by engineer. */
-"You may close the authorization page in your browser." = "Se puede cerrar la pagina autorizada en su navegador";
+"You may close the authorization page in your browser." = "Se puede cerrar la pagina autorizada en su navegador.";
 
 /* No comment provided by engineer. */
 "Your Spotify Account is Already Connected" = "Su cuenta todavía esta conectado";
 
+/* No comment provided by engineer. */
+"The authorization request has expired or is otherwise invalid." = "La petición autorizado ha expirado o por lo demás está inválido.";
+
+/* RepeatMode.rawValue */
+"off" = "apagado";
+
+/* RepeatMode.rawValue */
+"track" = "la pista";
+
+/* RepeatMode.rawValue */
+"context" = "el contexto";
