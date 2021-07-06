@@ -133,6 +133,10 @@ class PlayerManager: ObservableObject {
             )
     }
 
+    // MARK: - Albums -
+    
+    @Published var savedAlbums: [Album] = []
+
     // MARK: - Playlists -
 
     @Published var playlists: [Playlist<PlaylistItemsReference>] = []
@@ -197,6 +201,8 @@ class PlayerManager: ObservableObject {
     private var openArtistOrShowCancellable: AnyCancellable? = nil
     private var cycleRepeatModeCancellable: AnyCancellable? = nil
     private var updateSoundVolumeAndPlayerPositionCancellable: AnyCancellable? = nil
+    private var retrieveSavedAlbumsCancellable: AnyCancellable? = nil
+    private var playAlbumCancellable: AnyCancellable? = nil
     
     init(spotify: Spotify) {
         
@@ -252,6 +258,7 @@ class PlayerManager: ObservableObject {
                 self.retrieveCurrentUser()
                 self.updatePlayerState()
                 self.retrievePlaylists()
+                self.retrieveSavedAlbums()
             }
         }
         .store(in: &cancellables)
@@ -264,6 +271,7 @@ class PlayerManager: ObservableObject {
                 self.currentUser = nil
                 self.playlistsLastModifiedDates = [:]
                 self.playlists = []
+                self.savedAlbums = []
                 self.playlistsSortedByLastModifiedDate = []
                 self.removeImagesCache()
             }
@@ -734,6 +742,104 @@ class PlayerManager: ObservableObject {
         self.setPlayerPosition(to: CGFloat(newPosition))
     }
 
+    // MARK: - Albums -
+    
+    func retrieveSavedAlbums() {
+        
+        self.retrieveSavedAlbumsCancellable = spotify.api
+            .currentUserSavedAlbums(limit: 50)
+            .extendPagesConcurrently(spotify.api)
+            .collectAndSortByOffset()
+            .receive(on: RunLoop.main)
+            .sink(
+                receiveCompletion: { completion in
+                    switch completion {
+                        case .finished:
+                            break
+                        case .failure(let error):
+                            let title = NSLocalizedString(
+                                "Couldn't Retrieve Albums",
+                                comment: ""
+                            )
+                            Loggers.playerManager.error("\(title): \(error)")
+                            let alert = AlertItem(
+                                title: title,
+                                message: error.customizedLocalizedDescription
+                            )
+                            self.notificationSubject.send(alert)
+                    }
+                },
+                receiveValue: { savedAlbums in
+                    self.savedAlbums = savedAlbums
+                        .map(\.item)
+                        /*
+                         Remove albums that have a `nil` id so that this
+                         property can be used as the id in a ForEach.
+                         (The id must be unique, otherwise the app will crash.)
+                         In theory, the id should never be `nil` when the albums
+                         are retrieved using the `currentUserSavedAlbums()`
+                         endpoint.
+                         
+                         Using \.self in the ForEach is extremely expensive as
+                         this involves calculating the hash of the entire
+                         `Album` instance, which is very large.
+                         */
+                        .filter { $0.id != nil }
+                    
+                    self.retrieveAlbumImages()
+
+                }
+            )
+
+    }
+
+    func playAlbum(album: Album) {
+        
+        guard let albumURI = album.uri else {
+            let title = String.localizedStringWithFormat(
+                NSLocalizedString(
+                    "Couldn't Play \"%@\"",
+                    comment: "Couldn't Play [album name]"
+                ),
+                album.name
+            )
+            Loggers.playerManager.error("\(title): no uri")
+            let message = NSLocalizedString(
+                "Missing data.",
+                comment: ""
+            )
+            let alert = AlertItem(title: title, message: message)
+            self.notificationSubject.send(alert)
+            return
+        }
+
+        let playbackRequest = PlaybackRequest(
+            context: .contextURI(albumURI),
+            offset: nil
+        )
+        
+        self.playAlbumCancellable = self.spotify.api
+            .getAvailableDeviceThenPlay(playbackRequest)
+            .receive(on: RunLoop.main)
+            .handleAuthenticationError(spotify: self.spotify)
+            .sink(receiveCompletion: { completion in
+                if case .failure(let error) = completion {
+                    let title = String.localizedStringWithFormat(
+                        NSLocalizedString(
+                            "Couldn't Play \"%@\"",
+                            comment: "Couldn't Play [album name]"
+                        ),
+                        album.name
+                    )
+                    Loggers.playerManager.error("\(title): \(error)")
+                    let message = error.customizedLocalizedDescription
+                    let alert = AlertItem(title: title, message: message)
+                    self.notificationSubject.send(alert)
+                }
+            })
+
+    }
+
     // MARK: - Playlists -
     
     func playPlaylist(
@@ -759,8 +865,8 @@ class PlayerManager: ObservableObject {
                     ),
                     playlist.name
                 )
-                let message = error.customizedLocalizedDescription
                 Loggers.playerManager.error("\(title): \(error)")
+                let message = error.customizedLocalizedDescription
                 return AlertItem(title: title, message: message)
             }
             .eraseToAnyPublisher()
@@ -882,7 +988,8 @@ class PlayerManager: ObservableObject {
             } catch {
                 Loggers.images.error(
                     """
-                    couldn't get identifier for '\(playlist.name)': \(error)
+                    couldn't get identifier for playlist '\(playlist.name)': \
+                    \(error)
                     """
                 )
                 continue
@@ -896,7 +1003,7 @@ class PlayerManager: ObservableObject {
 
             guard let spotifyImage = playlist.images.smallest else {
                 Loggers.images.warning(
-                    "no images exist for '\(playlist.name)'"
+                    "no images exist for playlist '\(playlist.name)'"
                 )
                 continue
             }
@@ -926,6 +1033,62 @@ class PlayerManager: ObservableObject {
             
         }  // for playlist in self.playlists
             
+    }
+
+    func retrieveAlbumImages() {
+        
+        for album in self.savedAlbums {
+            
+            guard
+                let albumURI = album.uri,
+                let albumIdentifier = try? SpotifyIdentifier(uri: albumURI)
+            else {
+                Loggers.images.error(
+                    """
+                    couldn't get uri or identifier for album '\(album.name)'
+                    """
+                )
+                continue
+            }
+
+            guard self.images[albumIdentifier] == nil else {
+                // the image already exists in the cache, so we don't need
+                // to retrieve it again
+                continue
+            }
+            
+            guard let spotifyImage = album.images?.smallest else {
+                Loggers.images.warning(
+                    "no images exist for album '\(album.name)'"
+                )
+                continue
+            }
+
+            Loggers.images.notice(
+                "will retrieve image for album '\(album.name)'"
+            )
+            
+            // we need to download the album image again
+            URLSession.shared.dataTaskPublisher(for: spotifyImage.url)
+                .sink(
+                    receiveCompletion: { completion in
+                        if case .failure(let error) = completion {
+                            Loggers.images.error(
+                                "couldn't retrieve album image: \(error)"
+                            )
+                        }
+                    },
+                    receiveValue: { imageData, urlResponse in
+                        self.saveImageToFile(
+                            imageData: imageData,
+                            identifier: albumIdentifier
+                        )
+                    }
+                )
+                .store(in: &self.cancellables)
+
+        }
+        
     }
 
     func image(for identifier: SpotifyIdentifier) -> Image? {
@@ -994,7 +1157,11 @@ class PlayerManager: ObservableObject {
                 guard let nsImage = NSImage(data: imageData) else {
                     return
                 }
-                let resizedImage = nsImage.resized(width: 30, height: 30)
+                let imageSize = identifier.idCategory == .playlist ? 30 : 64
+                let resizedImage = nsImage.resized(
+                    width: imageSize,
+                    height: imageSize
+                )
                 let swiftUIImage = Image(nsImage: resizedImage)
 
                 guard let newImageData = resizedImage.tiffRepresentation else {
@@ -1019,7 +1186,8 @@ class PlayerManager: ObservableObject {
 
     }
     
-    /// Removes the folder containing the images.
+    /// Removes the folder containing the images and removes all items from the
+    /// `images` dictionary.
     func removeImagesCache() {
         self.images = [:]
         do {
@@ -1181,6 +1349,7 @@ class PlayerManager: ObservableObject {
 
     func presentPlaylistsView() {
         self.retrievePlaylists()
+        self.retrieveSavedAlbums()
         
         os_signpost(
             .event,

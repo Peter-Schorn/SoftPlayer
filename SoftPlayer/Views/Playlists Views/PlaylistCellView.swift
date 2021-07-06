@@ -32,6 +32,7 @@ struct PlaylistCellView: View {
             return image
         }
         return Image(.spotifyAlbumPlaceholder)
+        
     }
     
     var playlistOwnedByCurrentUser: Bool {
