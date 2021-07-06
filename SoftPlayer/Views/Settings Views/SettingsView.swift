@@ -24,7 +24,7 @@ struct SettingsView: View {
         .padding()
         .frame(
             width:  selectedTab == 0 ? 400 : 450,
-            height: selectedTab == 0 ? 200 : 400
+            height: selectedTab == 0 ? 250 : 400
         )
         
     }
@@ -32,7 +32,12 @@ struct SettingsView: View {
 }
 
 struct SettingsView_Previews: PreviewProvider {
+    
+    static let playerManager = PlayerManager(spotify: Spotify())
+
     static var previews: some View {
         SettingsView()
+            .environmentObject(playerManager)
+            .environmentObject(playerManager.spotify)
     }
 }
