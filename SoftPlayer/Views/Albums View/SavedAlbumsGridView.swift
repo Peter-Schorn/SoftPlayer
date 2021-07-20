@@ -33,15 +33,31 @@ struct SavedAlbumsGridView: View {
     }
 
     var body: some View {
-        ScrollView {
-            searchBar
-            LazyVGrid(columns: columns, spacing: nil) {
-                ForEach(playerManager.savedAlbums, id: \.id) { album in
-                    AlbumGridItemView(album: album)
+        ScrollViewReader { scrollView in
+            ScrollView {
+                searchBar
+                    .padding(.bottom, -10)
+                LazyVGrid(columns: columns, spacing: nil) {
+                    ForEach(
+                        Array(playerManager.savedAlbums.enumerated()),
+                        id: \.element.id
+                    ) { offset, album in
+                        AlbumGridItemView(album: album)
+                            .if((0...3).contains(offset)) {
+                                $0.padding(.top, 7)
+                            }
+                            .id(offset)
+                    }
+                }
+                .padding(.horizontal, 5)
+                
+            }
+            .onAppear {
+                if !self.playerManager.didScrollToAlbumsSearchBar {
+                    scrollView.scrollTo(0, anchor: .top)
+                    self.playerManager.didScrollToAlbumsSearchBar = true
                 }
             }
-            .padding(.horizontal, 5)
-            
         }
     }
     

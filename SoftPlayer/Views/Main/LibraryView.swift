@@ -2,25 +2,30 @@ import SwiftUI
 
 struct LibraryView: View {
     
-    @State private var selectedTab = 1
+    @EnvironmentObject var playerManager: PlayerManager
+    @EnvironmentObject var spotify: Spotify
+
+    @State private var currentTab: String? = nil
+
+    let animation = Animation.easeInOut(duration: 0.4)
 
     var body: some View {
-        TabView(selection: $selectedTab) {
-            
-            PlaylistsScrollView()
-                .tabItem {
-                    Image(systemName: "music.note.list")
-                }
-                .tag(0)
-            
-            SavedAlbumsGridView()
-                .tabItem {
-                    Image(systemName: "square.stack")
-                }
-                .tag(1)
-            
-        }
         
+        print("LibraryView.body")
+        
+        return PageViewController(
+            pages: [
+                PlaylistsScrollView()
+                    .environmentObject(playerManager)
+                    .environmentObject(spotify)
+                    .eraseToAnyView(),
+                SavedAlbumsGridView()
+                    .environmentObject(playerManager)
+                    .environmentObject(spotify)
+                    .eraseToAnyView()
+            ],
+            currentPage: $playerManager.libraryPage
+        )
 
     }
 }
