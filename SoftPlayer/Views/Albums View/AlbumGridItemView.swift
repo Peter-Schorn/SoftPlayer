@@ -34,6 +34,7 @@ struct AlbumGridItemView: View {
                 Text(album.name)
                     .font(.subheadline)
                     .lineLimit(2)
+                    .multilineTextAlignment(.center)
                     // This is necessary to ensure that the text wraps to the
                     // next line if it is too long.
                     .fixedSize(horizontal: false, vertical: true)
@@ -51,9 +52,9 @@ struct AlbumGridItemView_Previews: PreviewProvider {
     static let playerManager = PlayerManager(spotify: Spotify())
     
     static var previews: some View {
-        AlbumGridItemView(album: .jinx)
+        AlbumGridItemView(album: .darkSideOfTheMoon)
             .environmentObject(playerManager)
             .environmentObject(playerManager.spotify)
-            .frame(width: 100, height: 100)
+            .frame(width: 80, height: 80)
     }
 }
