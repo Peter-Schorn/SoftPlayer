@@ -16,12 +16,24 @@ class PlayerManager: ObservableObject {
 
     let spotify: Spotify
     
+    @AppStorage("libraryPage") var libraryPage = 0
+
+    @AppStorage("libraryTab") var libraryTab = "playlists"
     @AppStorage("onlyShowMyPlaylists") var onlyShowMyPlaylists = false
     
     @Published var isShowingPlaylistsView = false
+    
     @Published var isDraggingPlaybackPositionView = false
     @Published var isDraggingSoundVolumeSlider = false
     
+    /// Only scroll to the playlists search bar once after presenting the
+    /// library view.
+    @Published var didScrollToPlaylistsSearchBar = false
+    
+    /// Only scroll to the albums search bar once after presenting the
+    /// library view.
+    @Published var didScrollToAlbumsSearchBar = false
+
     // MARK: - Images -
     
     var images: [SpotifyIdentifier: Image] = [:]
@@ -1382,6 +1394,8 @@ class PlayerManager: ObservableObject {
         else {
             self.isShowingPlaylistsView = false
         }
+        self.didScrollToAlbumsSearchBar = false
+        self.didScrollToPlaylistsSearchBar = false
     }
     
 }

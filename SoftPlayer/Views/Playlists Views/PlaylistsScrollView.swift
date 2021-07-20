@@ -125,7 +125,7 @@ struct PlaylistsScrollView: View {
                     filterMenuView
                         .padding(.trailing, 5)
                 }
-                .padding(.top, 10)
+                .padding(.top, 5)
                 .padding(.bottom, -7)
                 .id(searchFieldId)
                 
@@ -174,7 +174,10 @@ struct PlaylistsScrollView: View {
                 .touchBar(content: PlayPlaylistsTouchBarView.init)
             )
             .onAppear {
-                scrollView.scrollTo(0, anchor: .top)
+                if !self.playerManager.didScrollToPlaylistsSearchBar {
+                    scrollView.scrollTo(0, anchor: .top)
+                    self.playerManager.didScrollToPlaylistsSearchBar = true
+                }
             }
             .onChange(of: searchText) { text in
                 scrollView.scrollTo(searchFieldId, anchor: .top)
