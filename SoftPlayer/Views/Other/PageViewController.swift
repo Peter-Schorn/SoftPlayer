@@ -32,7 +32,7 @@ struct PageViewController<Page: View>: NSViewControllerRepresentable {
     }
     
     func updateNSViewController(_ pageController: NSPageController, context: Context) {
-        print("updateNSViewController")
+//        print("updateNSViewController")
         if pageController.selectedIndex != self.currentPage {
             DispatchQueue.main.async {
                 pageController.animator().selectedIndex = self.currentPage
@@ -115,7 +115,7 @@ struct PageViewController<Page: View>: NSViewControllerRepresentable {
                 self.parent.currentPage = pageController.selectedIndex
             }
 //            print("pageController: didTransitionTo \(object)")
-            print("pageController.selectedIndex: \(pageController.selectedIndex)")
+//            print("pageController.selectedIndex: \(pageController.selectedIndex)")
         }
         
         func pageControllerDidEndLiveTransition(
