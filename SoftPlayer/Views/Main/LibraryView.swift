@@ -10,19 +10,19 @@ struct LibraryView: View {
     let animation = Animation.easeInOut(duration: 0.4)
 
     var body: some View {
-        
-        print("LibraryView.body")
-        
-        return PageViewController(
+        PageViewController(
             pages: [
                 PlaylistsScrollView()
                     .environmentObject(playerManager)
                     .environmentObject(spotify)
-                    .eraseToAnyView(),
+                    .eraseToAnyView()
+                    .id("PlaylistsScrollView"),
                 SavedAlbumsGridView()
                     .environmentObject(playerManager)
                     .environmentObject(spotify)
                     .eraseToAnyView()
+                    .id("SavedAlbumsGridView")
+                    
             ],
             currentPage: $playerManager.libraryPage
         )
