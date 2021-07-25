@@ -7,14 +7,14 @@ struct LibrarySegmentedControl: View {
 
     var body: some View {
         Picker(
-//            selection: playerManager.$libraryTab,
             selection: playerManager.$libraryPage,
             label: EmptyView()
         ) {
-            Text("Playlists")
+
+            Image(systemName: "music.note.list")
                 .tag(0)
         
-            Text("Albums")
+            Image(systemName: "square.stack.fill")
                 .tag(1)
             
         }
@@ -29,7 +29,12 @@ struct LibrarySegmentedControl_Previews: PreviewProvider {
 
     static var previews: some View {
         LibrarySegmentedControl()
-            .frame(width: AppDelegate.popoverWidth, height: 350)
+            .padding()
+            .frame(
+                width: AppDelegate.popoverWidth,
+                height: 350,
+                alignment: .top
+            )
             .environmentObject(playerManager)
             .environmentObject(playerManager.spotify)
     }

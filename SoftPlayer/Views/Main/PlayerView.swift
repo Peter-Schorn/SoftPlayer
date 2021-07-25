@@ -49,7 +49,6 @@ struct PlayerView: View {
                     
                     miniPlayerViewBackground
                     
-//                    PlaylistsScrollView()
                     LibraryView()
                     
                 }
@@ -67,7 +66,7 @@ struct PlayerView: View {
                 }
                 
                 miniPlayerView
-                    .padding(.top, 33)
+                    .padding(.top, 40)
                     
             }
             else {
@@ -349,22 +348,31 @@ struct PlayerView: View {
                 .padding(.vertical, 10)
                 .frame(height: 70)
             }
-            LibrarySegmentedControl()
+//            LibrarySegmentedControl()
         }
     }
 
     var miniPlayerViewBackground: some View {
         VStack {
-            Button(action: {
-                self.playerManager.dismissPlaylistsView(animated: true)
-            }, label: {
-                Image(systemName: "chevron.down")
-                    .padding(-3)
-            })
-            .padding(.top, 5)
-            .padding(.top, 1)
+            HStack {
+                Button(action: {
+                    self.playerManager.dismissPlaylistsView(animated: true)
+                }, label: {
+                    Image(systemName: "chevron.down")
+                        .padding(-3)
+                })
+                .padding(3)
+                
+                Spacer()
+
+                LibrarySegmentedControl()
+
+            }
+            .padding(.horizontal, 5)
+            .padding(.top, 7)
+            
             Spacer()
-                .frame(height: 115)
+                .frame(height: 87)
         }
         .frame(maxWidth: .infinity)
         .background(
@@ -395,6 +403,6 @@ struct PlayerView_Previews: PreviewProvider {
     }
     
     static func onAppear() {
-//        PlayerView.debugIsShowingPlaylistsView = true
+        PlayerView.debugIsShowingPlaylistsView = true
     }
 }

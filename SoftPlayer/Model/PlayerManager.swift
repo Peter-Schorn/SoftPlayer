@@ -18,7 +18,6 @@ class PlayerManager: ObservableObject {
     
     @AppStorage("libraryPage") var libraryPage = 0
 
-    @AppStorage("libraryTab") var libraryTab = "playlists"
     @AppStorage("onlyShowMyPlaylists") var onlyShowMyPlaylists = false
     
     @Published var isShowingPlaylistsView = false
@@ -147,6 +146,7 @@ class PlayerManager: ObservableObject {
 
     // MARK: - Albums -
     
+    /// Each album is guaranteed to have a non-`nil` id.
     @Published var savedAlbums: [Album] = []
 
     // MARK: - Playlists -
