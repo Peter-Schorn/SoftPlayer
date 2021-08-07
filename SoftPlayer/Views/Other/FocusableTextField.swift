@@ -121,14 +121,14 @@ class CustomNSSearchField: NSSearchField {
         Loggers.keyEvent.info(
             "\(self.name!): CustomNSSearchField.becomeFirstResponder"
         )
-        return true
+        return super.becomeFirstResponder()
     }
     
     override func resignFirstResponder() -> Bool {
         Loggers.keyEvent.info(
             "\(self.name!): CustomNSSearchField.resignFirstResponder"
         )
-        return true
+        return super.resignFirstResponder()
     }
 
 }
