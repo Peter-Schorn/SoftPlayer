@@ -126,6 +126,7 @@ struct SavedAlbumsGridView: View {
                     Text("No Albums Found")
                         .foregroundColor(.secondary)
                         .font(.headline)
+                        .padding(.top, 135)
                 }
                 else {
                     LazyVGrid(columns: columns) {
@@ -158,6 +159,7 @@ struct SavedAlbumsGridView: View {
                     scrollView.scrollTo(0, anchor: .top)
                     self.playerManager.didScrollToAlbumsSearchBar = true
                 }
+                searchFieldIsFocused = true
             }
             .onChange(of: searchText) { text in
                 scrollView.scrollTo(searchFieldId, anchor: .top)
@@ -208,7 +210,7 @@ struct SavedAlbumsGridView: View {
         else if let scrollView = scrollView, event.specialKey == nil,
                 let character = event.charactersIgnoringModifiers {
             
-            self.searchFieldIsFocused = true
+//            self.searchFieldIsFocused = true
             self.searchText += character
             scrollView.scrollTo(searchFieldId, anchor: .top)
             return true

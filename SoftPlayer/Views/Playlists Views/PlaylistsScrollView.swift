@@ -185,6 +185,7 @@ struct PlaylistsScrollView: View {
                     scrollView.scrollTo(0, anchor: .top)
                     self.playerManager.didScrollToPlaylistsSearchBar = true
                 }
+                searchFieldIsFocused = true
             }
             .onChange(of: searchText) { text in
                 scrollView.scrollTo(searchFieldId, anchor: .top)
