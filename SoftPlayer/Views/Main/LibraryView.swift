@@ -5,8 +5,6 @@ struct LibraryView: View {
     @EnvironmentObject var playerManager: PlayerManager
     @EnvironmentObject var spotify: Spotify
 
-    @State private var currentTab: String? = nil
-
     let animation = Animation.easeInOut(duration: 0.4)
 
     var body: some View {
@@ -24,7 +22,7 @@ struct LibraryView: View {
                     .id("SavedAlbumsGridView")
                     
             ],
-            currentPage: $playerManager.libraryPage
+            currentPage: $playerManager.libraryPage.rawValueBinding
         )
 
     }

@@ -348,7 +348,7 @@ struct PlayerView: View {
                 .padding(.vertical, 10)
                 .frame(height: 70)
             }
-//            LibrarySegmentedControl()
+            
         }
     }
 
@@ -405,4 +405,5 @@ struct PlayerView_Previews: PreviewProvider {
     static func onAppear() {
         PlayerView.debugIsShowingPlaylistsView = true
     }
+    
 }
