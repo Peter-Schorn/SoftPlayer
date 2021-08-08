@@ -108,26 +108,22 @@ class CustomNSSearchField: NSSearchField {
 
     var receiveKeyEvent: ((NSEvent) -> Bool)? = nil
     
-    override func keyDown(with event: NSEvent) {
-        Loggers.keyEvent.trace("CustomNSSearchField: keyDown: \(event)")
-    }
-
     override func performKeyEquivalent(with event: NSEvent) -> Bool {
         print("CustomNSSearchField.performKeyEquivalent \(self.name!): ")
         return receiveKeyEvent?(event) ?? false
     }
     
     override func becomeFirstResponder() -> Bool {
-        Loggers.keyEvent.info(
-            "\(self.name!): CustomNSSearchField.becomeFirstResponder"
-        )
+//        Loggers.keyEvent.info(
+//            "\(self.name!): CustomNSSearchField.becomeFirstResponder"
+//        )
         return super.becomeFirstResponder()
     }
     
     override func resignFirstResponder() -> Bool {
-        Loggers.keyEvent.info(
-            "\(self.name!): CustomNSSearchField.resignFirstResponder"
-        )
+//        Loggers.keyEvent.info(
+//            "\(self.name!): CustomNSSearchField.resignFirstResponder"
+//        )
         return super.resignFirstResponder()
     }
 

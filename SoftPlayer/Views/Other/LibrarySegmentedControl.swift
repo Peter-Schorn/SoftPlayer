@@ -12,14 +12,15 @@ struct LibrarySegmentedControl: View {
         ) {
 
             Image(systemName: "music.note.list")
-                .tag(0)
+                .tag(LibraryPage.playlists)
         
             Image(systemName: "square.stack.fill")
-                .tag(1)
+                .tag(LibraryPage.albums)
             
         }
         .pickerStyle(SegmentedPickerStyle())
         .padding(.horizontal, 5)
+        .frame(width: 100)
     }
 }
 
