@@ -165,7 +165,7 @@ struct SavedAlbumsGridView: View {
                 scrollView.scrollTo(searchFieldId, anchor: .top)
             }
             .onChange(of: playerManager.libraryPage) { page in
-                if page == 1 {
+                if page == .albums {
                     searchFieldIsFocused = true
                 }
                 else {
@@ -185,7 +185,7 @@ struct SavedAlbumsGridView: View {
         
         // don't handle the key event if the
         // `PlaylistsScrollView` page is being shown
-        if playerManager.libraryPage == 0 {
+        if playerManager.libraryPage == .playlists {
             Loggers.keyEvent.debug(
                 "SavedAlbumsGridView not handling event because not shown"
             )

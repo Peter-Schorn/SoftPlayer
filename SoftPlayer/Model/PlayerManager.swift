@@ -16,7 +16,7 @@ class PlayerManager: ObservableObject {
 
     let spotify: Spotify
     
-    @AppStorage("libraryPage") var libraryPage = 0
+    @AppStorage("libraryPage") var libraryPage = LibraryPage.playlists
 
     @AppStorage("onlyShowMyPlaylists") var onlyShowMyPlaylists = false
     
