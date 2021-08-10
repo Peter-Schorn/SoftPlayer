@@ -9,7 +9,8 @@ struct AlbumGridItemView: View {
     @EnvironmentObject var playerManager: PlayerManager
 
     let album: Album
-    
+    let isSelected: Bool
+
     var albumImage: Image {
         
         if let uri = album.uri,
@@ -24,7 +25,7 @@ struct AlbumGridItemView: View {
 
     var body: some View {
         Button(action: {
-            playerManager.playAlbum(album: album)
+            playerManager.playAlbum(album)
         }, label: {
             VStack {
                 albumImage
@@ -41,6 +42,7 @@ struct AlbumGridItemView: View {
                 Spacer()
             }
         })
+        .disabled(isSelected)
         .buttonStyle(PlainButtonStyle())
         .padding(2)
     }
@@ -52,9 +54,12 @@ struct AlbumGridItemView_Previews: PreviewProvider {
     static let playerManager = PlayerManager(spotify: Spotify())
     
     static var previews: some View {
-        AlbumGridItemView(album: .darkSideOfTheMoon)
-            .environmentObject(playerManager)
-            .environmentObject(playerManager.spotify)
-            .frame(width: 80, height: 80)
+        AlbumGridItemView(
+            album: .darkSideOfTheMoon,
+            isSelected: false
+        )
+        .environmentObject(playerManager)
+        .environmentObject(playerManager.spotify)
+        .frame(width: 80, height: 80)
     }
 }

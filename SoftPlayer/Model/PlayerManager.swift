@@ -805,7 +805,7 @@ class PlayerManager: ObservableObject {
 
     }
 
-    func playAlbum(album: Album) {
+    func playAlbum(_ album: Album) {
         
         guard let albumURI = album.uri else {
             let title = String.localizedStringWithFormat(

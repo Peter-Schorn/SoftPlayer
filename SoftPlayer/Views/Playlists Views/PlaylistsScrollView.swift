@@ -268,9 +268,11 @@ struct PlaylistsScrollView: View {
     }
 
     func searchFieldDidCommit() {
-        guard self.playerManager.isShowingPlaylistsView else {
+        guard self.playerManager.isShowingPlaylistsView,
+              playerManager.libraryPage == .playlists else {
             return
         }
+        
         if let firstPlaylist = self.filteredPlaylists.first?.element {
             withAnimation(highlightAnimation) {
                 self.selectedPlaylistURI = firstPlaylist.uri
