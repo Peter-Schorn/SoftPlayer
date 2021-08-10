@@ -12,35 +12,53 @@ struct PageViewController<Page: View>: NSViewControllerRepresentable {
     }
     
     func makeNSViewController(context: Context) -> NSPageController {
+        
+        print("--- makeNSViewController ---")
+
         let pageController = NSPageController()
+        pageController.delegate = context.coordinator
         pageController.view = NSView()
         pageController.transitionStyle = .horizontalStrip
-        pageController.delegate = context.coordinator
-        //        pageController.arrangedObjects = context.coordinator.controllers
-        pageController.arrangedObjects = context.coordinator.viewControllers
-        
-//        pageController.selectedIndex = self.currentPage
-        pageController.animator().selectedIndex = self.currentPage
-        
-//        pageController.navigateForward(nil)
-//        pageController.navigateBack(nil)
-//        pageController.completeTransition()
 //        pageController.selectedViewController =
 //                context.coordinator.viewControllers[self.currentPage]
-//
+        
+//        pageController.arrangedObjects = context.coordinator.viewControllers
+        pageController.arrangedObjects = Array(self.pages.indices)
+        
+//        pageController.animator().selectedIndex = self.currentPage
+        
+        
+
+        if self.currentPage == 0 {
+            pageController.selectedIndex = 1
+            pageController.navigateBack(nil)
+        }
+        else if self.currentPage == 1 {
+            pageController.selectedIndex = 0
+            pageController.navigateForward(nil)
+        }
+        else {
+            fatalError("unreachable")
+        }
+        
         return pageController
+        
     }
     
     func updateNSViewController(_ pageController: NSPageController, context: Context) {
+        
 //        print("updateNSViewController")
+        
         if pageController.selectedIndex != self.currentPage {
             DispatchQueue.main.async {
                 pageController.animator().selectedIndex = self.currentPage
             }
         }
+        
     }
     
     class Coordinator: NSObject, NSPageControllerDelegate {
+        
         let parent: PageViewController
         let viewControllers: [NSViewController]
         
@@ -59,10 +77,12 @@ struct PageViewController<Page: View>: NSViewControllerRepresentable {
             
 //            print("pageController: identifierFor: \(object)")
             
-            let objectIdentifier = ObjectIdentifier(object as AnyObject)
-            let identifier = String(describing: objectIdentifier)
-//            print("identifier: \(identifier)")
-            return identifier
+//            let objectIdentifier = ObjectIdentifier(object as AnyObject)
+//            let identifier = String(describing: objectIdentifier)
+////            print("identifier: \(identifier)")
+//            return identifier
+            
+            return String(describing: object)
             
         }
         
@@ -73,31 +93,36 @@ struct PageViewController<Page: View>: NSViewControllerRepresentable {
             
 //            print("pageController: viewControllerForIdentifier: \(identifier)")
             
-            for viewController in self.viewControllers {
-                let objectIdentifier = ObjectIdentifier(viewController)
-                if String(describing: objectIdentifier) == identifier {
-                    return viewController
-                }
-            }
+            let index = Int(identifier)!
 
-            fatalError(
-                "could not create viewControllerForIdentifier \(identifier)"
-            )
+            return self.viewControllers[index]
+            
+
+//            for viewController in self.viewControllers {
+//                let objectIdentifier = ObjectIdentifier(viewController)
+//                if String(describing: objectIdentifier) == identifier {
+//                    return viewController
+//                }
+//            }
+
+//            fatalError(
+//                "could not create viewControllerForIdentifier \(identifier)"
+//            )
             
         }
         
-        func pageController(
-            _ pageController: NSPageController,
-            prepare viewController: NSViewController,
-            with object: Any?
-        ) {
-            
-//            viewController.representedObject
-
-//            print("pageController: prepare viewController: \(viewController)")
-//            print("object: \(object ?? "nil")\n")
-            
-        }
+//        func pageController(
+//            _ pageController: NSPageController,
+//            prepare viewController: NSViewController,
+//            with object: Any?
+//        ) {
+//
+////            viewController.representedObject
+//
+////            print("pageController: prepare viewController: \(viewController)")
+////            print("object: \(object ?? "nil")\n")
+//
+//        }
         
         func pageControllerWillStartLiveTransition(
             _ pageController: NSPageController
@@ -129,4 +154,24 @@ struct PageViewController<Page: View>: NSViewControllerRepresentable {
         
     }
     
+}
+
+class CustomPageController: NSPageController {
+    
+    override func loadView() {
+        self.view = NSView()
+    }
+    
+    var _selectedViewController: NSViewController?
+
+    override var selectedViewController: NSViewController? {
+        get {
+            return self._selectedViewController
+        }
+        set {
+            self._selectedViewController = newValue
+        }
+    }
+
+
 }
