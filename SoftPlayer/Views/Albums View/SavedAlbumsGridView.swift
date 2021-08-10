@@ -14,7 +14,8 @@ struct SavedAlbumsGridView: View {
 
     @State private var searchText = ""
     @State private var searchFieldIsFocused = false
-    
+    @State private var selectedAlbumURI: String? = nil
+
     @State private var loadAlbumsCancellable: AnyCancellable? = nil
 
     let columns = [
@@ -24,6 +25,8 @@ struct SavedAlbumsGridView: View {
     ]
 
     let searchFieldId = "search field"
+
+    let highlightAnimation = Animation.linear(duration: 0.1)
 
     var filteredAlbums: [(offset: Int, element: Album)] {
 
@@ -102,6 +105,8 @@ struct SavedAlbumsGridView: View {
         return Array(filteredAlbums)
         
     }
+    
+    
 
     var body: some View {
         ScrollViewReader { scrollView in
@@ -134,11 +139,14 @@ struct SavedAlbumsGridView: View {
                             self.filteredAlbums,
                             id: \.element.id
                         ) { offset, album in
-                            AlbumGridItemView(album: album)
-                                .if((0...3).contains(offset)) {
-                                    $0.padding(.top, 7)
-                                }
-                                .id(offset)
+                            AlbumGridItemView(
+                                album: album,
+                                isSelected: selectedAlbumURI == album.uri
+                            )
+                            .if((0...3).contains(offset)) {
+                                $0.padding(.top, 7)
+                            }
+                            .id(offset)
                         }
                     }
                     .padding(.horizontal, 5)
@@ -220,7 +228,35 @@ struct SavedAlbumsGridView: View {
     }
 
     func searchFieldDidCommit() {
+        guard self.playerManager.isShowingPlaylistsView,
+              playerManager.libraryPage == .albums else {
+            return
+        }
         
+        if let firstAlbum = self.filteredAlbums.first?.element {
+            withAnimation(highlightAnimation) {
+                self.selectedAlbumURI = firstAlbum.uri
+            }
+            Loggers.savedAlbumsGridView.trace(
+                "playing album '\(firstAlbum.name)'"
+            )
+            self.playAlbum(firstAlbum)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                withAnimation(highlightAnimation) {
+                    self.selectedAlbumURI = nil
+                }
+            }
+        }
+        else {
+            withAnimation(highlightAnimation) {
+                self.selectedAlbumURI = nil
+            }
+        }
+
+    }
+    
+    func playAlbum(_ album: Album) {
+        self.playerManager.playAlbum(album)
     }
 
 }
