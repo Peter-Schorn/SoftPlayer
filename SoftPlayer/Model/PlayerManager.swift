@@ -292,6 +292,13 @@ class PlayerManager: ObservableObject {
         if self.spotifyApplication == nil {
             self.showSpotifyNotInstalledAlert()
         }
+        
+        // ensure the UI is updated after a keyboard shortcut changes
+        NotificationCenter.default.publisher(for: .shortcutByNameDidChange)
+            .sink { _ in
+                self.objectWillChange.send()
+            }
+            .store(in: &cancellables)
 
     }
     
@@ -1286,17 +1293,13 @@ class PlayerManager: ObservableObject {
         requireModifierKey: Bool
     ) -> Bool {
         
+        Loggers.keyEvent.trace("PlayerManager: \(event)")
+
         // 49 == space
         if !requireModifierKey && event.keyCode == 49 {
             self.playPause()
             return true
         }
-
-        if event.characters(byApplyingModifiers: .command) == "q" {
-            NSApplication.shared.terminate(nil)
-        }
-
-        Loggers.keyEvent.trace("PlayerManager: \(event)")
 
         guard let shortcut = KeyboardShortcuts.Shortcut(event: event) else {
             Loggers.keyEvent.notice("couldn't get shortcut for event")
@@ -1353,6 +1356,8 @@ class PlayerManager: ObservableObject {
                 )
             case .settings:
                 AppDelegate.shared.openSettingsWindow()
+            case .quit:
+                NSApplication.shared.terminate(nil)
             default:
                 return false
         }
