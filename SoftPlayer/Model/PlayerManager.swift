@@ -280,6 +280,13 @@ class PlayerManager: ObservableObject {
         if self.spotifyApplication == nil {
             self.showSpotifyNotInstalledAlert()
         }
+        
+        // ensure the UI is updated after a keyboard shortcut changes
+        NotificationCenter.default.publisher(for: .shortcutByNameDidChange)
+            .sink { _ in
+                self.objectWillChange.send()
+            }
+            .store(in: &cancellables)
 
     }
     
@@ -1002,7 +1009,8 @@ class PlayerManager: ObservableObject {
             } catch {
                 Loggers.images.error(
                     """
-                    couldn't get identifier for '\(playlist.name)': \(error)
+                    couldn't get identifier for playlist '\(playlist.name)': \
+                    \(error)
                     """
                 )
                 continue
@@ -1016,7 +1024,7 @@ class PlayerManager: ObservableObject {
 
             guard let spotifyImage = playlist.images.smallest else {
                 Loggers.images.warning(
-                    "no images exist for '\(playlist.name)'"
+                    "no images exist for playlist '\(playlist.name)'"
                 )
                 continue
             }
@@ -1139,7 +1147,8 @@ class PlayerManager: ObservableObject {
 
     }
     
-    /// Removes the folder containing the images.
+    /// Removes the folder containing the images and removes all items from the
+    /// `images` dictionary.
     func removeImagesCache() {
         self.images = [:]
         do {
@@ -1154,7 +1163,7 @@ class PlayerManager: ObservableObject {
             )
         }
     }
-    
+
     // MARK: - Open -
 
     /// Open the currently playing track/episode in the browser.
@@ -1228,17 +1237,13 @@ class PlayerManager: ObservableObject {
         requireModifierKey: Bool
     ) -> Bool {
         
+        Loggers.keyEvent.trace("PlayerManager: \(event)")
+
         // 49 == space
         if !requireModifierKey && event.keyCode == 49 {
             self.playPause()
             return true
         }
-
-        if event.characters(byApplyingModifiers: .command) == "q" {
-            NSApplication.shared.terminate(nil)
-        }
-
-        Loggers.keyEvent.trace("PlayerManager: \(event)")
 
         guard let shortcut = KeyboardShortcuts.Shortcut(event: event) else {
             Loggers.keyEvent.notice("couldn't get shortcut for event")
@@ -1289,6 +1294,8 @@ class PlayerManager: ObservableObject {
                 )
             case .settings:
                 AppDelegate.shared.openSettingsWindow()
+            case .quit:
+                NSApplication.shared.terminate(nil)
             default:
                 return false
         }

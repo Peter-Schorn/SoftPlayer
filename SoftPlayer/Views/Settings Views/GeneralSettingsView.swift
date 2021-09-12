@@ -1,6 +1,7 @@
 import SwiftUI
 import Combine
 import SpotifyWebAPI
+import KeyboardShortcuts
 
 struct GeneralSettingsView: View {
     
@@ -36,7 +37,6 @@ struct GeneralSettingsView: View {
                 Text("Logout from Spotify")
             })
             .disabled(!spotify.isAuthorized)
-            
             Text(
                 "All user data will be removed"
             )
@@ -48,10 +48,23 @@ struct GeneralSettingsView: View {
             }, label: {
                 Text("Quit Application")
             })
+            Text(
+                "\(KeyboardShortcuts.getShortcut(for: .quit).map(String.init) ?? "")"
+            )
+            .font(.footnote)
+            .foregroundColor(.secondary)
             
         }
         .padding(20)
-        .frame(width: 340)
+        .background(
+            KeyEventHandler { event in
+                return self.playerManager.receiveKeyEvent(
+                    event,
+                    requireModifierKey: true
+                )
+            }
+            .touchBar(content: PlayPlaylistsTouchBarView.init)
+        )
         
     }
     
@@ -66,7 +79,7 @@ struct GeneralSettingsView: View {
 struct GeneralSettingsView_Previews: PreviewProvider {
     
     static let playerManager = PlayerManager(spotify: Spotify())
-    
+
     static var previews: some View {
         TabView {
             GeneralSettingsView()
