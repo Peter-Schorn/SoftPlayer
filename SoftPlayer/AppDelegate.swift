@@ -167,6 +167,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         print(Name.volumeUp, to: &sink)
         print(Name.onlyShowMyPlaylists, to: &sink)
         print(Name.settings, to: &sink)
+        print(Name.quit, to: &sink)
     }
 
 }
