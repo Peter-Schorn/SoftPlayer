@@ -42,4 +42,8 @@ extension KeyboardShortcuts.Name {
         "settings",
         default: .init(.comma, modifiers: [.command])
     )
+    static let quit = Self(
+        "quit",
+        default: .init(.q, modifiers: [.command])
+    )
 }

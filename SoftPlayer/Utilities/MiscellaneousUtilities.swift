@@ -17,7 +17,7 @@ extension Publisher {
         return self.tryCatch { error -> Empty<Output, Error> in
             if let authError = error as? SpotifyAuthenticationError,
                     authError.error == "invalid_grant" {
-                spotify.isAuthorized = false
+                spotify.api.authorizationManager.deauthorize()
                 return Empty()
             }
             throw error
@@ -207,15 +207,17 @@ extension NSImage {
 extension Error {
     
     var customizedLocalizedDescription: String {
-        if
-            case .httpError(let data, _) = self as? SpotifyGeneralError,
-            let dataString = String(data: data, encoding: .utf8),
-            dataString.lowercased().starts(with: "user not approved for app")
-        {
+        if case .httpError(let data, _) = self as? SpotifyGeneralError,
+                let dataString = String(data: data, encoding: .utf8),
+                dataString.lowercased().starts(with: "user not approved for app") {
             return dataString
         }
         
         return NSLocalizedString(self.localizedDescription, comment: "")
     }
     
+}
+
+extension Notification.Name {
+    static let shortcutByNameDidChange = Self("KeyboardShortcuts_shortcutByNameDidChange")
 }
