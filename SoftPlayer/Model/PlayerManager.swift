@@ -391,68 +391,109 @@ class PlayerManager: ObservableObject {
         self.objectWillChange.send()
     }
     
-    func updateSoundVolumeAndPlayerPosition(fromTimer: Bool = false) {
+    func updateSoundVolumeAndPlayerPosition(
+        fromTimer: Bool = false
+    ) {
         Loggers.soundVolumeAndPlayerPosition.trace("")
         
-        // MARK: Sound Volume
-        if let intSoundVolume = self.spotifyApplication?.soundVolume {
-            if self.isDraggingSoundVolumeSlider {
-                return
-            }
-            if let lastAdjusted = self.lastAdjustedSoundVolumeSliderDate,
-               lastAdjusted.addingTimeInterval(3) >= Date() {
-                Loggers.soundVolumeAndPlayerPosition.notice(
-                    "sound volume was adjusted three seconds ago or less"
-                )
-                return
-            }
-            
-            let newSoundVolume = CGFloat(intSoundVolume)
-            if abs(newSoundVolume - self.soundVolume) >= 2 {
-                Loggers.soundVolumeAndPlayerPosition.trace(
-                    """
-                changed sound volume from \(soundVolume) to \
-                \(newSoundVolume)"
-                """
-                )
-                self.soundVolume = newSoundVolume
-            }
-        }
-        else {
-            Loggers.soundVolumeAndPlayerPosition.warning(
-                "couldn't get sound volume"
-            )
-        }
-        
-        // MARK: Player Position
-        if let playerPosition = self.spotifyApplication?.playerPosition,
-                !self.isDraggingPlaybackPositionView {
-            // if the player position was adjusted by the user three seconds ago
-            // or less, then don't update it here.
-            if let lastAdjusted = self.lastAdjustedPlayerPositionDate,
-                   fromTimer,
-                   lastAdjusted.addingTimeInterval(3) >= Date() {
-                Loggers.soundVolumeAndPlayerPosition.notice(
-                    "player position was adjusted three seconds ago or less"
-                )
-                return
-            }
-            let cgPlayerPosition = CGFloat(playerPosition)
-            if abs(cgPlayerPosition - self.playerPosition) > 1 {
-                
-                Loggers.soundVolumeAndPlayerPosition.trace(
-                    """
-                    changed player position from \(playerPosition) to \
-                    \(cgPlayerPosition)"
-                    """
-                )
-                self.playerPosition = cgPlayerPosition
-            }
-            
-        }
+        self.updateSoundVolume(
+            recursionDepth: 0
+        )
+        self.updatePlayerPosition(
+            fromTimer: fromTimer
+        )
 
     }
     
+    func updateSoundVolume(
+        recursionDepth: Int = 0
+    ) {
+        
+        Loggers.soundVolumeAndPlayerPosition.trace("")
+        
+        guard let intSoundVolume = self.spotifyApplication?.soundVolume else {
+            Loggers.soundVolumeAndPlayerPosition.warning(
+                "couldn't get sound volume"
+            )
+            return
+        }
+        
+        if intSoundVolume == 0, recursionDepth <= 2 {
+            print("recursion depth: \(recursionDepth)")
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                self.updateSoundVolume(
+                    recursionDepth: recursionDepth + 1
+                )
+            }
+            return
+        }
+        
+        if self.isDraggingSoundVolumeSlider {
+            return
+        }
+        if let lastAdjusted = self.lastAdjustedSoundVolumeSliderDate,
+           lastAdjusted.addingTimeInterval(3) >= Date() {
+            Loggers.soundVolumeAndPlayerPosition.notice(
+                "sound volume was adjusted three seconds ago or less"
+            )
+            return
+        }
+        
+        let newSoundVolume = CGFloat(intSoundVolume)
+        if abs(newSoundVolume - self.soundVolume) >= 2 {
+            
+            Loggers.soundVolumeAndPlayerPosition.trace(
+                """
+                will change sound volume from \(self.soundVolume) to \
+                \(newSoundVolume)"
+                """
+            )
+            self.soundVolume = newSoundVolume
+            
+        }
+        
+    }
+    
+    func updatePlayerPosition(
+        fromTimer: Bool = false
+    ) {
+        
+        guard let playerPosition = self.spotifyApplication?.playerPosition,
+              !self.isDraggingPlaybackPositionView else {
+            
+            Loggers.soundVolumeAndPlayerPosition.debug(
+                """
+                couldn't get player position or is dragging slider
+                """
+            )
+            return
+
+        }
+
+        // if the player position was adjusted by the user three seconds ago
+        // or less, then don't update it here.
+        if let lastAdjusted = self.lastAdjustedPlayerPositionDate,
+               fromTimer,
+               lastAdjusted.addingTimeInterval(3) >= Date() {
+            Loggers.soundVolumeAndPlayerPosition.notice(
+                "player position was adjusted three seconds ago or less"
+            )
+            return
+        }
+        let cgPlayerPosition = CGFloat(playerPosition)
+        if abs(cgPlayerPosition - self.playerPosition) {
+            
+            Loggers.soundVolumeAndPlayerPosition.trace(
+                """
+                will change player position from \(self.playerPosition) to \
+                \(cgPlayerPosition)"
+                """
+            )
+            self.playerPosition = cgPlayerPosition
+        }
+
+    }
+
     /// Loads the image from the artwork URL of the current track.
     func loadArtworkImage() {
         guard let url = self.currentTrack?.artworkUrl
@@ -1035,6 +1076,8 @@ class PlayerManager: ObservableObject {
         }
     }
     
+    // MARK: - Open -
+
     /// Open the currently playing track/episode in the browser.
     func openCurrentPlaybackInSpotify() {
         
@@ -1217,7 +1260,7 @@ class PlayerManager: ObservableObject {
     
 }
 
-// MARK: - - Private Members - -
+// MARK: - Private Members -
 
 private extension PlayerManager {
     
