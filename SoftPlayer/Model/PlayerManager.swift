@@ -481,7 +481,7 @@ class PlayerManager: ObservableObject {
             return
         }
         let cgPlayerPosition = CGFloat(playerPosition)
-        if abs(cgPlayerPosition - self.playerPosition) {
+        if abs(cgPlayerPosition - self.playerPosition) > 1 {
             
             Loggers.soundVolumeAndPlayerPosition.trace(
                 """
@@ -1187,17 +1187,11 @@ class PlayerManager: ObservableObject {
                 let newSoundVolume = (self.soundVolume + 5)
                     .clamped(to: 0...100)
                 self.soundVolume = newSoundVolume
-                self.spotifyApplication?.setSoundVolume?(
-                    Int(newSoundVolume)
-                )
             case .volumeDown:
                 Loggers.keyEvent.trace("decrease sound volume")
                 let newSoundVolume = (self.soundVolume - 5)
                     .clamped(to: 0...100)
                 self.soundVolume = newSoundVolume
-                self.spotifyApplication?.setSoundVolume?(
-                    Int(newSoundVolume)
-                )
             case .showPlaylists:
                 if self.isShowingPlaylistsView {
                     self.dismissPlaylistsView(animated: true)
