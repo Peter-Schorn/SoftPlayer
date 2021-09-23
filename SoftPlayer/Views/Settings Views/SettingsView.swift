@@ -24,8 +24,18 @@ struct SettingsView: View {
         .padding()
         .frame(
             width:  selectedTab == 0 ? 400 : 450,
-            height: selectedTab == 0 ? 250 : 400
+            height: selectedTab == 0 ? 300 : 400
         )
+        .background(
+            KeyEventHandler { event in
+                return self.playerManager.receiveKeyEvent(
+                    event,
+                    requireModifierKey: true
+                )
+            }
+            .touchBar(content: PlayPlaylistsTouchBarView.init)
+        )
+        .preferredColorScheme(playerManager.appearance.colorScheme)
         
     }
     

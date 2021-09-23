@@ -8,6 +8,7 @@ struct RootView: View {
     fileprivate static var debugShowLoginView = false
     
     @EnvironmentObject var spotify: Spotify
+    @EnvironmentObject var playerManager: PlayerManager
 
     @State private var requestTokensCancellable: AnyCancellable? = nil
     
@@ -28,6 +29,7 @@ struct RootView: View {
             spotify.redirectURLSubject,
             perform: handleRedirectURL(_:)
         )
+        .preferredColorScheme(playerManager.appearance.colorScheme)
         
     }
     

@@ -17,6 +17,8 @@ class PlayerManager: ObservableObject {
     let spotify: Spotify
     
     @AppStorage("onlyShowMyPlaylists") var onlyShowMyPlaylists = false
+
+    @AppStorage("appearance") var appearance = AppAppearance.system
     
     @Published var isShowingPlaylistsView = false
     @Published var isDraggingPlaybackPositionView = false
