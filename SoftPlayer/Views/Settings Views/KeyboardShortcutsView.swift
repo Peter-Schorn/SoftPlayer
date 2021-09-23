@@ -3,6 +3,8 @@ import KeyboardShortcuts
 
 struct KeyboardShortcutsView: View {
     
+    @EnvironmentObject var playerManager: PlayerManager
+    
     var body: some View {
         VStack {
             shortcutView(
@@ -48,6 +50,15 @@ struct KeyboardShortcutsView: View {
             .padding(.top, 10)
 
         }
+        .background(
+            KeyEventHandler { event in
+                return self.playerManager.receiveKeyEvent(
+                    event,
+                    requireModifierKey: true
+                )
+            }
+            .touchBar(content: PlayPlaylistsTouchBarView.init)
+        )
         
     }
     
@@ -63,4 +74,23 @@ struct KeyboardShortcutsView: View {
         }
     }
     
+}
+
+
+struct KeyboardShortcutsView_Previews: PreviewProvider {
+    
+    static let playerManager = PlayerManager(spotify: Spotify())
+    
+    static var previews: some View {
+        TabView {
+            KeyboardShortcutsView()
+                .environmentObject(playerManager)
+                .environmentObject(playerManager.spotify)
+                .tabItem { Text("Shortcuts") }
+            
+        }
+        .padding()
+        .frame(width: 450, height: 470)
+    }
+
 }

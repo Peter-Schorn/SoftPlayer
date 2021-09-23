@@ -13,6 +13,7 @@
 		47038544257E801100D0E79A /* BlurView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47038543257E801100D0E79A /* BlurView.swift */; };
 		4712E604257FB1A100A881D5 /* NotificationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4712E603257FB1A100A881D5 /* NotificationView.swift */; };
 		4712E607257FD19500A881D5 /* PlayPlaylistsTouchBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4712E606257FD19500A881D5 /* PlayPlaylistsTouchBarView.swift */; };
+		4715D7B326FD229F00562192 /* AppAppearance.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4715D7B226FD229F00562192 /* AppAppearance.swift */; };
 		471CD4EA26883037009176F2 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 471CD4E826883037009176F2 /* InfoPlist.strings */; };
 		471CD4ED26883037009176F2 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 471CD4EB26883037009176F2 /* Localizable.strings */; };
 		471CD4EF26883AC5009176F2 /* AlertItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 471CD4EE26883AC5009176F2 /* AlertItem.swift */; };
@@ -65,6 +66,7 @@
 		47038543257E801100D0E79A /* BlurView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlurView.swift; sourceTree = "<group>"; };
 		4712E603257FB1A100A881D5 /* NotificationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationView.swift; sourceTree = "<group>"; };
 		4712E606257FD19500A881D5 /* PlayPlaylistsTouchBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayPlaylistsTouchBarView.swift; sourceTree = "<group>"; };
+		4715D7B226FD229F00562192 /* AppAppearance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppAppearance.swift; sourceTree = "<group>"; };
 		471CD4E926883037009176F2 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		471CD4EC26883037009176F2 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/Localizable.strings; sourceTree = "<group>"; };
 		471CD4EE26883AC5009176F2 /* AlertItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlertItem.swift; sourceTree = "<group>"; };
@@ -241,6 +243,7 @@
 			children = (
 				47FD3DE2256F9599000E2346 /* SpotifyBridge.swift */,
 				47D8CF82256664C60034FA1E /* PlayerManager.swift */,
+				4715D7B226FD229F00562192 /* AppAppearance.swift */,
 				47FD3DF6256FA77F000E2346 /* Spotify.swift */,
 				47FD3DD9256F642F000E2346 /* PlayerStateNotification.swift */,
 			);
@@ -400,6 +403,7 @@
 				4789987B25749FD500866EE1 /* CustomSliderView.swift in Sources */,
 				471CD4EF26883AC5009176F2 /* AlertItem.swift in Sources */,
 				4789A5BA25885F1900A5E1E3 /* KeyboardShortcutsNames.swift in Sources */,
+				4715D7B326FD229F00562192 /* AppAppearance.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
