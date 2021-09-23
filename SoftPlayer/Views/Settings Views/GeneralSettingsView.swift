@@ -10,6 +10,17 @@ struct GeneralSettingsView: View {
     var body: some View {
         Form {
             
+            Picker("Appearance:", selection: playerManager.$appearance) {
+                ForEach(AppAppearance.allCases, id: \.self) { appearance in
+                    Text(appearance.rawValue)
+                    if appearance == .system {
+                        Divider()
+                    }
+                }
+            }
+            .frame(width: 200)
+            .padding(.bottom, 10)
+ 
             Button(action: showImagesCacheFolder, label: {
                 Text("Show Images Folder")
             })
@@ -18,6 +29,8 @@ struct GeneralSettingsView: View {
             )
             .font(.footnote)
             .foregroundColor(.secondary)
+            .fixedSize(horizontal: false, vertical: true)
+            
             
             Button(action: spotify.api.authorizationManager.deauthorize, label: {
                 Text("Logout from Spotify")
@@ -38,6 +51,7 @@ struct GeneralSettingsView: View {
             
         }
         .padding(20)
+        .frame(width: 340)
         
     }
     
@@ -52,15 +66,17 @@ struct GeneralSettingsView: View {
 struct GeneralSettingsView_Previews: PreviewProvider {
     
     static let playerManager = PlayerManager(spotify: Spotify())
-
+    
     static var previews: some View {
         TabView {
             GeneralSettingsView()
                 .environmentObject(playerManager)
                 .environmentObject(playerManager.spotify)
-//                .frame(width: 400)
                 .tabItem { Text("General") }
             
         }
+        .padding()
+        .frame(width: 400, height: 250)
     }
+    
 }

@@ -41,6 +41,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         let rootView = RootView()
             .environmentObject(spotify)
             .environmentObject(playerManager)
+            
 
         let popover = NSPopover()
         popover.contentSize = NSSize(
