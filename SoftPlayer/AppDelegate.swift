@@ -37,6 +37,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         
         self.playerManager = PlayerManager(spotify: spotify)
         
+        // MARK: Root View
         let rootView = RootView()
             .environmentObject(spotify)
             .environmentObject(playerManager)
