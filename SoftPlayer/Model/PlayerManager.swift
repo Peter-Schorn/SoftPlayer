@@ -34,6 +34,8 @@ class PlayerManager: ObservableObject {
     var currentTrack: SpotifyTrack? = nil
     var albumArtistTitle = ""
     
+    /// Set only if the playback is occurring in the context of a playlist.
+    @Published var currentlyPlayingPlaylistName: String? = nil
     @Published var shuffleIsOn = false
     @Published var repeatMode = RepeatMode.off
     @Published var playerPosition: CGFloat = 0 {
@@ -180,9 +182,7 @@ class PlayerManager: ObservableObject {
     let playerStateDidChange = DistributedNotificationCenter
         .default().publisher(for: .spotifyPlayerStateDidChange)
 
-    let spotifyApplication: SpotifyApplication? = SBApplication(
-        bundleIdentifier: "com.spotify.client"
-    )
+    let spotifyApplication = CustomSpotifyApplication()
     
     private var previousArtworkURL: String? = nil
     private var isUpdatingCurrentlyPlayingContext = false
@@ -199,22 +199,16 @@ class PlayerManager: ObservableObject {
     private var openArtistOrShowCancellable: AnyCancellable? = nil
     private var cycleRepeatModeCancellable: AnyCancellable? = nil
     private var updateSoundVolumeAndPlayerPositionCancellable: AnyCancellable? = nil
+    private var retrieveCurrentlyPlayingPlaylistCancellable: AnyCancellable? = nil
+    var playerStateDidChangeCancellable: AnyCancellable? = nil
     
     init(spotify: Spotify) {
         
         self.spotify = spotify
         
-        self.playerStateDidChange
+        self.playerStateDidChangeCancellable = self.playerStateDidChange
             .receive(on: RunLoop.main)
-            .sink(receiveValue: { _ in
-                Loggers.playerManager.trace(
-                    "received player state did change notification"
-                )
-                if self.spotify.isAuthorized {
-                    self.updatePlayerState()
-                }
-            })
-            .store(in: &cancellables)
+            .sink(receiveValue: self.receivePlayerStateDidChange(notification:))
         
         self.artworkURLDidChange
             .sink(receiveValue: self.loadArtworkImage)
@@ -236,6 +230,7 @@ class PlayerManager: ObservableObject {
                     self.retrieveAvailableDevices()
                 }
             }
+            
         }
         .store(in: &cancellables)
         
@@ -252,8 +247,8 @@ class PlayerManager: ObservableObject {
             )
             if isAuthorized {
                 self.retrieveCurrentUser()
-                self.updatePlayerState()
                 self.retrievePlaylists()
+                self.updatePlayerState()
             }
         }
         .store(in: &cancellables)
@@ -351,6 +346,42 @@ class PlayerManager: ObservableObject {
         else {
             self.albumArtistTitle = ""
         }
+    }
+    
+    func receivePlayerStateDidChange(notification: Notification) {
+        
+        Loggers.playerManager.trace(
+            "received player state did change notification"
+        )
+
+        if let playerState = PlayerStateNotification(
+            userInfo: notification.userInfo
+        ) {
+            
+            Loggers.playerManager.trace(
+                """
+                playerStateDidChange: \
+                \(playerState.state?.rawValue ?? "nil")
+                """
+            )
+            if playerState.state == .stopped {
+                return
+            }
+        }
+        else {
+            Loggers.playerManager.error(
+                """
+                could not create PlayerStateNotification from \
+                notification.userInfo:
+                \(notification.userInfo as Any)
+                """
+            )
+        }
+
+        if self.spotify.isAuthorized {
+            self.updatePlayerState()
+        }
+        
     }
 
     func updatePlayerState() {
@@ -533,7 +564,7 @@ class PlayerManager: ObservableObject {
     }
     
     func setPlayerPosition(to position: CGFloat) {
-        self.spotifyApplication?.setPlayerPosition?(Double(position))
+        self.spotifyApplication?.setPlayerPosition(Double(position))
         self.playerPosition = position
     }
     
@@ -570,10 +601,10 @@ class PlayerManager: ObservableObject {
     
     /// Retrieves the currently playing context and sets the repeat state
     /// and whether play/pause is disabled.
-    func retrieveCurrentlyPlayingContext(level: Int = 1) {
+    func retrieveCurrentlyPlayingContext(recursionDepth: Int = 1) {
         
-        if level >= 5 {
-            Loggers.syncContext.trace("level \(level) >= 5")
+        if recursionDepth >= 5 {
+            Loggers.syncContext.trace("recursionDepth \(recursionDepth) >= 5")
             self.currentlyPlayingContext = nil
             self.isUpdatingCurrentlyPlayingContext = false
             return
@@ -584,7 +615,7 @@ class PlayerManager: ObservableObject {
         // may return information for the previous playback.
         self.isUpdatingCurrentlyPlayingContext = true
         Loggers.syncContext.trace(
-            "isUpdatingCurrentlyPlayingContext = true; level: \(level)"
+            "isUpdatingCurrentlyPlayingContext = true; recursionDepth: \(recursionDepth)"
         )
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             self.retrieveCurrentlyPlayingContextCancellable =
@@ -640,7 +671,7 @@ class PlayerManager: ObservableObject {
                             self.receiveCurrentlyPlayingContext(context)
                         }
                         else {
-                            let asyncDelay = 0.4 * Double(level)
+                            let asyncDelay = 0.4 * Double(recursionDepth)
                             Loggers.syncContext.warning(
                                 """
                                 uriFromContext != uriFromAppleScript \
@@ -652,7 +683,7 @@ class PlayerManager: ObservableObject {
                                 deadline: .now() + asyncDelay
                             ) {
                                 self.retrieveCurrentlyPlayingContext(
-                                    level: level + 1
+                                    recursionDepth: recursionDepth + 1
                                 )
                             }
                         }
@@ -663,6 +694,38 @@ class PlayerManager: ObservableObject {
         
     }
     
+    func retrieveCurrentlyPlayingPlaylist() {
+        
+        guard let context = self.currentlyPlayingContext?.context,
+                context.type == .playlist else {
+            self.currentlyPlayingPlaylistName = nil
+            return
+        }
+
+        let playlistURI = context.uri
+
+        self.retrieveCurrentlyPlayingPlaylistCancellable = self.spotify.api
+            .playlistName(playlistURI)
+            .receive(on: RunLoop.main)
+            .sink(
+                receiveCompletion: { completion in
+                    if case .failure(let error) = completion {
+                        self.currentlyPlayingPlaylistName = nil
+                        Loggers.playerState.error(
+                            """
+                            could not retrieve playlist name for \(playlistURI): \
+                            \(error)
+                            """
+                        )
+                    }
+                },
+                receiveValue: { playlistName in
+                    self.currentlyPlayingPlaylistName = playlistName
+                }
+            )
+
+    }
+
     // MARK: - Player Controls -
     
     func cycleRepeatMode() {
@@ -704,7 +767,7 @@ class PlayerManager: ObservableObject {
         Loggers.shuffle.trace(
             "will set shuffle to \(self.shuffleIsOn)"
         )
-        self.spotifyApplication?.setShuffling?(
+        self.spotifyApplication?.setShuffling(
             self.shuffleIsOn
         )
     }
@@ -733,7 +796,7 @@ class PlayerManager: ObservableObject {
     
     func skipToPreviousTrack() {
         Loggers.playerState.trace("")
-        self.spotifyApplication?.previousTrack?()
+        self.spotifyApplication?.previousTrack()
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             self.updatePlayerState()
         }
@@ -751,12 +814,12 @@ class PlayerManager: ObservableObject {
     }
     
     func playPause() {
-        self.spotifyApplication?.playpause?()
+        self.spotifyApplication?.playpause()
     }
 
     func skipToNextTrack() {
         Loggers.playerState.trace("")
-        self.spotifyApplication?.nextTrack?()
+        self.spotifyApplication?.nextTrack()
     }
     
     func seekForwards15Seconds() {
@@ -1302,6 +1365,8 @@ private extension PlayerManager {
         Loggers.playerState.notice(
             "allowed actions: \(allowedActionsString)"
         )
+
+        self.retrieveCurrentlyPlayingPlaylist()
         
         
     }

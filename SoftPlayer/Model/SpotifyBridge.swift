@@ -72,6 +72,165 @@ import SpotifyWebAPI
 
 extension SBApplication: SpotifyApplication { }
 
+class CustomSpotifyApplication {
+    
+    private let spotifyApplication: SpotifyApplication
+
+    /// If `true`, then all apple events sent via the methods of
+    /// `SpotifyApplication` are blocked.
+    var blockAppleEvents = false
+
+    init?() {
+        if let spotifyApplication = SBApplication(
+            bundleIdentifier: "com.spotify.client"
+        ) {
+            self.spotifyApplication = spotifyApplication
+        }
+        else {
+            return nil
+        }
+        
+    }
+    
+    func activate() {
+        if self.blockAppleEvents { return }
+        self.spotifyApplication.activate()
+    }
+
+    var isRunning: Bool? {
+        if self.blockAppleEvents { return nil }
+        return self.spotifyApplication.isRunning
+    }
+
+    /// The current playing track.
+    var currentTrack: SpotifyTrack? {
+        if self.blockAppleEvents { return nil }
+        return self.spotifyApplication.currentTrack
+    }
+    
+    /// The sound output volume (minimum = 0; maximum = 100).
+    var soundVolume: Int? {
+        if self.blockAppleEvents { return nil }
+        return self.spotifyApplication.soundVolume
+    }
+    
+    /// Is Spotify stopped, paused, or playing?
+    var playerState: SpotifyEPlS? {
+        if self.blockAppleEvents { return nil }
+        return self.spotifyApplication.playerState
+    }
+    
+    /// The player’s position within the currently playing track in seconds.
+    var playerPosition: Double? {
+        if self.blockAppleEvents { return nil }
+        return self.spotifyApplication.playerPosition
+    }
+    
+    /// Is repeating enabled in the current playback context?
+    var repeatingEnabled: Bool? {
+        if self.blockAppleEvents { return nil }
+        return self.spotifyApplication.repeatingEnabled
+    }
+    
+    /// Is repeating on or off?
+    var repeating: Bool? {
+        if self.blockAppleEvents { return nil }
+        return self.spotifyApplication.repeating
+    }
+    
+    /// enabled in the current playback context?
+    var shufflingEnabled: Bool? {
+        if self.blockAppleEvents { return nil }
+        return self.spotifyApplication.shufflingEnabled
+    }
+    
+    /// Is shuffling on or off?
+    var shuffling: Bool? {
+        if self.blockAppleEvents { return nil }
+        return self.spotifyApplication.shuffling
+    }
+    
+    /// The name of the application.
+    var name: String? {
+        if self.blockAppleEvents { return nil }
+        return self.spotifyApplication.name
+    }
+    
+    /// Is this the frontmost (active) application?
+    var frontmost: Bool? {
+        if self.blockAppleEvents { return nil }
+        return self.spotifyApplication.frontmost
+    }
+    
+    /// The version of the application.
+    var version: String? {
+        if self.blockAppleEvents { return nil }
+        return self.spotifyApplication.version
+    }
+    
+
+    /// Skip to the next track.
+    func nextTrack() -> Void? {
+        if self.blockAppleEvents { return nil }
+        return self.spotifyApplication.nextTrack?()
+    }
+    
+    /// Skip to the previous track.
+    func previousTrack() -> Void? {
+        if self.blockAppleEvents { return nil }
+        return self.spotifyApplication.previousTrack?()
+    }
+    
+    /// Toggle play/pause.
+    func playpause() -> Void? {
+        if self.blockAppleEvents { return nil }
+        return self.spotifyApplication.playpause?()
+    }
+    
+    /// Pause playback.
+    func pause() -> Void? {
+        if self.blockAppleEvents { return nil }
+        return self.spotifyApplication.pause?()
+    }
+    
+    /// Resume playback.
+    func play() -> Void? {
+        if self.blockAppleEvents { return nil }
+        return self.spotifyApplication.play?()
+    }
+    
+    /// Start playback of a track in the given context.
+    func playTrack(_ x: String!, inContext: String!) -> Void? {
+        if self.blockAppleEvents { return nil }
+        return self.spotifyApplication.playTrack?(x, inContext: inContext)
+    }
+    
+    /// The sound output volume (minimum = 0; maximum = 100).
+    func setSoundVolume(_ soundVolume: Int) -> Void? {
+        if self.blockAppleEvents { return nil }
+        return self.spotifyApplication.setSoundVolume?(soundVolume)
+    }
+    
+    /// The player’s position within the currently playing track in seconds.
+    func setPlayerPosition(_ playerPosition: Double) -> Void? {
+        if self.blockAppleEvents { return nil }
+        return self.spotifyApplication.setPlayerPosition?(playerPosition)
+    }
+    
+    /// Is repeating on or off?
+    func setRepeating(_ repeating: Bool) -> Void? {
+        if self.blockAppleEvents { return nil }
+        return self.spotifyApplication.setRepeating?(repeating)
+    }
+    
+    /// Is shuffling on or off?
+    func setShuffling(_ shuffling: Bool) -> Void? {
+        if self.blockAppleEvents { return nil }
+        return self.spotifyApplication.setShuffling?(shuffling)
+    }
+
+}
+
 // MARK: SpotifyTrack
 @objc public protocol SpotifyTrack: SBObjectProtocol {
     

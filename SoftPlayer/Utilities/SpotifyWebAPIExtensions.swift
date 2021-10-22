@@ -55,10 +55,31 @@ extension SpotifyAPI where AuthorizationManager: SpotifyScopeAuthorizationManage
         }
         .eraseToAnyPublisher()
         
-        
-        
     }
 
+    /// Retrieves the name of the given playlist.
+    func playlistName(
+        _ playlist: SpotifyURIConvertible, market: String? = nil
+    ) -> AnyPublisher<String, Error> {
+    
+        return self.filteredPlaylist(
+            playlist,
+            filters: "name",
+            additionalTypes: [],
+            market: market
+        )
+        .decodeSpotifyObject(SimplePlaylist.self)
+        .map(\.name)
+        .eraseToAnyPublisher()
+
+    }
+
+}
+
+struct SimplePlaylist: Codable, Hashable {
+    
+    let name: String
+    
 }
 
 extension CurrentlyPlayingContext {

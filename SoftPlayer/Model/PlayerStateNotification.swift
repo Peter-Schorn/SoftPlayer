@@ -4,10 +4,10 @@ import Foundation
 /// posts when the player state changes.
 struct PlayerStateNotification {
 
-    /// Whether content is playing or paused.
+    /// Whether content is playing, paused, or stopped.
     let state: State?
 
-    /// The currend playback position in **seconds**.
+    /// The current playback position in **seconds**.
     let playbackPosition: Double?
 
     /// The duration of the track/episode in **milliseconds**.
@@ -30,7 +30,7 @@ struct PlayerStateNotification {
 
     let hasArtwork: Bool
 
-    let playcount: Int?
+    let playCount: Int?
 
     let trackNumber: Int?
 
@@ -86,7 +86,7 @@ struct PlayerStateNotification {
 
         self.popularity = userInfo["Popularity"] as? Int
         self.hasArtwork = userInfo["Has Artwork"] as? Bool ?? false
-        self.playcount = userInfo["Play Count"] as? Int
+        self.playCount = userInfo["Play Count"] as? Int
         self.trackNumber = userInfo["Track Number"] as? Int
         self.discNumber = userInfo["Disc Number"] as? Int
 

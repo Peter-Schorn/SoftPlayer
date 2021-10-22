@@ -23,6 +23,7 @@
 		475878CE258731F1007EB435 /* CancelButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 475878CD258731F1007EB435 /* CancelButton.swift */; };
 		4768023A2570CDF800397202 /* Logging in Frameworks */ = {isa = PBXBuildFile; productRef = 476802392570CDF800397202 /* Logging */; };
 		47699875257DDE8400B7D6F5 /* ViewExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47699874257DDE8400B7D6F5 /* ViewExtensions.swift */; };
+		477450982706C2D4007CD45D /* NowPlayingAnimation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 477450972706C2D4007CD45D /* NowPlayingAnimation.swift */; };
 		477560E02580083200B7FFED /* SpotifyWebAPIExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 477560DF2580083200B7FFED /* SpotifyWebAPIExtensions.swift */; };
 		477560E62580140D00B7FFED /* TouchBarPlaylistButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 477560E52580140D00B7FFED /* TouchBarPlaylistButton.swift */; };
 		47832F482566474300AADEA3 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47832F472566474300AADEA3 /* AppDelegate.swift */; };
@@ -75,6 +76,7 @@
 		474C7C912570F713004A3DB5 /* AvailableDevicesButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AvailableDevicesButton.swift; sourceTree = "<group>"; };
 		475878CD258731F1007EB435 /* CancelButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CancelButton.swift; sourceTree = "<group>"; };
 		47699874257DDE8400B7D6F5 /* ViewExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewExtensions.swift; sourceTree = "<group>"; };
+		477450972706C2D4007CD45D /* NowPlayingAnimation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NowPlayingAnimation.swift; sourceTree = "<group>"; };
 		477560DF2580083200B7FFED /* SpotifyWebAPIExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotifyWebAPIExtensions.swift; sourceTree = "<group>"; };
 		477560E52580140D00B7FFED /* TouchBarPlaylistButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TouchBarPlaylistButton.swift; sourceTree = "<group>"; };
 		47832F442566474300AADEA3 /* Soft Player.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Soft Player.app"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -211,6 +213,7 @@
 			isa = PBXGroup;
 			children = (
 				4789987725747F0F00866EE1 /* PlaybackPositionView.swift */,
+				477450972706C2D4007CD45D /* NowPlayingAnimation.swift */,
 				47F6EC63257C96D7007079D2 /* SoundVolumeSlider.swift */,
 				4789987A25749FD500866EE1 /* CustomSliderView.swift */,
 				4712E603257FB1A100A881D5 /* NotificationView.swift */,
@@ -369,6 +372,7 @@
 				47F6EC51257C95D8007079D2 /* ShuffleButton.swift in Sources */,
 				47F6EC60257C96B7007079D2 /* NextTrackButton.swift in Sources */,
 				472A742A25859431008998C5 /* SettingsView.swift in Sources */,
+				477450982706C2D4007CD45D /* NowPlayingAnimation.swift in Sources */,
 				4712E607257FD19500A881D5 /* PlayPlaylistsTouchBarView.swift in Sources */,
 				475878CE258731F1007EB435 /* CancelButton.swift in Sources */,
 				47FD3DE3256F9599000E2346 /* SpotifyBridge.swift in Sources */,
