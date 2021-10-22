@@ -60,13 +60,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         )
         if let button = self.statusBarItem.button {
             // MARK: Menu Bar Icon Image
-            
-            // let configuration = NSImage.SymbolConfiguration(
-            //     textStyle: .caption2,
-            //     scale: .small
-            // )
             let menuBarIcon = NSImage(.musicNoteCircle)
-                // .withSymbolConfiguration(configuration)!
 
             menuBarIcon.size = NSSize(width: 18, height: 18)
             button.image = menuBarIcon
@@ -81,7 +75,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationWillTerminate(_ aNotification: Notification) {
-        // Insert code here to tear down your application
+        self.playerManager.spotifyApplication?.blockAppleEvents = true
+        self.playerManager.playerStateDidChangeCancellable = nil
+        
     }
 
     func application(_ application: NSApplication, open urls: [URL]) {
@@ -100,13 +96,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         
     }
 
-    func applicationShouldTerminate(
-        _ sender: NSApplication
-    ) -> NSApplication.TerminateReply {
-        
-        return .terminateNow
-        
-    }
 
     // MARK: - Manage Windows -
 

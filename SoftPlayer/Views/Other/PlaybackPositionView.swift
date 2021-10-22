@@ -7,7 +7,8 @@ struct PlaybackPositionView: View {
     @EnvironmentObject var playerManager: PlayerManager
     
     let timerInterval: Double
-    let timer: Publishers.Autoconnect<Timer.TimerPublisher>
+    let timer: Timer.TimerPublisher
+    @State private var timerCancellable: Cancellable? = nil
     
     var duration: CGFloat {
         return CGFloat((playerManager.currentTrack?.duration ?? 1) / 1000)
@@ -15,8 +16,16 @@ struct PlaybackPositionView: View {
     
     init() {
         self.timerInterval = 0.5
-        self.timer = Timer.publish(every: timerInterval, on: .main, in: .common)
-            .autoconnect()
+        self.timer = Timer.publish(
+            every: timerInterval,
+            on: .main,
+            in: .common
+        )
+        
+        if AppDelegate.shared.popover.isShown {
+            self.timerCancellable = self.timer.connect()
+        }
+
     }
     
     var body: some View {
@@ -43,9 +52,17 @@ struct PlaybackPositionView: View {
             }
             .padding(.horizontal, 5)
         }
+        .onReceive(playerManager.popoverWillShow) {
+            self.timerCancellable = self.timer.connect()
+        }
+        .onReceive(playerManager.popoverDidClose) {
+            self.timerCancellable?.cancel()
+        }
         .onReceive(timer) { _ in
             
-            guard AppDelegate.shared.popover.isShown else {
+            guard AppDelegate.shared.popover.isShown &&
+                    playerManager.spotify.isAuthorized &&
+                    !playerManager.isShowingPlaylistsView else {
                 return
             }
 
@@ -71,7 +88,7 @@ struct PlaybackPositionView: View {
             \(self.playerManager.playerPosition)
             """
         )
-        self.playerManager.spotifyApplication?.setPlayerPosition?(
+        self.playerManager.spotifyApplication?.setPlayerPosition(
             Double(self.playerManager.playerPosition)
         )
     }
@@ -83,4 +100,6 @@ struct PlayerPositionView_Previews: PreviewProvider {
         PlayerView_Previews.previews
     }
 }
+
+
 
