@@ -41,6 +41,12 @@ struct PlaylistCellView: View {
         return false
     }
     
+    var isCurrentlyPlaying: Bool {
+//        self.playlist.uri ==
+//                self.playerManager.currentlyPlayingContext?.context?.uri
+        self.playlist.name == "new"
+    }
+    
     var body: some View {
         HStack {
             
@@ -49,12 +55,29 @@ struct PlaylistCellView: View {
                     playlistImage
                         .resizable()
                         .aspectRatio(contentMode: .fit)
+//                        .overlay(
+//                            Group {
+//                                if isCurrentlyPlaying {
+//                                    Image(systemName: "play.circle")
+////                                        .background(Color.black.opacity(0.5))
+////                                        .clipShape(Circle())
+////                                        .foregroundColor(.green)
+////                                        .font(.title)
+//                                }
+//                            }
+//                        )
                         .frame(width: 30, height: 30)
                         .cornerRadius(2)
                     Text(playlist.name)
                         .font(.subheadline)
                         .lineLimit(2)
                         .fixedSize(horizontal: false, vertical: true)
+                    
+//                    if isCurrentlyPlaying {
+//                        Image(systemName: "speaker.wave.3.fill")
+//                            .font(.caption)
+//                    }
+
                     Spacer()
                 }
                 .contentShape(Rectangle())
