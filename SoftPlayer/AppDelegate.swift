@@ -20,6 +20,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     var popover: NSPopover!
     var statusBarItem: NSStatusItem!
+    var contextMenu: NSMenu!
     
     // MARK: Environment Objects
     var spotify: Spotify!
@@ -32,6 +33,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // SwiftLogNoOpLogHandler.bootstrap()
 
         self.initializeKeyboardShortcutNames()
+
+        self.configureContextMenu()
 
         self.spotify = Spotify()
         
@@ -58,6 +61,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         self.statusBarItem = NSStatusBar.system.statusItem(
             withLength: NSStatusItem.squareLength
         )
+
         if let button = self.statusBarItem.button {
             // MARK: Menu Bar Icon Image
             let menuBarIcon = NSImage(.musicNoteCircle)
@@ -65,6 +69,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             menuBarIcon.size = NSSize(width: 18, height: 18)
             button.image = menuBarIcon
             button.action = #selector(togglePopover(_:))
+            button.sendAction(on: [.leftMouseDown, .rightMouseDown])
         }
         else {
             Loggers.general.critical(
@@ -73,11 +78,26 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
         
     }
+    
+    func configureContextMenu() {
+        
+        self.contextMenu = NSMenu(title: "Options")
+        self.contextMenu.addItem(
+            withTitle: "Settings",
+            action: #selector(self.openSettingsWindow),
+            keyEquivalent: ""
+        )
+        self.contextMenu.addItem(
+            withTitle: "Quit",
+            action: #selector(NSApplication.shared.terminate(_:)),
+            keyEquivalent: ""
+        )
+        
+    }
 
     func applicationWillTerminate(_ aNotification: Notification) {
         self.playerManager.spotifyApplication?.blockAppleEvents = true
         self.playerManager.playerStateDidChangeCancellable = nil
-        
     }
 
     func application(_ application: NSApplication, open urls: [URL]) {
@@ -99,7 +119,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     // MARK: - Manage Windows -
 
-    func openSettingsWindow() {
+    @objc func openSettingsWindow() {
         
         self.closePopover()
         
@@ -167,12 +187,28 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 extension AppDelegate: NSPopoverDelegate {
     
     @objc func togglePopover(_ sender: AnyObject?) {
-        if self.popover.isShown {
-            self.closePopover()
+        
+        if let event = NSApplication.shared.currentEvent,
+                event.type == .rightMouseDown {
+            // then the user right-clicked on the status bar item
+            
+            self.statusBarItem.menu = self.contextMenu
+            self.statusBarItem.button?.performClick(nil)
+            self.statusBarItem.menu = nil
+
         }
         else {
-            self.openPopover()
+            // assume the user left-clicked on the status bar item
+            
+            if self.popover.isShown {
+                self.closePopover()
+            }
+            else {
+                self.openPopover()
+            }
+            
         }
+
     }
     
     func openPopover() {
