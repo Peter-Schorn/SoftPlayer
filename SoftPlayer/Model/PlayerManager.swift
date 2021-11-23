@@ -99,6 +99,8 @@ class PlayerManager: ObservableObject {
     /// track/episode.
     @Published var artworkImage = Image(.spotifyAlbumPlaceholder)
     
+    @Published var isPlaying = false
+
     // MARK: - Devices -
 
     /// Devices with `nil` for `id` and/or are restricted are filtered out.
@@ -421,6 +423,9 @@ class PlayerManager: ObservableObject {
             self.artworkURLDidChange.send()
         }
         self.previousArtworkURL = self.spotifyApplication?.currentTrack?.artworkUrl
+        
+        self.isPlaying = self.spotifyApplication?.playerState == .playing
+
         self.objectWillChange.send()
     }
     
