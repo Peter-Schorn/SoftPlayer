@@ -42,9 +42,8 @@ struct PlaylistCellView: View {
     }
     
     var isCurrentlyPlaying: Bool {
-//        self.playlist.uri ==
-//                self.playerManager.currentlyPlayingContext?.context?.uri
-        self.playlist.name == "new"
+        self.playlist.uri ==
+                self.playerManager.currentlyPlayingContext?.context?.uri
     }
     
     var body: some View {
@@ -55,17 +54,6 @@ struct PlaylistCellView: View {
                     playlistImage
                         .resizable()
                         .aspectRatio(contentMode: .fit)
-//                        .overlay(
-//                            Group {
-//                                if isCurrentlyPlaying {
-//                                    Image(systemName: "play.circle")
-////                                        .background(Color.black.opacity(0.5))
-////                                        .clipShape(Circle())
-////                                        .foregroundColor(.green)
-////                                        .font(.title)
-//                                }
-//                            }
-//                        )
                         .frame(width: 30, height: 30)
                         .cornerRadius(2)
                     Text(playlist.name)
@@ -73,10 +61,12 @@ struct PlaylistCellView: View {
                         .lineLimit(2)
                         .fixedSize(horizontal: false, vertical: true)
                     
-//                    if isCurrentlyPlaying {
-//                        Image(systemName: "speaker.wave.3.fill")
-//                            .font(.caption)
-//                    }
+                    if isCurrentlyPlaying {
+                        NowPlayingAnimation(
+                            isAnimating: $playerManager.isPlaying
+                        )
+                        .frame(width: 12, height: 10)
+                    }
 
                     Spacer()
                 }
@@ -176,7 +166,10 @@ struct PlaylistCellView: View {
         self.playPlaylistCancellable = self.playerManager
             .playPlaylist(playlist)
             .sink(receiveCompletion: { completion in
-                if case .failure(let alert) = completion {
+                switch completion {
+                case .finished:
+                    self.playerManager.retrieveCurrentlyPlayingContext()
+                case .failure(let alert):
                     self.playerManager.notificationSubject.send(alert)
                 }
             })
@@ -191,17 +184,18 @@ struct PlaylistCellView_Previews: PreviewProvider {
 
     static var previews: some View {
         
-        Self.withAllColorSchemes {
+//        Self.withAllColorSchemes {
+        LazyVStack {
             PlaylistCellView(playlist: .menITrust, isSelected: false)
                 .environmentObject(playerManager.spotify)
                 .environmentObject(playerManager)
-                .frame(width: AppDelegate.popoverWidth)
-                .padding()
         }
+        .frame(width: AppDelegate.popoverWidth, height: 100)
+//        }
 
-        PlayerView_Previews.previews
-            .onAppear {
-                PlayerView.debugIsShowingPlaylistsView = true
-            }
+//        PlayerView_Previews.previews
+//            .onAppear {
+//                PlayerView.debugIsShowingPlaylistsView = true
+//            }
     }
 }
