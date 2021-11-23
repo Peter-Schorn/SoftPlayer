@@ -200,7 +200,7 @@ class PlayerManager: ObservableObject {
     private var didUpdateCurrentlyPlayingContextCancellable: AnyCancellable? = nil
     private var openArtistOrShowCancellable: AnyCancellable? = nil
     private var cycleRepeatModeCancellable: AnyCancellable? = nil
-    private var updateSoundVolumeAndPlayerPositionCancellable: AnyCancellable? = nil
+    private var updatePlayerStateCancellable: AnyCancellable? = nil
     private var retrieveCurrentlyPlayingPlaylistCancellable: AnyCancellable? = nil
     var playerStateDidChangeCancellable: AnyCancellable? = nil
     
@@ -221,13 +221,22 @@ class PlayerManager: ObservableObject {
             if self.spotify.isAuthorized {
                 self.updatePlayerState()
             }
-            self.updateSoundVolumeAndPlayerPositionCancellable = Timer.publish(
+            self.updatePlayerStateCancellable = Timer.publish(
                 every: 2, on: .main, in: .common
             )
             .autoconnect()
             .sink { _ in
-                if !self.isShowingPlaylistsView && self.spotify.isAuthorized {
-                    Loggers.soundVolumeAndPlayerPosition.trace("timer fired")
+                
+                Loggers.soundVolumeAndPlayerPosition.trace("timer fired")
+
+                guard self.spotify.isAuthorized else {
+                    return
+                }
+
+                if self.isShowingPlaylistsView {
+                    self.retrieveCurrentlyPlayingContext()
+                }
+                else {
                     self.updateSoundVolumeAndPlayerPosition(fromTimer: true)
                     self.retrieveAvailableDevices()
                 }
@@ -238,7 +247,7 @@ class PlayerManager: ObservableObject {
         
         self.popoverDidClose.sink {
             Loggers.playerManager.trace("popoverDidDismiss")
-            self.updateSoundVolumeAndPlayerPositionCancellable = nil
+            self.updatePlayerStateCancellable = nil
             self.updatePlaylistsSortedByLastModifiedDate()
         }
         .store(in: &cancellables)
@@ -1288,6 +1297,7 @@ class PlayerManager: ObservableObject {
 
     func presentPlaylistsView() {
         self.retrievePlaylists()
+        self.retrieveCurrentlyPlayingContext()
         
         os_signpost(
             .event,
@@ -1337,6 +1347,13 @@ private extension PlayerManager {
             return
         }
         
+        Loggers.playerState.trace(
+            """
+            CurrentlyPlayingContext.context.uri: \
+            \(context.context?.uri ?? "nil")
+            """
+        )
+
         self.currentlyPlayingContext = context
         if let repeatMode = self.currentlyPlayingContext?.repeatState {
             self.repeatMode = repeatMode
