@@ -35,7 +35,7 @@ class PlayerManager: ObservableObject {
     var albumArtistTitle = ""
     
     /// Set only if the playback is occurring in the context of a playlist.
-    @Published var currentlyPlayingPlaylistName: String? = nil
+//    @Published var currentlyPlayingPlaylistName: String? = nil
     @Published var shuffleIsOn = false
     @Published var repeatMode = RepeatMode.off
     @Published var playerPosition: CGFloat = 0 {
@@ -708,37 +708,37 @@ class PlayerManager: ObservableObject {
         
     }
     
-    func retrieveCurrentlyPlayingPlaylist() {
-        
-        guard let context = self.currentlyPlayingContext?.context,
-                context.type == .playlist else {
-            self.currentlyPlayingPlaylistName = nil
-            return
-        }
-
-        let playlistURI = context.uri
-
-        self.retrieveCurrentlyPlayingPlaylistCancellable = self.spotify.api
-            .playlistName(playlistURI)
-            .receive(on: RunLoop.main)
-            .sink(
-                receiveCompletion: { completion in
-                    if case .failure(let error) = completion {
-                        self.currentlyPlayingPlaylistName = nil
-                        Loggers.playerState.error(
-                            """
-                            could not retrieve playlist name for \(playlistURI): \
-                            \(error)
-                            """
-                        )
-                    }
-                },
-                receiveValue: { playlistName in
-                    self.currentlyPlayingPlaylistName = playlistName
-                }
-            )
-
-    }
+//    func retrieveCurrentlyPlayingPlaylist() {
+//
+//        guard let context = self.currentlyPlayingContext?.context,
+//                context.type == .playlist else {
+//            self.currentlyPlayingPlaylistName = nil
+//            return
+//        }
+//
+//        let playlistURI = context.uri
+//
+//        self.retrieveCurrentlyPlayingPlaylistCancellable = self.spotify.api
+//            .playlistName(playlistURI)
+//            .receive(on: RunLoop.main)
+//            .sink(
+//                receiveCompletion: { completion in
+//                    if case .failure(let error) = completion {
+//                        self.currentlyPlayingPlaylistName = nil
+//                        Loggers.playerState.error(
+//                            """
+//                            could not retrieve playlist name for \(playlistURI): \
+//                            \(error)
+//                            """
+//                        )
+//                    }
+//                },
+//                receiveValue: { playlistName in
+//                    self.currentlyPlayingPlaylistName = playlistName
+//                }
+//            )
+//
+//    }
 
     // MARK: - Player Controls -
     
@@ -1388,7 +1388,7 @@ private extension PlayerManager {
             "allowed actions: \(allowedActionsString)"
         )
 
-        self.retrieveCurrentlyPlayingPlaylist()
+//        self.retrieveCurrentlyPlayingPlaylist()
         
         
     }
