@@ -16,12 +16,13 @@ final class Spotify: ObservableObject {
     
     private static let clientId: String = {
         
-        if let clientId = ProcessInfo.processInfo.environment["CLIENT_ID"] {
-            return clientId
-        }
 
         let __clientId__ = ""
         if __clientId__.isEmpty {
+            if let clientId = ProcessInfo.processInfo
+                    .environment["CLIENT_ID"] {
+                return clientId
+            }
             fatalError(
                 "failed to inject value for client id in pre-build script"
             )
@@ -33,6 +34,10 @@ final class Spotify: ObservableObject {
        
         let __tokensURL__ = ""
         if __tokensURL__.isEmpty {
+            if let tokensURL = ProcessInfo.processInfo
+                    .environment["TOKENS_URL"] {
+                return URL(string: tokensURL)!
+            }
             fatalError(
                 "failed to inject value for tokens URL in pre-build script"
             )
@@ -48,6 +53,10 @@ final class Spotify: ObservableObject {
         
         let __tokensRefreshURL__ = ""
         if __tokensRefreshURL__.isEmpty {
+            if let tokensRefreshURL = ProcessInfo.processInfo
+                    .environment["TOKENS_REFRESH_URL"] {
+                return URL(string: tokensRefreshURL)!
+            }
             fatalError(
                 "failed to inject value for tokens refresh URL in pre-build script"
             )
