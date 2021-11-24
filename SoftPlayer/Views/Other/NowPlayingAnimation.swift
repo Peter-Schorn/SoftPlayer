@@ -26,52 +26,57 @@ struct NowPlayingAnimation: View {
 
         @State private var scale: CGFloat
         
+        @State private var targetScale: CGFloat
+
         let minScale: CGFloat = 0.2
         let maxScale: CGFloat = 1
+        
+        let duration: CGFloat = 0.4
+        let durationRange = 0.3...0.5
+
+        let delayMultiplier = 0.2
 
         init(index: Int, isAnimating: Binding<Bool>) {
             self.index = index
             self._isAnimating = isAnimating
             self.scale = self.minScale
+            self.targetScale = self.minScale
             
             self.inactiveAnimation = Animation
-                .easeInOut(duration: 0.4)
+                .easeInOut(duration: self.duration)
 
             self.activeAnimation = Animation
-                .easeInOut(duration: 0.4)
-                .delay(Double(self.index) * 0.2)
+                .easeInOut(duration: self.duration)
+                .delay(Double(self.index) * delayMultiplier)
                 
         }
         
         var body: some View {
-            Rectangle()
-                .scale(
-                    x: 1,
-                    y: scale,
-                    anchor: .bottom
-                )
-                .fill(Color.green)
-                .onAnimationCompleted(
-                    for: scale,
-                    completion: scalingCompletion
-                )
-                .onAppear {
-                    if self.isAnimating {
-                        self.executeAnimation(delay: true)
+            ScalingRectangle(
+                scale: scale,
+                targetScale: targetScale,
+                completion: scalingCompletion
+            )
+            .fill(Color.green)
+            
+            .onAppear {
+                if self.isAnimating {
+                    self.executeAnimation(delay: true)
+                }
+            }
+            .onChange(of: self.isAnimating) { isAnimating in
+                
+                if isAnimating {
+                    self.executeAnimation(delay: true)
+                }
+                else {
+                    withAnimation(self.inactiveAnimation) {
+                        self.scale = self.minScale
+                        self.targetScale = self.minScale
                     }
                 }
-                .onChange(of: self.isAnimating) { isAnimating in
-                    
-                    if isAnimating {
-                        self.executeAnimation(delay: true)
-                    }
-                    else {
-                        withAnimation(self.inactiveAnimation) {
-                            self.scale = self.minScale
-                        }
-                    }
-                    
-                }
+                
+            }
         }
         
         func scalingCompletion() {
@@ -81,9 +86,9 @@ struct NowPlayingAnimation: View {
         }
         
         func executeAnimation(delay: Bool) {
-//            print("executeAnimation")
+//            print("\n\nexecuteAnimation")
             
-            let duration = Double.random(in: 0.3...0.5)
+            let duration = Double.random(in: durationRange)
 //            print("duration: \(duration)")
             
             var animation = Animation
@@ -91,90 +96,80 @@ struct NowPlayingAnimation: View {
             
             if delay {
                 animation = animation
-                    .delay(Double(self.index) * 0.1)
+                    .delay(Double(self.index) * delayMultiplier)
             }
 
             self.activeAnimation = animation
-            
 
             withAnimation(self.activeAnimation) {
                 if scale == self.maxScale {
                     self.scale = self.minScale
+                    self.targetScale = self.minScale
                 }
-                else {
+                else /* if scale == self.minScale */ {
                     self.scale = self.maxScale
+                    self.targetScale = self.maxScale
                 }
             }
         }
         
     }
 
-}
+    struct ScalingRectangle: Shape {
 
-/// An animatable modifier that is used for observing animations for a given animatable value.
-struct AnimationCompletionObserver<Content: View, Value: VectorArithmetic>: View, Animatable {
+        let rectangle = Rectangle()
 
-    let content: Content
+        private var targetScale: CGFloat
+        
+        private var scale: CGFloat
 
-    /// The target value for which we're observing. This value is directly set once the animation starts. During animation, `animatableData` will hold the oldValue and is only updated to the target value once the animation completes.
-    private var value: Value
+        private var completion: () -> Void
 
-    /// The completion callback which is called once the animation completes.
-    private var completion: () -> Void
-
-
-    init(
-        value: Value,
-        completion: @escaping () -> Void,
-        content: Content
-    ) {
-        self.animatableData = value
-        self.value = value
-        self.completion = completion
-        self.content = content
-    }
-    
-    var animatableData: Value {
-        didSet {
-            self.notifyCompletionIfFinished()
+        init(
+            scale: CGFloat,
+            targetScale: CGFloat,
+            completion: @escaping () -> Void
+        ) {
+            self.scale = scale
+            self.targetScale = targetScale
+            self.completion = completion
         }
-    }
-    
-    var body: some View {
-        content
-    }
-
-    private func notifyCompletionIfFinished() {
-
-        if self.animatableData == self.value {
-            DispatchQueue.main.async {
-                self.completion()
+        
+        var animatableData: CGFloat {
+            get {
+                return self.scale
+            }
+            set {
+                self.scale = newValue
+//                print("value: \(self.scale)")
+                self.notifyCompletionIfFinished()
+                
             }
         }
+        
+        func path(in rect: CGRect) -> Path {
+            return self.rectangle
+                .scale(
+                    x: 1,
+                    y: scale,
+                    anchor: .bottom
+                )
+                .path(in: rect)
+        }
+
+        private func notifyCompletionIfFinished() {
+
+            if self.scale == self.targetScale {
+                DispatchQueue.main.async {
+                    self.completion()
+                }
+            }
+
+        }
 
     }
 
-    
 
-}
-
-extension View {
-
-    /// Calls the completion handler whenever an animation on the given value completes.
-    /// - Parameters:
-    ///   - value: The value to observe for animations.
-    ///   - completion: The completion callback to call once the animation completes.
-    /// - Returns: A modified `View` instance with the observer attached.
-    func onAnimationCompleted<Value: VectorArithmetic>(
-        for value: Value,
-        completion: @escaping () -> Void
-    ) -> some View {
-        return AnimationCompletionObserver(
-            value: value,
-            completion: completion,
-            content: self
-        )
-    }
 }
 
 
