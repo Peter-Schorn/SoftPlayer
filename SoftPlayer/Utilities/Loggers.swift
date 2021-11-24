@@ -19,12 +19,12 @@ enum Loggers {
 
     static let playerManager = Logger(
         label: "PlayerManager",
-        level: .trace
+        level: .warning
     )
     
     static let playerState = Logger(
         label: "PlayerState",
-        level: .trace
+        level: .warning
     )
     
     static let artwork = Logger(
