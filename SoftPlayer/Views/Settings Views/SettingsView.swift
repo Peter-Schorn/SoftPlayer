@@ -24,7 +24,7 @@ struct SettingsView: View {
         .padding()
         .frame(
             width:  selectedTab == 0 ? 400 : 450,
-            height: selectedTab == 0 ? 300 : 400
+            height: selectedTab == 0 ? 300 : 470
         )
         .background(
             KeyEventHandler { event in

@@ -188,11 +188,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 extension AppDelegate: NSPopoverDelegate {
     
     @objc func togglePopover(_ sender: AnyObject?) {
-        
+
         if let event = NSApplication.shared.currentEvent,
                 event.type == .rightMouseDown {
             // then the user right-clicked on the status bar item
-            
+
             self.statusBarItem.menu = self.contextMenu
             self.statusBarItem.button?.performClick(nil)
             self.statusBarItem.menu = nil
@@ -200,7 +200,7 @@ extension AppDelegate: NSPopoverDelegate {
         }
         else {
             // assume the user left-clicked on the status bar item
-            
+
             if self.popover.isShown {
                 self.closePopover()
             }
