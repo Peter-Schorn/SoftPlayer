@@ -552,7 +552,7 @@ class PlayerManager: ObservableObject {
     func loadArtworkImage() {
         guard let url = self.currentTrack?.artworkUrl
                 .flatMap(URL.init(string:)) else {
-            Loggers.playerManager.warning(
+            Loggers.images.warning(
                 "no artwork URL or couldn't convert from String"
             )
             self.artworkImage = Image(.spotifyAlbumPlaceholder)
@@ -565,7 +565,7 @@ class PlayerManager: ObservableObject {
             .sink(
                 receiveCompletion: { completion in
                     if case .failure(let error) = completion {
-                        Loggers.playerManager.error(
+                        Loggers.images.error(
                             "couldn't load artwork image: \(error)"
                         )
                         self.artworkImage = Image(.spotifyAlbumPlaceholder)
@@ -574,10 +574,13 @@ class PlayerManager: ObservableObject {
                 receiveValue: { data, response in
                     if let nsImage = NSImage(data: data) {
                         // MARK: Successfully Receive Image
-                        self.artworkImage = Image(nsImage: nsImage)
+                        let squareImage = nsImage.croppedToSquare() ?? nsImage
+                        self.artworkImage = Image(nsImage: squareImage)
                     }
                     else {
-                        Loggers.playerManager.error("couldn't convert data to image")
+                        Loggers.images.error(
+                            "couldn't convert data to image"
+                        )
                         self.artworkImage = Image(.spotifyAlbumPlaceholder)
                     }
                 }
@@ -1122,7 +1125,14 @@ class PlayerManager: ObservableObject {
                 guard let nsImage = NSImage(data: imageData) else {
                     return
                 }
-                let resizedImage = nsImage.resized(width: 30, height: 30)
+                guard let resizedImage = nsImage.croppedToSquare()?
+                        .resized(width: 30, height: 30) else {
+                    Loggers.images.error(
+                        "couldn't crop image: \(identifier.uri)"
+                    )
+                    return
+                            
+                }
                 let swiftUIImage = Image(nsImage: resizedImage)
 
                 guard let newImageData = resizedImage.tiffRepresentation else {
@@ -1138,7 +1148,7 @@ class PlayerManager: ObservableObject {
                 }
                 
             } catch {
-                Loggers.playerManager.error(
+                Loggers.images.error(
                     "couldn't save image to file: \(error)"
                 )
             }
@@ -1153,12 +1163,12 @@ class PlayerManager: ObservableObject {
         self.images = [:]
         do {
             if let folder = self.imagesFolder {
-                Loggers.playerManager.notice("will delete folder: \(folder)")
+                Loggers.images.notice("will delete folder: \(folder)")
                 try FileManager.default.removeItem(at: folder)
             }
             
         } catch {
-            Loggers.playerManager.error(
+            Loggers.images.error(
                 "couldn't remove image cache: \(error)"
             )
         }
@@ -1180,9 +1190,7 @@ class PlayerManager: ObservableObject {
             return
         }
         
-        self.openSpotifyDesktopApplication { _, _ in
-            NSWorkspace.shared.open(uriURL)
-        }
+        NSWorkspace.shared.open(uriURL)
 
     }
     
@@ -1206,29 +1214,12 @@ class PlayerManager: ObservableObject {
                     }
                 },
                 receiveValue: { url in
-                    self.openSpotifyDesktopApplication { _, _ in
-                        NSWorkspace.shared.open(url)
-                    }
+                    NSWorkspace.shared.open(url)
                 }
             )
             
     }
     
-    func openSpotifyDesktopApplication(
-        _ completionHandler: ((NSRunningApplication?, Error?) -> Void)? = nil
-    ) {
-        
-        let spotifyPath = URL(fileURLWithPath: "/Applications/Spotify.app")
-        let configuration = NSWorkspace.OpenConfiguration()
-        configuration.activates = true
-        NSWorkspace.shared.openApplication(
-            at: spotifyPath,
-            configuration: configuration,
-            completionHandler: completionHandler
-        )
-
-    }
-
     // MARK: - Key Events -
     
     /// Returns `true` if the key event was handled; else, `false`.

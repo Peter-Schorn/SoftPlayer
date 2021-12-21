@@ -87,7 +87,7 @@ struct PlayerView: View {
         }
 
     }
-    
+
     var playerView: some View {
         VStack(spacing: 5) {
             // MARK: Large Album Image
@@ -254,7 +254,6 @@ struct PlayerView: View {
                     in: namespace,
                     isSource: playlistsViewIsSource
                 )
-                .aspectRatio(contentMode: .fit)
                 .frame(width: 70, height: 70)
                 .adaptiveShadow(radius: 2)
                 .padding(.leading, 7)
@@ -373,21 +372,32 @@ struct PlayerView: View {
 struct PlayerView_Previews: PreviewProvider {
     
     static let playerManager = PlayerManager(spotify: Spotify())
+    static let playerManager2 = PlayerManager(spotify: Spotify())
     
     static var previews: some View {
 //        Self.withAllColorSchemes {
-            PlayerView()
-                .environmentObject(playerManager.spotify)
-                .environmentObject(playerManager)
-                .frame(
-                    width: AppDelegate.popoverWidth,
-                    height: AppDelegate.popoverHeight
-                )
-                .onAppear(perform: onAppear)
+        PlayerView()
+            .environmentObject(playerManager.spotify)
+            .environmentObject(playerManager)
+            .frame(
+                width: AppDelegate.popoverWidth,
+                height: AppDelegate.popoverHeight
+            )
+            .onAppear(perform: onAppear)
+        
+        PlayerView()
+            .environmentObject(playerManager2.spotify)
+            .environmentObject(playerManager2)
+            .frame(
+                width: AppDelegate.popoverWidth,
+                height: AppDelegate.popoverHeight
+            )
+            .onAppear(perform: onAppear)
+
 //        }
     }
     
     static func onAppear() {
-        
+        playerManager2.isShowingPlaylistsView = true
     }
 }
