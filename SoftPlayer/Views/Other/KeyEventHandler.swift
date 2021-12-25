@@ -14,7 +14,7 @@ struct KeyEventHandler: NSViewRepresentable {
        
         init(receiveKeyEvent: @escaping (NSEvent) -> Bool) {
             self.receiveKeyEvent = receiveKeyEvent
-            super.init(frame: NSZeroRect)
+            super.init(frame: .zero)
         }
         
         required init?(coder: NSCoder) {

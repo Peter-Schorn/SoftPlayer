@@ -47,7 +47,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             
 
         let popover = NSPopover()
-        popover.contentSize = NSSize(
+        popover.contentSize = CGSize(
             width: Self.popoverWidth, height: Self.popoverHeight
         )
         popover.behavior = .transient
@@ -66,7 +66,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             // MARK: Menu Bar Icon Image
             let menuBarIcon = NSImage(.musicNoteCircle)
 
-            menuBarIcon.size = NSSize(width: 18, height: 18)
+            menuBarIcon.size = CGSize(width: 18, height: 18)
             button.image = menuBarIcon
             button.action = #selector(togglePopover(_:))
             button.sendAction(on: [.leftMouseDown, .rightMouseDown])
@@ -130,7 +130,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 .environmentObject(self.playerManager)
             
             self.settingsWindow = NSWindow(
-                contentRect: NSRect(x: 0, y: 0, width: 450, height: 400),
+                contentRect: CGRect(x: 0, y: 0, width: 450, height: 400),
                 styleMask: [
                     .titled,
                     .closable,
@@ -224,7 +224,7 @@ extension AppDelegate: NSPopoverDelegate {
         self.popover.show(
             relativeTo: button.bounds,
             of: button,
-            preferredEdge: NSRectEdge.minY
+            preferredEdge: .minY
         )
         self.popover.contentViewController?.view.window?.becomeKey()
     }
