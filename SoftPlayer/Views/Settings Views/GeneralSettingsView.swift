@@ -11,14 +11,18 @@ struct GeneralSettingsView: View {
     var body: some View {
         Form {
             
-            Picker("Appearance:", selection: playerManager.$appearance) {
-                ForEach(AppAppearance.allCases, id: \.self) { appearance in
-                    Text(appearance.rawValue)
-                    if appearance == .system {
-                        Divider()
+            Picker(
+                selection: playerManager.$appearance,
+                content: {
+                    ForEach(AppAppearance.allCases, id: \.self) { appearance in
+                        Text(appearance.localizedDescription)
+                        if appearance == .system {
+                            Divider()
+                        }
                     }
-                }
-            }
+                },
+                label: { Text("Appearance:") }
+            )
             .frame(width: 200)
             .padding(.bottom, 10)
  

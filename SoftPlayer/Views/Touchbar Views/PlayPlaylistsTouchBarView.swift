@@ -50,7 +50,7 @@ struct PlayPlaylistsTouchBarView: View {
         .onDisappear {
             self.offset = 0
         }
-        
+        .frame(height: 30)
     }
     
     var navigationButtons: some View {
