@@ -29,4 +29,11 @@ enum AppAppearance: String, CaseIterable {
         }
     }
     
+    var localizedDescription: String {
+        return NSLocalizedString(
+            self.rawValue,
+            comment: "AppAppearance.rawValue"
+        )
+    }
+    
 }

@@ -80,6 +80,9 @@
 "Previous track" = "Pista anterior";
 
 /* No comment provided by engineer. */
+"Quit" = "Abandonar";
+
+/* No comment provided by engineer. */
 "Quit Application" = "Abandona la aplicación";
 
 /* No comment provided by engineer. */
@@ -98,7 +101,7 @@
 "Seek forwards 15 seconds%@" = "Vaya adelante quince segundos%@";
 
 /* No comment provided by engineer. */
-"Settings" = "Las Preferencias";
+"Settings" = "Las preferencias";
 
 /* No comment provided by engineer. */
 "Shortcuts" = "Los accesos directos";
@@ -171,3 +174,16 @@
 
 /* RepeatMode.rawValue */
 "context" = "el contexto";
+
+"Player command failed: No active device found (status code: 404)" = "Error en el comando del reproductor: No se encontró ningún dispositivo activo (código de estado: 404)";
+
+/* AppAppearance.rawValue */
+"System" = "El sistema";
+
+/* AppAppearance.rawValue */
+"Light" = "Claro";
+
+/* AppAppearance.rawValue */
+"Dark" = "Oscuro";
+
+"Appearance:" = "El aspecto:";
