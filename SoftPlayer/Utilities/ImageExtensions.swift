@@ -15,13 +15,13 @@ extension NSImage {
         let newImage = NSImage(size: size)
         newImage.lockFocus()
         self.draw(
-            in: NSRect(
+            in: CGRect(
                 x: 0,
                 y: 0,
                 width: size.width,
                 height: size.height
             ),
-            from: NSRect(
+            from: CGRect(
                 x: 0,
                 y: 0,
                 width: self.size.width,
