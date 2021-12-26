@@ -45,8 +45,8 @@ struct PlaylistsScrollView: View {
             let playlists = self.playerManager.playlistsSortedByLastModifiedDate
                 .filter { playlist in
                     if self.onlyShowMyPlaylists,
-                       let userId = playlist.owner?.id,
-                       userId != currentUserId {
+                            let userId = playlist.owner?.id,
+                            userId != currentUserId {
                         return false
                     }
                     return true
