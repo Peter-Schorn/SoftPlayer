@@ -31,6 +31,8 @@ struct PlayPlaylistsTouchBarView: View {
             "offset: \(offset); indices: \(indices)"
         )
         return playerManager.playlistsSortedByLastModifiedDate[indices]
+        
+//        return Playlist.spanishPlaylists[0..<4]
     }
     
     var body: some View {

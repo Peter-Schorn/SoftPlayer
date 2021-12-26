@@ -254,3 +254,137 @@ extension RepeatMode {
     }
 
 }
+
+// MARK: - Spanish -
+
+extension Device {
+    
+    static let spanishDevices: [Self] = [
+        .pedroComputer,
+        .pedroIphone
+    ]
+
+    static let pedroComputer = Self(
+        id: nil,
+        isActive: true,
+        isPrivateSession: false,
+        isRestricted: false,
+        name: "MacBook Pro de Pedro",
+        type: .computer,
+        volumePercent: nil
+    )
+
+    static let pedroIphone = Self(
+        id: nil,
+        isActive: false,
+        isPrivateSession: false,
+        isRestricted: false,
+        name: "iPhone de Pedro",
+        type: .smartphone,
+        volumePercent: nil
+    )
+    
+}
+
+extension Playlist where Items == PlaylistItemsReference {
+    
+    init(
+        name: String,
+        id: String,
+        owner: SpotifyUser? = nil
+    ) {
+        
+        let identifier = SpotifyIdentifier(
+            id: id, idCategory: .playlist
+        )
+
+        self.init(
+            name: name,
+            items: .init(href: nil, total: 0),
+            owner: owner,
+            isCollaborative: false,
+            snapshotId: "",
+            href: .example,
+            id: id,
+            uri: identifier.uri,
+            images: []
+        )
+    }
+
+    static let spanishPlaylists: [Self] = [
+        .luisMiguel,
+        .losÉxitosDeRock,
+        .losMejoresDeGustavoCerati,
+        .elRockClásico,
+        .esteEsEnriqueIglesias,
+        .shakira,
+        .tusCancionesMasPopulares,
+        .elBluesClásicos,
+        .alejandroSanz
+    ]
+
+    static let luisMiguel = Self(
+        name: "Luis Miguel",
+        id: "01KRdno32jt1vmG7s5pVFg",
+        owner: .peter
+    )
+
+    static let losÉxitosDeRock = Self(
+        name: "Los éxitos de rock",
+        id: "5XjvJgo6aUOF6mwtJIKOZr"
+    )
+    
+    static let losMejoresDeGustavoCerati = Self(
+        name: "Los mejores de Gustavo Cerati",
+        id: "37i9dQZF1EJJh1E5HEdm0o"
+    )
+    
+    static let elRockClásico = Self(
+        name: "El rock clásico",
+        id: "37i9dQZF1EUMDoJuT8yJsl",
+        owner: .peter
+    )
+    
+    static let esteEsEnriqueIglesias = Self(
+        name: "Este es Enrique Iglesias",
+        id: "0ijeB2eFmJL1euREk6Wu6C"
+    )
+    
+    static let shakira = Self(
+        name: "Shakira",
+        id: "2EgZjzog2eSfApWQHZVn6t",
+        owner: .peter
+    )
+    
+    static let tusCancionesMasPopulares = Self(
+        name: "Tus canciones mas populares",
+        id: "5MlKAGFZNoN2d0Up8sQc0N"
+    )
+    
+    static let elBluesClásicos = Self(
+        name: "El blues clásicos",
+        id: "33yLOStnp2emkEA76ew1Dz",
+        owner: .peter
+    )
+    
+    static let alejandroSanz = Self(
+        name: "Alejandro Sanz",
+        id: "37i9dQZF1DX3zc219hYxy3",
+        owner: .peter
+    )
+    
+}
+
+extension SpotifyUser {
+    
+    static let peter = Self.init(
+        displayName: nil,
+        uri: "spotify:user:petervschorn",
+        id: "petervschorn",
+        images: nil,
+        href: .example,
+        allowsExplicitContent: true,
+        explicitContentSettingIsLocked: false
+    )
+
+}

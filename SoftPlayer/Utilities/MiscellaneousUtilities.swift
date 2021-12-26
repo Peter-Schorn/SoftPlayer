@@ -135,3 +135,10 @@ extension Error {
 extension Notification.Name {
     static let shortcutByNameDidChange = Self("KeyboardShortcuts_shortcutByNameDidChange")
 }
+
+extension URL {
+    
+    /// http://www.example.com/
+    static let example = Self(string: "http://www.example.com/")!
+
+}

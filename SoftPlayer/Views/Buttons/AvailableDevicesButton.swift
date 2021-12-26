@@ -20,6 +20,7 @@ struct AvailableDevicesButton: View {
             else {
                 ForEach(
                     Array(playerManager.availableDevices.enumerated()),
+//                    Array(Device.spanishDevices.enumerated()),
                     id: \.offset
                 ) { (offset, device) in
                     Button(action: {

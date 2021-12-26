@@ -38,6 +38,11 @@ struct PlayerView: View {
     let nextTrackButtonId = "nextTrack"
     let repeatModeButtonId = "repeatModeButton"
 
+    // MARK: DEBUG
+    
+//    let trackTitle = "Tabu"
+//    let albumArtistTitle = "Gustavo Cerati - Bocanada"
+
     // MARK: - Begin Views -
     
     var body: some View {
@@ -109,6 +114,7 @@ struct PlayerView: View {
             // MARK: Large Playing Title
             VStack(spacing: 5) {
                 Text(playerManager.currentTrack?.name ?? "")
+//                Text(trackTitle)
                     .fontWeight(.semibold)
                     // MARK: Matched Geometry Effect
                     .matchedGeometryEffect(
@@ -124,6 +130,7 @@ struct PlayerView: View {
                     .help(playerManager.currentTrack?.name ?? "")
 
                 Text(playerManager.albumArtistTitle)
+//                Text(albumArtistTitle)
                     // MARK: Matched Geometry Effect
                     .matchedGeometryEffect(
                         id: albumArtisTitleId,
@@ -263,6 +270,7 @@ struct PlayerView: View {
                 // MARK: Small Playing Title
                 VStack(spacing: 3) {
                     Text(playerManager.currentTrack?.name ?? "")
+//                    Text(trackTitle)
                         .fontWeight(.semibold)
                         .font(.callout)
                         // MARK: Matched Geometry Effect
@@ -277,6 +285,7 @@ struct PlayerView: View {
                             perform: playerManager.openCurrentPlaybackInSpotify
                         )
                     Text(playerManager.albumArtistTitle)
+//                    Text(albumArtistTitle)
                         .font(.footnote)
                         // MARK: Matched Geometry Effect
                         .matchedGeometryEffect(
