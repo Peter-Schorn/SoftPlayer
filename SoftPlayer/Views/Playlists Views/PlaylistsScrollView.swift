@@ -150,6 +150,8 @@ struct PlaylistsScrollView: View {
                         ForEach(
                             self.filteredPlaylists,
                             id: \.element.uri
+//                            Array(Playlist.spanishPlaylists.enumerated()),
+//                            id: \.offset
                         ) { playlist in
                             PlaylistCellView(
                                 playlist: playlist.element,
