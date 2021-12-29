@@ -81,14 +81,16 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     
     func configureContextMenu() {
         
-        self.contextMenu = NSMenu(title: "Options")
+        self.contextMenu = NSMenu(
+            title: NSLocalizedString("Options", comment: "")
+        )
         self.contextMenu.addItem(
-            withTitle: "Settings",
+            withTitle: NSLocalizedString("Settings", comment: ""),
             action: #selector(self.openSettingsWindow),
             keyEquivalent: ""
         )
         self.contextMenu.addItem(
-            withTitle: "Quit",
+            withTitle: NSLocalizedString("Quit", comment: ""),
             action: #selector(NSApplication.shared.terminate(_:)),
             keyEquivalent: ""
         )
