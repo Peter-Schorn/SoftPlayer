@@ -137,6 +137,9 @@
 "There are no devices available to play content on" = "No hay dispositivos disponibles para tocar contenido";
 
 /* No comment provided by engineer. */
+"This URL could not be handled." = "No se ha podido procesar esta URL.";
+
+/* No comment provided by engineer. */
 "Toggle only show my playlists" = "Solamente muestra mis listas de reproducción";
 
 /* No comment provided by engineer. */
@@ -144,6 +147,9 @@
 
 /* No comment provided by engineer. */
 "Transfer playback to a different device" = "Transfiere la reproducción a otro dispositivo ";
+
+/* No comment provided by engineer. */
+"Unexpected URL" = "URL inesperada";
 
 /* No comment provided by engineer. */
 "Volume down" = "Baje volumno";

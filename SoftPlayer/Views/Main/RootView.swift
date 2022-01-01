@@ -37,6 +37,25 @@ struct RootView: View {
 
         Loggers.general.trace("LoginView received redirect URL: \(url)")
 
+        // peter-schorn-soft-player://login-callback
+
+        guard url.scheme == "peter-schorn-soft-player",
+                url.host == "login-callback" else {
+                  
+            self.showAlert(
+                title: NSLocalizedString(
+                    "Unexpected URL",
+                    comment: ""
+                ),
+                message: NSLocalizedString(
+                    "This URL could not be handled.",
+                    comment: ""
+                )
+            )
+                    
+            return
+        }
+
         if self.spotify.isAuthorized {
             self.showAlert(
                 title: NSLocalizedString(
