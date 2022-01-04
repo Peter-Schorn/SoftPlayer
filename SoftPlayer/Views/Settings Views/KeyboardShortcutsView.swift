@@ -34,6 +34,10 @@ struct KeyboardShortcutsView: View {
                     label: Text("Shuffle")
                 )
                 shortcutView(
+                    for: .likeTrack,
+                    label: Text("Like Track")
+                )
+                shortcutView(
                     for: .volumeDown,
                     label: Text("Volume down")
                 )
@@ -45,12 +49,12 @@ struct KeyboardShortcutsView: View {
                     for: .onlyShowMyPlaylists,
                     label: Text("Toggle only show my playlists")
                 )
+            }
+            Group {
                 shortcutView(
                     for: .settings,
                     label: Text("Settings")
                 )
-            }
-            Group {
                 shortcutView(
                     for: .quit,
                     label: Text("Quit")
@@ -105,7 +109,7 @@ struct KeyboardShortcutsView_Previews: PreviewProvider {
             
         }
         .padding()
-        .frame(width: 450, height: 470)
+        .frame(width: 450, height: 500)
     }
 
 }
