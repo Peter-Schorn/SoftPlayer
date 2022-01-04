@@ -26,6 +26,10 @@ extension KeyboardShortcuts.Name {
         "shuffle",
         default: .init(.s, modifiers: [.command])
     )
+    static let likeTrack = Self(
+        "likeTrack",
+        default: .init(.l, modifiers: [.command])
+    )
     static let volumeDown = Self(
         "volumeDown",
         default: .init(.downArrow, modifiers: [.command])

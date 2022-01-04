@@ -176,6 +176,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         print(Name.nextTrack, to: &sink)
         print(Name.repeatMode, to: &sink)
         print(Name.shuffle, to: &sink)
+        print(Name.likeTrack, to: &sink)
         print(Name.volumeDown, to: &sink)
         print(Name.volumeUp, to: &sink)
         print(Name.onlyShowMyPlaylists, to: &sink)
