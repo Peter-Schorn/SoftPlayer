@@ -38,6 +38,7 @@
 		4789A5B725885F0800A5E1E3 /* KeyboardShortcutsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4789A5B625885F0800A5E1E3 /* KeyboardShortcutsView.swift */; };
 		4789A5BA25885F1900A5E1E3 /* KeyboardShortcutsNames.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4789A5B925885F1900A5E1E3 /* KeyboardShortcutsNames.swift */; };
 		4795210D25744AA6000A5B82 /* MiscellaneousUtilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4795210C25744AA6000A5B82 /* MiscellaneousUtilities.swift */; };
+		47C6472A2783FF4700EB1FD8 /* SaveTrackButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47C647292783FF4700EB1FD8 /* SaveTrackButton.swift */; };
 		47CDDC8A2582D97F00E87918 /* RegularExpressions in Frameworks */ = {isa = PBXBuildFile; productRef = 47CDDC892582D97F00E87918 /* RegularExpressions */; };
 		47D8CF7F256663080034FA1E /* NotificationNames.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47D8CF7E256663080034FA1E /* NotificationNames.swift */; };
 		47D8CF83256664C60034FA1E /* PlayerManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47D8CF82256664C60034FA1E /* PlayerManager.swift */; };
@@ -96,6 +97,7 @@
 		4789A5B925885F1900A5E1E3 /* KeyboardShortcutsNames.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardShortcutsNames.swift; sourceTree = "<group>"; };
 		4795210C25744AA6000A5B82 /* MiscellaneousUtilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MiscellaneousUtilities.swift; sourceTree = "<group>"; };
 		47B75D322687DFC6003F58A9 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/Main.strings; sourceTree = "<group>"; };
+		47C647292783FF4700EB1FD8 /* SaveTrackButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SaveTrackButton.swift; sourceTree = "<group>"; };
 		47D8CF7E256663080034FA1E /* NotificationNames.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationNames.swift; sourceTree = "<group>"; };
 		47D8CF82256664C60034FA1E /* PlayerManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerManager.swift; sourceTree = "<group>"; };
 		47DC186825824B5800EF11BA /* Loggers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Loggers.swift; sourceTree = "<group>"; };
@@ -260,6 +262,7 @@
 			isa = PBXGroup;
 			children = (
 				47F6EC50257C95D8007079D2 /* ShuffleButton.swift */,
+				47C647292783FF4700EB1FD8 /* SaveTrackButton.swift */,
 				47F6EC55257C963F007079D2 /* PreviousTrackButton.swift */,
 				47F6EC59257C967D007079D2 /* PlayPauseButton.swift */,
 				47F6EC5F257C96B7007079D2 /* NextTrackButton.swift */,
@@ -391,6 +394,7 @@
 				4703151E2583BEA800B2BDF2 /* FocusableTextField.swift in Sources */,
 				47012A3E258A8A1700174321 /* ShowPlaylistsButton.swift in Sources */,
 				477560E02580083200B7FFED /* SpotifyWebAPIExtensions.swift in Sources */,
+				47C6472A2783FF4700EB1FD8 /* SaveTrackButton.swift in Sources */,
 				47F6EC56257C963F007079D2 /* PreviousTrackButton.swift in Sources */,
 				47832F4A2566474300AADEA3 /* RootView.swift in Sources */,
 				47F6EC64257C96D7007079D2 /* SoundVolumeSlider.swift in Sources */,

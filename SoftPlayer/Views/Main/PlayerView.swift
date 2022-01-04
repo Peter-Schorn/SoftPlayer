@@ -213,6 +213,8 @@ struct PlayerView: View {
                     // MARK: Show PlaylistsView Button
                     ShowPlaylistsButton()
                     
+                    SaveTrackButton()
+
                     Spacer()
 
                     AvailableDevicesButton()

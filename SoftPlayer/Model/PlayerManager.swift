@@ -30,8 +30,14 @@ class PlayerManager: ObservableObject {
 
     // MARK: - Player State -
     
+    /// The currently playing track or episode.
+    ///
     /// Retrieved from the Spotify desktop application using AppleScript.
     var currentTrack: SpotifyTrack? = nil
+    
+    /// The currently playing track or episode identifier
+    var currentItemIdentifier: SpotifyIdentifier? = nil
+
     var albumArtistTitle = ""
     
     /// Set only if the playback is occurring in the context of a playlist.
@@ -50,6 +56,9 @@ class PlayerManager: ObservableObject {
     }
     @Published var soundVolume: CGFloat = 100
     
+    /// Whether or not the current track is in the current user's saved tracks.
+    @Published var currentTrackIsSaved = false
+
     // MARK: Player Position
     
     static let noPlaybackPositionPlaceholder = "- : -"
@@ -202,6 +211,7 @@ class PlayerManager: ObservableObject {
     private var cycleRepeatModeCancellable: AnyCancellable? = nil
     private var updatePlayerStateCancellable: AnyCancellable? = nil
     private var retrieveCurrentlyPlayingPlaylistCancellable: AnyCancellable? = nil
+    private var currentUserSavedTracksContainsCancellable: AnyCancellable? = nil
     var playerStateDidChangeCancellable: AnyCancellable? = nil
     
     init(spotify: Spotify) {
@@ -348,9 +358,8 @@ class PlayerManager: ObservableObject {
     }
     
     func setAlbumArtistTitle() {
-        let currentTrack = self.currentTrack
-        let albumName = currentTrack?.album
-        if let artistName = currentTrack?.artist, !artistName.isEmpty {
+        let albumName = self.currentTrack?.album
+        if let artistName = self.currentTrack?.artist, !artistName.isEmpty {
             if let albumName = albumName, !albumName.isEmpty {
                 self.albumArtistTitle = "\(artistName) - \(albumName)"
             }
@@ -405,6 +414,7 @@ class PlayerManager: ObservableObject {
     func updatePlayerState() {
         
         Loggers.playerState.trace("will update player state")
+        
         self.retrieveAvailableDevices()
 
         if self.isTransferringPlayback {
@@ -414,6 +424,17 @@ class PlayerManager: ObservableObject {
             return
         }
         
+        self.currentTrack = self.spotifyApplication?.currentTrack
+        let newIdentifier = self.currentTrack?.identifier
+        
+        if let newIdentifier = newIdentifier,
+                newIdentifier != self.currentItemIdentifier {
+            
+            self.currentTrackIsSaved = false
+        }
+
+        self.currentItemIdentifier = newIdentifier
+
         self.updateSoundVolumeAndPlayerPosition()
         self.retrieveCurrentlyPlayingContext()
         Loggers.playerState.trace(
@@ -422,7 +443,7 @@ class PlayerManager: ObservableObject {
             to '\(self.spotifyApplication?.currentTrack?.name ?? "nil")'
             """
         )
-        self.currentTrack = self.spotifyApplication?.currentTrack
+
         self.updateFormattedPlaybackPosition()
         self.setAlbumArtistTitle()
         self.shuffleIsOn = spotifyApplication?.shuffling ?? false
@@ -473,7 +494,9 @@ class PlayerManager: ObservableObject {
         }
         
         if intSoundVolume == 0, recursionDepth <= 2 {
-            print("recursion depth: \(recursionDepth)")
+            Loggers.soundVolumeAndPlayerPosition.notice(
+                "recursion depth: \(recursionDepth)"
+            )
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                 self.updateSoundVolume(
                     recursionDepth: recursionDepth + 1
@@ -862,6 +885,58 @@ class PlayerManager: ObservableObject {
             newPosition = currentPosition + 15
         }
         self.setPlayerPosition(to: CGFloat(newPosition))
+    }
+
+    func addOrRemoveCurrentItemFromSavedTracks() {
+        if self.currentTrackIsSaved {
+            self.removeCurrentItemFromSavedTracks()
+        }
+        else {
+            self.addCurrentItemToSavedTracks()
+        }
+    }
+
+    func addCurrentItemToSavedTracks() {
+        guard let identifier = self.currentTrack?.identifier,
+                identifier.idCategory == .track else {
+            return
+        }
+        
+        self.spotify.api.saveTracksForCurrentUser([identifier])
+            .receive(on: RunLoop.main)
+            .sink { completion in
+                Loggers.playerManager.trace(
+                    "saveTracksForCurrentUser completion: \(completion)"
+                )
+                switch completion {
+                    case .finished:
+                        self.currentTrackIsSaved = true
+                    case .failure(_):
+                        break
+                }
+            }
+            .store(in: &self.cancellables)
+    }
+    
+    func removeCurrentItemFromSavedTracks() {
+        guard let itemURI = self.currentTrack?.id?() else {
+            return
+        }
+        
+        self.spotify.api.removeSavedTracksForCurrentUser([itemURI])
+            .receive(on: RunLoop.main)
+            .sink { completion in
+                Loggers.playerManager.trace(
+                    "removeSavedTracksForCurrentUser completion: \(completion)"
+                )
+                switch completion {
+                    case .finished:
+                        self.currentTrackIsSaved = false
+                    case .failure(_):
+                        break
+                }
+            }
+            .store(in: &self.cancellables)
     }
 
     // MARK: - Playlists -
@@ -1278,6 +1353,8 @@ class PlayerManager: ObservableObject {
                 self.cycleRepeatMode()
             case .shuffle:
                 self.toggleShuffle()
+            case .likeTrack:
+                self.addOrRemoveCurrentItemFromSavedTracks()
             case .onlyShowMyPlaylists:
                 self.onlyShowMyPlaylists.toggle()
                 Loggers.keyEvent.notice(
@@ -1388,7 +1465,34 @@ private extension PlayerManager {
 
 //        self.retrieveCurrentlyPlayingPlaylist()
         
-        
+        if case .track(let track) = context.item, let uri = track.uri,
+                !track.isLocal {
+            
+            self.currentUserSavedTracksContainsCancellable =
+                self.spotify.api.currentUserSavedTracksContains([uri])
+                    .receive(on: RunLoop.main)
+                    .sink(
+                        receiveCompletion: { completion in
+                            if case .failure(let error) = completion {
+                                Loggers.playerManager.trace(
+                                    """
+                                    error for currentUserSavedTracksContains \
+                                    with uri \(uri): \(error)
+                                    """
+                                )
+                            }
+                        },
+                        receiveValue: { results in
+                            if let trackIsSaved = results.first {
+                                self.currentTrackIsSaved = trackIsSaved
+                            }
+                        }
+                    )
+        }
+        else {
+            self.currentTrackIsSaved = false
+        }
+
     }
     
     private func areInDecreasingOrderByDateThenIncreasingOrderByIndex(
