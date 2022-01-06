@@ -20,6 +20,17 @@ class PlayerManager: ObservableObject {
 
     @AppStorage("appearance") var appearance = AppAppearance.system
     
+    var colorSchemeObservation: NSKeyValueObservation? = nil
+
+    var colorScheme: ColorScheme {
+        if let colorScheme = self.appearance.colorScheme {
+            return colorScheme
+        }
+        return ColorScheme(
+            nsAppearance: NSApplication.shared.effectiveAppearance
+        )!
+    }
+
     @Published var isShowingPlaylistsView = false
     @Published var isDraggingPlaybackPositionView = false
     @Published var isDraggingSoundVolumeSlider = false
@@ -297,6 +308,25 @@ class PlayerManager: ObservableObject {
                 self.objectWillChange.send()
             }
             .store(in: &cancellables)
+
+        self.observeColorScheme()
+
+    }
+    
+    func observeColorScheme() {
+        
+        self.colorSchemeObservation = NSApplication.shared.observe(
+            \.effectiveAppearance, options: .new
+        ) { _, change in
+            let appearance = change.newValue?.name.rawValue
+//            print(
+//                """
+//                NSApplication.effectiveAppearancec changed to \
+//                \(appearance.map(String.init(describing:)) ?? "nil")
+//                """
+//            )
+            self.objectWillChange.send()
+        }
 
     }
     

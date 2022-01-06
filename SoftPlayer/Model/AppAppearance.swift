@@ -37,3 +37,18 @@ enum AppAppearance: String, CaseIterable {
     }
     
 }
+
+extension ColorScheme {
+    
+    init?(nsAppearance: NSAppearance) {
+        switch nsAppearance.name {
+            case .aqua:
+                self = .light
+            case .darkAqua:
+                self = .dark
+            default:
+                return nil
+        }
+    }
+
+}

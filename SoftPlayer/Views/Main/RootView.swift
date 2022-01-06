@@ -29,7 +29,7 @@ struct RootView: View {
             spotify.redirectURLSubject,
             perform: handleRedirectURL(_:)
         )
-        .preferredColorScheme(playerManager.appearance.colorScheme)
+        .preferredColorScheme(playerManager.colorScheme)
         
     }
     
