@@ -14,8 +14,9 @@ struct GeneralSettingsView: View {
             Picker(
                 selection: playerManager.$appearance,
                 content: {
-                    ForEach(AppAppearance.allCases, id: \.self) { appearance in
+                    ForEach(AppAppearance.allCases) { appearance in
                         Text(appearance.localizedDescription)
+                            .tag(appearance)
                         if appearance == .system {
                             Divider()
                         }
