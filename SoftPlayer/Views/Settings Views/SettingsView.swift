@@ -35,7 +35,7 @@ struct SettingsView: View {
             }
             .touchBar(content: PlayPlaylistsTouchBarView.init)
         )
-        .preferredColorScheme(playerManager.appearance.colorScheme)
+        .preferredColorScheme(playerManager.colorScheme)
         
     }
     
