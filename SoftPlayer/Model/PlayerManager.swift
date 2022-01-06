@@ -318,7 +318,7 @@ class PlayerManager: ObservableObject {
         self.colorSchemeObservation = NSApplication.shared.observe(
             \.effectiveAppearance, options: .new
         ) { _, change in
-            let appearance = change.newValue?.name.rawValue
+//            let appearance = change.newValue?.name.rawValue
 //            print(
 //                """
 //                NSApplication.effectiveAppearancec changed to \
