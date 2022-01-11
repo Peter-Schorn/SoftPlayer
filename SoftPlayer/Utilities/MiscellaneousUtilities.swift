@@ -132,13 +132,35 @@ extension Error {
     
 }
 
-extension Notification.Name {
-    static let shortcutByNameDidChange = Self("KeyboardShortcuts_shortcutByNameDidChange")
-}
-
 extension URL {
     
     /// http://www.example.com/
     static let example = Self(string: "http://www.example.com/")!
 
+}
+
+enum LibraryPage: Int {
+    case playlists
+    case albums
+}
+
+extension Binding where Value: RawRepresentable {
+    
+    var rawValueBinding: Binding<Value.RawValue> {
+        
+        return Binding<Value.RawValue>(
+            get: {
+                return self.wrappedValue.rawValue
+            },
+            set: { newValue in
+                self.wrappedValue = Value(rawValue: newValue)!
+            }
+        )
+        
+    }
+
+}
+
+extension Notification.Name {
+    static let shortcutByNameDidChange = Self("KeyboardShortcuts_shortcutByNameDidChange")
 }

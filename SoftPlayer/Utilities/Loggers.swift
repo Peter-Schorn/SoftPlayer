@@ -82,6 +82,11 @@ enum Loggers {
         level: .warning
     )
     
+    static let savedAlbumsGridView = Logger(
+        label: "SavedAlbumsGridView",
+        level: .warning
+    )
+    
 }
 
 struct SoftPlayerLogHandler: LogHandler {

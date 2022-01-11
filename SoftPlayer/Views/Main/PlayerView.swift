@@ -16,6 +16,7 @@ struct PlayerView: View {
     
     @Namespace var namespace
     
+    
     @State private var cancellables: Set<AnyCancellable> = []
 
     // MARK: Geometry Effect Constants
@@ -53,7 +54,7 @@ struct PlayerView: View {
                     
                     miniPlayerViewBackground
                     
-                    PlaylistsScrollView()
+                    LibraryView()
                     
                 }
                 .background(
@@ -70,7 +71,7 @@ struct PlayerView: View {
                 }
                 
                 miniPlayerView
-                    .padding(.top, 33)
+                    .padding(.top, 40)
                     
             }
             else {
@@ -301,73 +302,35 @@ struct PlayerView: View {
                             perform: playerManager.openArtistOrShowInSpotify
                         )
                 }
-                Spacer()
-                // MARK: Small Player Controls
-                HStack(spacing: 15) {
-                    ShuffleButton()
-                        .scaleEffect(0.8)
-                        // MARK: Matched Geometry Effect
-                        .matchedGeometryEffect(
-                            id: shuffleButtonId,
-                            in: namespace,
-                            isSource: playlistsViewIsSource
-                        )
-                        .transition(.scale)
-                    PreviousTrackButton(size: .small)
-                        // MARK: Matched Geometry Effect
-                        .matchedGeometryEffect(
-                            id: previousTrackButtonId,
-                            in: namespace,
-                            isSource: playlistsViewIsSource
-                        )
-                        .transition(.scale)
-                    PlayPauseButton()
-                        // MARK: Matched Geometry Effect
-                        .matchedGeometryEffect(
-                            id: playPauseButtonId,
-                            in: namespace,
-                            isSource: playlistsViewIsSource
-                        )
-                        .transition(.scale)
-                        .frame(width: 20, height: 20)
-                    NextTrackButton(size: .small)
-                        // MARK: Matched Geometry Effect
-                        .matchedGeometryEffect(
-                            id: nextTrackButtonId,
-                            in: namespace,
-                            isSource: playlistsViewIsSource
-                        )
-                        .transition(.scale)
-                    RepeatModeButton()
-                        .scaleEffect(0.8)
-                        // MARK: Matched Geometry Effect
-                        .matchedGeometryEffect(
-                            id: repeatModeButtonId,
-                            in: namespace,
-                            isSource: playlistsViewIsSource
-                        )
-                        .transition(.scale)
-                }
-                .padding(.bottom, 3)
+                .padding(.horizontal, 5)
+                .padding(.vertical, 10)
+                .frame(height: 70)
             }
-            .padding(.horizontal, 5)
-            .padding(.vertical, 10)
-            .frame(height: 70)
+            
         }
     }
 
     var miniPlayerViewBackground: some View {
         VStack {
-            Button(action: {
-                self.playerManager.dismissPlaylistsView(animated: true)
-            }, label: {
-                Image(systemName: "chevron.down")
-                    .padding(-3)
-            })
-            .padding(.top, 5)
-            .padding(.top, 1)
+            HStack {
+                Button(action: {
+                    self.playerManager.dismissPlaylistsView(animated: true)
+                }, label: {
+                    Image(systemName: "chevron.down")
+                        .padding(-3)
+                })
+                .padding(3)
+                
+                Spacer()
+
+                LibrarySegmentedControl()
+
+            }
+            .padding(.horizontal, 5)
+            .padding(.top, 7)
+            
             Spacer()
-                .frame(height: 85)
+                .frame(height: 87)
         }
         .frame(maxWidth: .infinity)
         .background(
@@ -409,6 +372,7 @@ struct PlayerView_Previews: PreviewProvider {
     }
     
     static func onAppear() {
-        playerManager2.isShowingPlaylistsView = true
+        PlayerView.debugIsShowingPlaylistsView = true
     }
+    
 }
