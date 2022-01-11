@@ -41,7 +41,9 @@ struct PlaylistsScrollView: View {
         
         let currentUserId = self.playerManager.currentUser?.id
         
-        if searchText.strip().isEmpty {
+        let lowercasedSearch = searchText.strip().lowercased()
+
+        if lowercasedSearch.isEmpty {
             let playlists = self.playerManager.playlistsSortedByLastModifiedDate
                 .filter { playlist in
                     if self.onlyShowMyPlaylists,
@@ -56,8 +58,7 @@ struct PlaylistsScrollView: View {
             return Array(playlists)
         }
         
-        let lowerCasedSearch = searchText.lowercased()
-        let searchWords = lowerCasedSearch.words
+        let searchWords = lowercasedSearch.words
         
         let playlists = self.playerManager.playlistsSortedByLastModifiedDate
             .compactMap { playlist -> RatedPlaylist? in
@@ -68,21 +69,21 @@ struct PlaylistsScrollView: View {
                     return nil
                 }
                 
-                let lowerCasedPlaylistName = playlist.name.lowercased()
-                if lowerCasedSearch == lowerCasedPlaylistName {
+                let lowercasedPlaylistName = playlist.name.lowercased()
+                if lowercasedSearch == lowercasedPlaylistName {
                     return (playlist: playlist, rating: .infinity)
                 }
                 
                 var rating: Double = 0
-                if try! lowerCasedPlaylistName.regexMatch(
-                    lowerCasedSearch,
+                if try! lowercasedPlaylistName.regexMatch(
+                    lowercasedSearch,
                     regexOptions: [.ignoreMetacharacters]
                 ) != nil {
-                    rating += Double(lowerCasedSearch.count)
+                    rating += Double(lowercasedSearch.count)
                 }
                 
                 for searchWord in searchWords {
-                    if try! lowerCasedPlaylistName.regexMatch(
+                    if try! lowercasedPlaylistName.regexMatch(
                         searchWord,
                         regexOptions: [.ignoreMetacharacters]
                     ) != nil {
@@ -97,9 +98,7 @@ struct PlaylistsScrollView: View {
                 return (playlist: playlist, rating: rating)
                 
             }
-            .sorted { lhs, rhs in
-                lhs.rating > rhs.rating
-            }
+            .sorted { $0.rating > $1.rating }
             .map(\.playlist)
             .enumerated()
         
@@ -113,10 +112,15 @@ struct PlaylistsScrollView: View {
             ScrollView {
                 HStack {
                     FocusableTextField(
+                        name: "PlaylistsScrollView",
                         text: $searchText,
                         isFirstResponder: $searchFieldIsFocused,
                         onCommit: searchFieldDidCommit,
-                        receiveKeyEvent: receiveSearchFieldKeyEvent
+                        receiveKeyEvent: { event in
+                            return self.receiveKeyEvent(
+                                event, scrollView: scrollView
+                            )
+                        }
                     )
                     .touchBar(content: PlayPlaylistsTouchBarView.init)
                     .padding(.leading, 6)
@@ -125,7 +129,7 @@ struct PlaylistsScrollView: View {
                     filterMenuView
                         .padding(.trailing, 5)
                 }
-                .padding(.top, 10)
+                .padding(.top, 5)
                 .padding(.bottom, -7)
                 .id(searchFieldId)
                 
@@ -169,6 +173,9 @@ struct PlaylistsScrollView: View {
                     .frame(height: 8)
                 
             }
+            .onExitCommand {
+                self.playerManager.dismissPlaylistsView(animated: true)
+            }
             .background(
                 KeyEventHandler { event in
                     return self.receiveKeyEvent(event, scrollView: scrollView)
@@ -176,10 +183,22 @@ struct PlaylistsScrollView: View {
                 .touchBar(content: PlayPlaylistsTouchBarView.init)
             )
             .onAppear {
-                scrollView.scrollTo(0, anchor: .top)
+                if !self.playerManager.didScrollToPlaylistsSearchBar {
+                    scrollView.scrollTo(0, anchor: .top)
+                    self.playerManager.didScrollToPlaylistsSearchBar = true
+                }
+                searchFieldIsFocused = true
             }
             .onChange(of: searchText) { text in
                 scrollView.scrollTo(searchFieldId, anchor: .top)
+            }
+            .onChange(of: playerManager.libraryPage) { page in
+                if page == .playlists {
+                    searchFieldIsFocused = true
+                }
+                else {
+                    searchFieldIsFocused = false
+                }
             }
             
         }
@@ -205,16 +224,23 @@ struct PlaylistsScrollView: View {
         .help(Text("Filters"))
         .frame(width: 30)
     }
-
-    func receiveSearchFieldKeyEvent(_ event: NSEvent) -> Bool {
-        Loggers.keyEvent.trace("search field: \(event)")
-        return receiveKeyEvent(event, scrollView: nil)
-    }
     
     /// Returns `true` if the key event was handled; else, `false`.
-    func receiveKeyEvent(_ event: NSEvent, scrollView: ScrollViewProxy?) -> Bool {
+    func receiveKeyEvent(
+        _ event: NSEvent,
+        scrollView: ScrollViewProxy?)
+    -> Bool {
 
         Loggers.keyEvent.trace("PlaylistsScrollView: \(event)")
+
+        // don't handle the key event if the
+        // `SavedAlbumsGridView` page is being shown
+        if playerManager.libraryPage == .albums {
+            Loggers.keyEvent.debug(
+                "PlaylistsScrollView not handling event because not shown"
+            )
+            return false
+        }
 
         if event.modifierFlags.contains(.command) {
             return self.playerManager.receiveKeyEvent(
@@ -226,6 +252,11 @@ struct PlaylistsScrollView: View {
             self.searchFieldDidCommit()
             return true
         }
+        // escape key
+        else if event.keyCode == 53 {
+            self.playerManager.dismissPlaylistsView(animated: true)
+            return true
+        }
         else if let scrollView = scrollView, event.specialKey == nil,
                 let character = event.charactersIgnoringModifiers {
 
@@ -233,14 +264,17 @@ struct PlaylistsScrollView: View {
             self.searchText += character
             scrollView.scrollTo(searchFieldId, anchor: .top)
             return true
+
         }
         return false
     }
 
     func searchFieldDidCommit() {
-        guard self.playerManager.isShowingPlaylistsView else {
+        guard self.playerManager.isShowingPlaylistsView,
+              playerManager.libraryPage == .playlists else {
             return
         }
+        
         if let firstPlaylist = self.filteredPlaylists.first?.element {
             withAnimation(highlightAnimation) {
                 self.selectedPlaylistURI = firstPlaylist.uri
