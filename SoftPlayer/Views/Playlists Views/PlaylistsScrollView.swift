@@ -270,7 +270,7 @@ struct PlaylistsScrollView: View {
     }
 
     func searchFieldDidCommit() {
-        guard self.playerManager.isShowingPlaylistsView,
+        guard self.playerManager.isShowingLibraryView,
               playerManager.libraryPage == .playlists else {
             return
         }
