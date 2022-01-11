@@ -62,7 +62,7 @@ struct PlaybackPositionView: View {
             
             guard AppDelegate.shared.popover.isShown &&
                     playerManager.spotify.isAuthorized &&
-                    !playerManager.isShowingPlaylistsView else {
+                    !playerManager.isShowingLibraryView else {
                 return
             }
 

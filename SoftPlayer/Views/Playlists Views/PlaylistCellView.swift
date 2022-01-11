@@ -168,10 +168,10 @@ struct PlaylistCellView: View {
             .playPlaylist(playlist)
             .sink(receiveCompletion: { completion in
                 switch completion {
-                case .finished:
-                    self.playerManager.retrieveCurrentlyPlayingContext()
-                case .failure(let alert):
-                    self.playerManager.notificationSubject.send(alert)
+                    case .finished:
+                        self.playerManager.retrieveCurrentlyPlayingContext()
+                    case .failure(let alert):
+                        self.playerManager.notificationSubject.send(alert)
                 }
             })
         

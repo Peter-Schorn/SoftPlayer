@@ -22,11 +22,11 @@ struct PlayerView: View {
     // MARK: Geometry Effect Constants
     
     var playerViewIsSource: Bool {
-        !playerManager.isShowingPlaylistsView
+        !playerManager.isShowingLibraryView
     }
     
     var playlistsViewIsSource: Bool {
-        playerManager.isShowingPlaylistsView
+        playerManager.isShowingLibraryView
     }
     
     let albumImageId = "albumImage"
@@ -48,7 +48,7 @@ struct PlayerView: View {
     
     var body: some View {
         ZStack(alignment: .top) {
-            if playerManager.isShowingPlaylistsView
+            if playerManager.isShowingLibraryView
                     || Self.debugIsShowingPlaylistsView {
                 VStack(spacing: 0) {
                     
@@ -63,9 +63,9 @@ struct PlayerView: View {
                 )
                 // MARK: Playlists View Transition
                 .transition(.move(edge: .bottom))
-                .onExitCommand {
-                    self.playerManager.dismissPlaylistsView(animated: true)
-                }
+//                .onExitCommand {
+//                    self.playerManager.dismissPlaylistsView(animated: true)
+//                }
                 .onReceive(playerManager.popoverDidClose) {
                     self.playerManager.dismissPlaylistsView(animated: false)
                 }
@@ -83,14 +83,14 @@ struct PlayerView: View {
             width: AppDelegate.popoverWidth,
             height: AppDelegate.popoverHeight
         )
-        .onExitCommand {
-            if self.playerManager.isShowingPlaylistsView {
-                self.playerManager.dismissPlaylistsView(animated: true)
-            }
-            else {
-                AppDelegate.shared.closePopover()
-            }
-        }
+//        .onExitCommand {
+//            if self.playerManager.isShowingLibraryView {
+//                self.playerManager.dismissPlaylistsView(animated: true)
+//            }
+//            else {
+//                AppDelegate.shared.closePopover()
+//            }
+//        }
 
     }
 
@@ -253,54 +253,105 @@ struct PlayerView: View {
     }
     
     var miniPlayerView: some View {
-        HStack(spacing: 0) {
-            // MARK: Small Album Image
-            playerManager.artworkImage
-                .resizable()
-                .cornerRadius(5)
-                // MARK: Matched Geometry Effect
-                .matchedGeometryEffect(
-                    id: albumImageId,
-                    in: namespace,
-                    isSource: playlistsViewIsSource
-                )
-                .frame(width: 70, height: 70)
-                .adaptiveShadow(radius: 2)
-                .padding(.leading, 7)
-                .padding(.trailing, 2)
-                
-            VStack(spacing: 0) {
-                // MARK: Small Playing Title
-                VStack(spacing: 3) {
-                    Text(playerManager.currentTrack?.name ?? "")
-//                    Text(trackTitle)
-                        .fontWeight(.semibold)
-                        .font(.callout)
-                        // MARK: Matched Geometry Effect
-                        .matchedGeometryEffect(
-                            id: trackEpisodeNameId,
-                            in: namespace,
-                            isSource: playlistsViewIsSource
-                        )
-                        .lineLimit(1)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .onTapGesture(
-                            perform: playerManager.openCurrentPlaybackInSpotify
-                        )
-                    Text(playerManager.albumArtistTitle)
-//                    Text(albumArtistTitle)
-                        .font(.footnote)
-                        // MARK: Matched Geometry Effect
-                        .matchedGeometryEffect(
-                            id: albumArtisTitleId,
-                            in: namespace,
-                            isSource: playlistsViewIsSource
-                        )
-                        .lineLimit(1)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .onTapGesture(
-                            perform: playerManager.openArtistOrShowInSpotify
-                        )
+        VStack {
+            HStack(spacing: 0) {
+                // MARK: Small Album Image
+                playerManager.artworkImage
+                    .resizable()
+                    .cornerRadius(5)
+                    // MARK: Matched Geometry Effect
+                    .matchedGeometryEffect(
+                        id: albumImageId,
+                        in: namespace,
+                        isSource: playlistsViewIsSource
+                    )
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 70, height: 70)
+                    .adaptiveShadow(radius: 2)
+                    .padding(.leading, 7)
+                    .padding(.trailing, 2)
+                    
+                VStack(spacing: 0) {
+                    // MARK: Small Playing Title
+                    VStack(spacing: 3) {
+                        Text(playerManager.currentTrack?.name ?? "")
+                            .fontWeight(.semibold)
+                            .font(.callout)
+                            // MARK: Matched Geometry Effect
+                            .matchedGeometryEffect(
+                                id: trackEpisodeNameId,
+                                in: namespace,
+                                isSource: playlistsViewIsSource
+                            )
+                            .lineLimit(1)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .onTapGesture(
+                                perform: playerManager.openCurrentPlaybackInSpotify
+                            )
+                            .help(playerManager.currentTrack?.name ?? "")
+                        Text(playerManager.albumArtistTitle)
+                            .font(.footnote)
+                            // MARK: Matched Geometry Effect
+                            .matchedGeometryEffect(
+                                id: albumArtisTitleId,
+                                in: namespace,
+                                isSource: playlistsViewIsSource
+                            )
+                            .lineLimit(1)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .onTapGesture(
+                                perform: playerManager.openArtistOrShowInSpotify
+                            )
+                            .help(playerManager.albumArtistTitle)
+                    }
+                    Spacer()
+                    // MARK: Small Player Controls
+                    HStack(spacing: 15) {
+                        ShuffleButton()
+                            .scaleEffect(0.8)
+                            // MARK: Matched Geometry Effect
+                            .matchedGeometryEffect(
+                                id: shuffleButtonId,
+                                in: namespace,
+                                isSource: playlistsViewIsSource
+                            )
+                            .transition(.scale)
+                        PreviousTrackButton(size: .small)
+                            // MARK: Matched Geometry Effect
+                            .matchedGeometryEffect(
+                                id: previousTrackButtonId,
+                                in: namespace,
+                                isSource: playlistsViewIsSource
+                            )
+                            .transition(.scale)
+                        PlayPauseButton()
+                            // MARK: Matched Geometry Effect
+                            .matchedGeometryEffect(
+                                id: playPauseButtonId,
+                                in: namespace,
+                                isSource: playlistsViewIsSource
+                            )
+                            .transition(.scale)
+                            .frame(width: 20, height: 20)
+                        NextTrackButton(size: .small)
+                            // MARK: Matched Geometry Effect
+                            .matchedGeometryEffect(
+                                id: nextTrackButtonId,
+                                in: namespace,
+                                isSource: playlistsViewIsSource
+                            )
+                            .transition(.scale)
+                        RepeatModeButton()
+                            .scaleEffect(0.8)
+                            // MARK: Matched Geometry Effect
+                            .matchedGeometryEffect(
+                                id: repeatModeButtonId,
+                                in: namespace,
+                                isSource: playlistsViewIsSource
+                            )
+                            .transition(.scale)
+                    }
+                    .padding(.bottom, 3)
                 }
                 .padding(.horizontal, 5)
                 .padding(.vertical, 10)
@@ -372,7 +423,8 @@ struct PlayerView_Previews: PreviewProvider {
     }
     
     static func onAppear() {
-        PlayerView.debugIsShowingPlaylistsView = true
+//        PlayerView.debugIsShowingPlaylistsView = true
+        playerManager.isShowingLibraryView = true
     }
     
 }

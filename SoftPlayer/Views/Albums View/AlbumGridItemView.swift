@@ -22,6 +22,11 @@ struct AlbumGridItemView: View {
         return Image(.spotifyAlbumPlaceholder)
         
     }
+    
+    var isCurrentlyPlaying: Bool {
+        self.album.uri ==
+                self.playerManager.currentlyPlayingContext?.context?.uri
+    }
 
     var body: some View {
         Button(action: {
@@ -32,13 +37,19 @@ struct AlbumGridItemView: View {
                     .resizable()
                     .aspectRatio(contentMode: .fit)
                     .cornerRadius(5)
-                Text(album.name)
-                    .font(.subheadline)
-                    .lineLimit(2)
-                    .multilineTextAlignment(.center)
-                    // This is necessary to ensure that the text wraps to the
-                    // next line if it is too long.
-                    .fixedSize(horizontal: false, vertical: true)
+                HStack {
+                    Text(album.name)
+                        .font(.subheadline)
+                        .lineLimit(2)
+                        .multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
+                    if isCurrentlyPlaying {
+                        NowPlayingAnimation(
+                            isAnimating: $playerManager.isPlaying
+                        )
+                            .frame(width: 12, height: 10)
+                    }
+                }
                 Spacer()
             }
         })

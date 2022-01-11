@@ -19,9 +19,9 @@ struct SavedAlbumsGridView: View {
     @State private var loadAlbumsCancellable: AnyCancellable? = nil
 
     let columns = [
-        GridItem(.flexible()),
-        GridItem(.flexible()),
-        GridItem(.flexible())
+        GridItem(.flexible(), alignment: .top),
+        GridItem(.flexible(), alignment: .top),
+        GridItem(.flexible(), alignment: .top)
     ]
 
     let searchFieldId = "search field"
@@ -106,8 +106,6 @@ struct SavedAlbumsGridView: View {
         
     }
     
-    
-
     var body: some View {
         ScrollViewReader { scrollView in
             ScrollView {
@@ -134,7 +132,9 @@ struct SavedAlbumsGridView: View {
                         .padding(.top, 135)
                 }
                 else {
-                    LazyVGrid(columns: columns) {
+                    LazyVGrid(
+                        columns: columns
+                    ) {
                         ForEach(
                             self.filteredAlbums,
                             id: \.element.id
@@ -143,7 +143,7 @@ struct SavedAlbumsGridView: View {
                                 album: album,
                                 isSelected: selectedAlbumURI == album.uri
                             )
-                            .if((0...3).contains(offset)) {
+                            .if((0...2).contains(offset)) {
                                 $0.padding(.top, 7)
                             }
                             .id(offset)
@@ -228,7 +228,7 @@ struct SavedAlbumsGridView: View {
     }
 
     func searchFieldDidCommit() {
-        guard self.playerManager.isShowingPlaylistsView,
+        guard self.playerManager.isShowingLibraryView,
               playerManager.libraryPage == .albums else {
             return
         }
