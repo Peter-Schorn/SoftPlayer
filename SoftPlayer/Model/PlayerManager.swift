@@ -30,10 +30,10 @@ class PlayerManager: ObservableObject {
         }
         return ColorScheme(
             nsAppearance: NSApplication.shared.effectiveAppearance
-        )!
+        ) ?? .light
     }
 
-    @Published var isShowingPlaylistsView = false
+    @Published var isShowingLibraryView = false
     
     @Published var isDraggingPlaybackPositionView = false
     @Published var isDraggingSoundVolumeSlider = false
@@ -272,7 +272,7 @@ class PlayerManager: ObservableObject {
                     return
                 }
 
-                if self.isShowingPlaylistsView {
+                if self.isShowingLibraryView {
                     self.retrieveCurrentlyPlayingContext()
                 }
                 else {
@@ -936,6 +936,58 @@ class PlayerManager: ObservableObject {
         }
         self.setPlayerPosition(to: CGFloat(newPosition))
     }
+    
+    func addOrRemoveCurrentItemFromSavedTracks() {
+        if self.currentTrackIsSaved {
+            self.removeCurrentItemFromSavedTracks()
+        }
+        else {
+            self.addCurrentItemToSavedTracks()
+        }
+    }
+    
+    func addCurrentItemToSavedTracks() {
+        guard let identifier = self.currentTrack?.identifier,
+                identifier.idCategory == .track else {
+            return
+        }
+        
+        self.spotify.api.saveTracksForCurrentUser([identifier])
+            .receive(on: RunLoop.main)
+            .sink { completion in
+                Loggers.playerManager.trace(
+                    "saveTracksForCurrentUser completion: \(completion)"
+                )
+                switch completion {
+                    case .finished:
+                        self.currentTrackIsSaved = true
+                    case .failure(_):
+                        break
+                }
+            }
+            .store(in: &self.cancellables)
+    }
+    
+    func removeCurrentItemFromSavedTracks() {
+        guard let itemURI = self.currentTrack?.id?() else {
+            return
+        }
+        
+        self.spotify.api.removeSavedTracksForCurrentUser([itemURI])
+            .receive(on: RunLoop.main)
+            .sink { completion in
+                Loggers.playerManager.trace(
+                    "removeSavedTracksForCurrentUser completion: \(completion)"
+                )
+                switch completion {
+                    case .finished:
+                        self.currentTrackIsSaved = false
+                    case .failure(_):
+                        break
+                }
+            }
+            .store(in: &self.cancellables)
+    }
 
     // MARK: - Albums -
     
@@ -1352,8 +1404,10 @@ class PlayerManager: ObservableObject {
                 guard let nsImage = NSImage(data: imageData) else {
                     return
                 }
+                let imageSize: CGFloat =
+                        identifier.idCategory == .playlist ? 30 : 64
                 guard let resizedImage = nsImage.croppedToSquare()?
-                        .resized(width: 30, height: 30) else {
+                        .resized(width: imageSize, height: imageSize) else {
                     Loggers.images.error(
                         "couldn't crop image: \(identifier.uri)"
                     )
@@ -1495,7 +1549,7 @@ class PlayerManager: ObservableObject {
                     .clamped(to: 0...100)
                 self.soundVolume = newSoundVolume
             case .showPlaylists:
-                if self.isShowingPlaylistsView {
+                if self.isShowingLibraryView {
                     self.dismissPlaylistsView(animated: true)
                 }
                 else {
@@ -1534,7 +1588,7 @@ class PlayerManager: ObservableObject {
         )
 
         withAnimation(PlayerView.animation) {
-            self.isShowingPlaylistsView = true
+            self.isShowingLibraryView = true
         }
     }
 
@@ -1548,15 +1602,14 @@ class PlayerManager: ObservableObject {
 
         if animated {
             withAnimation(PlayerView.animation) {
-                self.isShowingPlaylistsView = false
+                self.isShowingLibraryView = false
             }
             self.updateSoundVolumeAndPlayerPosition()
             self.updatePlaylistsSortedByLastModifiedDate()
             self.retrieveAvailableDevices()
-            self.updatePlaylistsSortedByLastModifiedDate()
         }
         else {
-            self.isShowingPlaylistsView = false
+            self.isShowingLibraryView = false
         }
         self.didScrollToAlbumsSearchBar = false
         self.didScrollToPlaylistsSearchBar = false

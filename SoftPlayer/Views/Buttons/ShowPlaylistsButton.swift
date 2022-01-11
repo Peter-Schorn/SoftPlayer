@@ -22,7 +22,7 @@ struct ShowPlaylistsButton: View {
 
     var body: some View {
         Button(action: {
-            if self.playerManager.isShowingPlaylistsView {
+            if self.playerManager.isShowingLibraryView {
                 self.playerManager.dismissPlaylistsView(animated: true)
             }
             else {
