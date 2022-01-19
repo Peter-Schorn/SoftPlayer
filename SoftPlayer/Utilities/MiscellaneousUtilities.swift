@@ -3,6 +3,7 @@ import SpotifyWebAPI
 import RegularExpressions
 import Combine
 import SwiftUI
+import AppKit
 
 enum Size {
     case small, large

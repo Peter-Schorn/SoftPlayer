@@ -7,10 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		47012A3E258A8A1700174321 /* ShowPlaylistsButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47012A3D258A8A1700174321 /* ShowPlaylistsButton.swift */; };
+		47012A3E258A8A1700174321 /* ShowLibraryButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47012A3D258A8A1700174321 /* ShowLibraryButton.swift */; };
 		4703151E2583BEA800B2BDF2 /* FocusableTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4703151D2583BEA800B2BDF2 /* FocusableTextField.swift */; };
 		470315232583EED900B2BDF2 /* FocusView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 470315222583EED900B2BDF2 /* FocusView.swift */; };
-		47038544257E801100D0E79A /* BlurView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47038543257E801100D0E79A /* BlurView.swift */; };
+		47038544257E801100D0E79A /* VisualEffectView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47038543257E801100D0E79A /* VisualEffectView.swift */; };
 		4712E604257FB1A100A881D5 /* NotificationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4712E603257FB1A100A881D5 /* NotificationView.swift */; };
 		4712E607257FD19500A881D5 /* PlayPlaylistsTouchBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4712E606257FD19500A881D5 /* PlayPlaylistsTouchBarView.swift */; };
 		4715D7B326FD229F00562192 /* AppAppearance.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4715D7B226FD229F00562192 /* AppAppearance.swift */; };
@@ -46,7 +46,6 @@
 		47D8CF7F256663080034FA1E /* NotificationNames.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47D8CF7E256663080034FA1E /* NotificationNames.swift */; };
 		47D8CF83256664C60034FA1E /* PlayerManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47D8CF82256664C60034FA1E /* PlayerManager.swift */; };
 		47D8CF892566679C0034FA1E /* SpotifyAPI in Frameworks */ = {isa = PBXBuildFile; productRef = 47D8CF882566679C0034FA1E /* SpotifyAPI */; };
-		47DC0F9326A665690010F73C /* PageViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47DC0F9226A665690010F73C /* PageViewController.swift */; };
 		47DC186925824B5800EF11BA /* Loggers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47DC186825824B5800EF11BA /* Loggers.swift */; };
 		47DC18702582712400EF11BA /* PlaylistCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47DC186F2582712400EF11BA /* PlaylistCellView.swift */; };
 		47E9F5A3276ED0A50035349D /* ImageExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47E9F5A2276ED0A50035349D /* ImageExtensions.swift */; };
@@ -68,10 +67,10 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		47012A3D258A8A1700174321 /* ShowPlaylistsButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShowPlaylistsButton.swift; sourceTree = "<group>"; };
+		47012A3D258A8A1700174321 /* ShowLibraryButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShowLibraryButton.swift; sourceTree = "<group>"; };
 		4703151D2583BEA800B2BDF2 /* FocusableTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FocusableTextField.swift; sourceTree = "<group>"; };
 		470315222583EED900B2BDF2 /* FocusView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FocusView.swift; sourceTree = "<group>"; };
-		47038543257E801100D0E79A /* BlurView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlurView.swift; sourceTree = "<group>"; };
+		47038543257E801100D0E79A /* VisualEffectView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisualEffectView.swift; sourceTree = "<group>"; };
 		4712E603257FB1A100A881D5 /* NotificationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationView.swift; sourceTree = "<group>"; };
 		4712E606257FD19500A881D5 /* PlayPlaylistsTouchBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayPlaylistsTouchBarView.swift; sourceTree = "<group>"; };
 		4715D7B226FD229F00562192 /* AppAppearance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppAppearance.swift; sourceTree = "<group>"; };
@@ -108,11 +107,10 @@
 		47C647292783FF4700EB1FD8 /* SaveTrackButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SaveTrackButton.swift; sourceTree = "<group>"; };
 		47D8CF7E256663080034FA1E /* NotificationNames.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationNames.swift; sourceTree = "<group>"; };
 		47D8CF82256664C60034FA1E /* PlayerManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerManager.swift; sourceTree = "<group>"; };
-		47DC0F9226A665690010F73C /* PageViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageViewController.swift; sourceTree = "<group>"; };
 		47DC186825824B5800EF11BA /* Loggers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Loggers.swift; sourceTree = "<group>"; };
 		47DC186F2582712400EF11BA /* PlaylistCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaylistCellView.swift; sourceTree = "<group>"; };
-		47ECF9B42694509B00DD118E /* LibrarySegmentedControl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibrarySegmentedControl.swift; sourceTree = "<group>"; };
 		47E9F5A2276ED0A50035349D /* ImageExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageExtensions.swift; sourceTree = "<group>"; };
+		47ECF9B42694509B00DD118E /* LibrarySegmentedControl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibrarySegmentedControl.swift; sourceTree = "<group>"; };
 		47F6EC50257C95D8007079D2 /* ShuffleButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShuffleButton.swift; sourceTree = "<group>"; };
 		47F6EC55257C963F007079D2 /* PreviousTrackButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviousTrackButton.swift; sourceTree = "<group>"; };
 		47F6EC59257C967D007079D2 /* PlayPauseButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayPauseButton.swift; sourceTree = "<group>"; };
@@ -237,7 +235,6 @@
 			isa = PBXGroup;
 			children = (
 				4789987725747F0F00866EE1 /* PlaybackPositionView.swift */,
-				47DC0F9226A665690010F73C /* PageViewController.swift */,
 				47ECF9B42694509B00DD118E /* LibrarySegmentedControl.swift */,
 				477450972706C2D4007CD45D /* NowPlayingAnimation.swift */,
 				47F6EC63257C96D7007079D2 /* SoundVolumeSlider.swift */,
@@ -245,7 +242,7 @@
 				4712E603257FB1A100A881D5 /* NotificationView.swift */,
 				475878CD258731F1007EB435 /* CancelButton.swift */,
 				4703151D2583BEA800B2BDF2 /* FocusableTextField.swift */,
-				47038543257E801100D0E79A /* BlurView.swift */,
+				47038543257E801100D0E79A /* VisualEffectView.swift */,
 				470315222583EED900B2BDF2 /* FocusView.swift */,
 				47891C942583128900063460 /* KeyEventHandler.swift */,
 			);
@@ -290,7 +287,7 @@
 				47F6EC5F257C96B7007079D2 /* NextTrackButton.swift */,
 				47F6EC5C257C9699007079D2 /* RepeatModeButton.swift */,
 				474C7C912570F713004A3DB5 /* AvailableDevicesButton.swift */,
-				47012A3D258A8A1700174321 /* ShowPlaylistsButton.swift */,
+				47012A3D258A8A1700174321 /* ShowLibraryButton.swift */,
 			);
 			path = Buttons;
 			sourceTree = "<group>";
@@ -414,9 +411,9 @@
 				47343A642582C86600EF6750 /* PlaylistsScrollView.swift in Sources */,
 				47FD3DFB256FA7CF000E2346 /* ImageNames.swift in Sources */,
 				47DC186925824B5800EF11BA /* Loggers.swift in Sources */,
-				47038544257E801100D0E79A /* BlurView.swift in Sources */,
+				47038544257E801100D0E79A /* VisualEffectView.swift in Sources */,
 				4703151E2583BEA800B2BDF2 /* FocusableTextField.swift in Sources */,
-				47012A3E258A8A1700174321 /* ShowPlaylistsButton.swift in Sources */,
+				47012A3E258A8A1700174321 /* ShowLibraryButton.swift in Sources */,
 				477560E02580083200B7FFED /* SpotifyWebAPIExtensions.swift in Sources */,
 				47C6472A2783FF4700EB1FD8 /* SaveTrackButton.swift in Sources */,
 				47F6EC56257C963F007079D2 /* PreviousTrackButton.swift in Sources */,
@@ -433,7 +430,6 @@
 				478A64662692FBC600557DF3 /* AlbumGridItemView.swift in Sources */,
 				47FD3DF3256FA726000E2346 /* LoginView.swift in Sources */,
 				4789A5B725885F0800A5E1E3 /* KeyboardShortcutsView.swift in Sources */,
-				47DC0F9326A665690010F73C /* PageViewController.swift in Sources */,
 				47DC18702582712400EF11BA /* PlaylistCellView.swift in Sources */,
 				47E9F5A3276ED0A50035349D /* ImageExtensions.swift in Sources */,
 				4795210D25744AA6000A5B82 /* MiscellaneousUtilities.swift in Sources */,

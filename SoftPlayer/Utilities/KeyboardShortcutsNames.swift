@@ -2,8 +2,8 @@ import KeyboardShortcuts
 
 extension KeyboardShortcuts.Name {
     
-    static let showPlaylists = Self(
-        "showPlaylists",
+    static let showLibrary = Self(
+        "showLibrary",
         default: .init(.p, modifiers: [.command])
     )
     static let previousTrack = Self(

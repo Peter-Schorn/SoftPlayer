@@ -11,6 +11,8 @@ struct AlbumGridItemView: View {
     let album: Album
     let isSelected: Bool
 
+    @State private var cancellables: Set<AnyCancellable> = []
+
     var albumImage: Image {
         
         if let uri = album.uri,
@@ -56,6 +58,56 @@ struct AlbumGridItemView: View {
         .disabled(isSelected)
         .buttonStyle(PlainButtonStyle())
         .padding(2)
+        .contentShape(Rectangle())
+        .contextMenu(menuItems: contextMenu)
+    }
+    
+    func contextMenu() -> some View {
+        HStack {
+            Button("Open in Spotify") {
+                guard let url = self.album.uri.flatMap(URL.init(string:)) else {
+                    NSSound.beep()
+                    return
+                }
+                NSWorkspace.shared.open(url)
+            }
+            Button("Remove From Library") {
+                guard let albumURI = self.album.uri else {
+                    NSSound.beep()
+                    return
+                }
+                self.spotify.api.removeSavedAlbumsForCurrentUser(
+                    [albumURI]
+                )
+                .receive(on: RunLoop.main)
+                .sink(receiveCompletion: { completion in
+                    switch completion {
+                        case .finished:
+                            self.playerManager.retrieveSavedAlbums()
+                        case .failure(let error):
+                            let alertTitle = String.localizedStringWithFormat(
+                                NSLocalizedString(
+                                    "Couldn't Remove Album \"%@\"",
+                                    comment: "Couldn't Remove Album [album name]"
+                                ),
+                                self.album.name
+                            )
+
+                            let alert = AlertItem(
+                                title: alertTitle,
+                                message: error.customizedLocalizedDescription
+                            )
+                            self.playerManager.notificationSubject.send(alert)
+                            Loggers.playlistCellView.error(
+                                "\(alertTitle): \(error)"
+                            )
+                    }
+                })
+                .store(in: &cancellables)
+
+            }
+            
+        }
     }
     
 }

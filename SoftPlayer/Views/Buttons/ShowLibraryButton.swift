@@ -1,12 +1,12 @@
 import SwiftUI
 import KeyboardShortcuts
 
-struct ShowPlaylistsButton: View {
+struct ShowLibraryButton: View {
     
     @EnvironmentObject var playerManager: PlayerManager
 
     var shortcutName: String {
-        if let name = KeyboardShortcuts.getShortcut(for: .showPlaylists) {
+        if let name = KeyboardShortcuts.getShortcut(for: .showLibrary) {
             return " \(name)"
         }
         return ""
@@ -14,7 +14,7 @@ struct ShowPlaylistsButton: View {
 
     var keyboardShortcut: KeyboardShortcut? {
         guard let shortcut = KeyboardShortcuts
-                .getShortcut(for: .showPlaylists) else {
+                .getShortcut(for: .showLibrary) else {
             return nil
         }
         return KeyboardShortcut.init(shortcut)
@@ -38,8 +38,8 @@ struct ShowPlaylistsButton: View {
     }
 }
 
-struct ShowPlaylistsButton_Previews: PreviewProvider {
+struct ShowLibraryButton_Previews: PreviewProvider {
     static var previews: some View {
-        ShowPlaylistsButton()
+        ShowLibraryButton()
     }
 }

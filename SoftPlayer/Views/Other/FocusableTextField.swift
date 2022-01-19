@@ -109,7 +109,7 @@ class CustomNSSearchField: NSSearchField {
     var receiveKeyEvent: ((NSEvent) -> Bool)? = nil
     
     override func performKeyEquivalent(with event: NSEvent) -> Bool {
-        print("CustomNSSearchField.performKeyEquivalent \(self.name!): ")
+//        print("CustomNSSearchField.performKeyEquivalent \(self.name!): ")
         return receiveKeyEvent?(event) ?? false
     }
     

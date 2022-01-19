@@ -81,7 +81,6 @@ struct PlaybackPositionView: View {
     }
     
     func updatePlaybackPosition() {
-        self.playerManager.lastAdjustedPlayerPositionDate = Date()
         Loggers.soundVolumeAndPlayerPosition.trace(
             """
             updating playback position to \
@@ -91,6 +90,7 @@ struct PlaybackPositionView: View {
         self.playerManager.spotifyApplication?.setPlayerPosition(
             Double(self.playerManager.playerPosition)
         )
+        self.playerManager.lastAdjustedPlayerPositionDate = Date()
     }
    
 }
