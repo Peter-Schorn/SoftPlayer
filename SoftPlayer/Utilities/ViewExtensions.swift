@@ -55,28 +55,48 @@ extension View {
         
     }
 
-    /**
-     A gesture that recognizes a tap and a long press.
-     
-     - Parameters:
-       - onTap: Called in response to a tap gesture.
-       - isLongPressing: Updated based on whether the user is currently
-             long-pressing on a view.
-     */
     func tapAndLongPressAndHoldGesture(
-        onTap: @escaping () -> Void,
-        isLongPressing: GestureState<Bool>
+        _ state: GestureState<TapAndLongPressGestureState>,
+        onTap: @escaping () -> Void
     ) -> some View {
         self.gesture(
             TapGesture()
-                .onEnded { _ in onTap() }
-                .exclusively(before: LongPressGesture(minimumDuration: 0.5)
-                .sequenced(before: LongPressGesture(minimumDuration: .infinity))
-                .updating(isLongPressing) { value, state, transaction in
-                    if case .second(true, nil) = value {
-                        state = true
+                .simultaneously(
+                    with: LongPressGesture(minimumDuration: .infinity)
+                )
+                .updating(state) { value, state, transaction in
+//                    print(
+//                        """
+//                        updating:
+//                            value:
+//                                TapGesture: \(value.first as Any)
+//                                LongPressGesture: \(value.second as Any)
+//                            state: \(state)
+//
+//                        """
+//                    )
+                    
+                    state.isTapping = value.first != nil
+//                    print("--- state.isTapping = \(state.isTapping) ---")
+
+                    if value.first == nil {
+                        state.isLongPressing = value.second ?? false
                     }
-                })
+                    
+                }
+                .onEnded { value in
+//                    print(
+//                        """
+//                        onEnded:
+//                            value:
+//                                TapGesture: \(value.first as Any)
+//                                LongPressGesture: \(value.second as Any)
+//
+//                        """
+//                    )
+                    onTap()
+                }
+                
         )
     }
     
@@ -90,7 +110,17 @@ extension View {
             self
         }
     }
+
+}
+
+struct TapAndLongPressGestureState: Hashable {
+
+    var isTapping = false
+    var isLongPressing = false
+    
+    init() {
         
+    }
 
 }
 

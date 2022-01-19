@@ -93,9 +93,56 @@ struct PlaylistCellView: View {
         .disabled(isSelected)
         .padding(.leading, 8)
         .padding(.trailing, 15)
+        .contentShape(Rectangle())
+        .contextMenu(menuItems: contextMenu)
         
     }
     
+    func contextMenu() -> some View {
+        HStack {
+            Button("Open in Spotify") {
+                guard let url = URL(string: self.playlist.uri) else {
+                    NSSound.beep()
+                    return
+                }
+                NSWorkspace.shared.open(url)
+            }
+            Button("Unfollow Playlist") {
+                self.spotify.api.unfollowPlaylistForCurrentUser(
+                    self.playlist
+                )
+                .receive(on: RunLoop.main)
+                .sink(receiveCompletion: { completion in
+                    switch completion {
+                        case .finished:
+                            self.playerManager.retrievePlaylists()
+                        case .failure(let error):
+                            let alertTitle = String.localizedStringWithFormat(
+                                NSLocalizedString(
+                                    "Couldn't Unfollow \"%@\"",
+                                    comment: "Couldn't Unfollow [playlist name]"
+                                ),
+                                self.playlist.name
+                            )
+
+                            let alert = AlertItem(
+                                title: alertTitle,
+                                message: error.customizedLocalizedDescription
+                            )
+                            self.playerManager.notificationSubject.send(alert)
+                            Loggers.playlistCellView.error(
+                                "\(alertTitle): \(error)"
+                            )
+                    }
+                })
+                .store(in: &cancellables)
+                
+
+            }
+            
+        }
+    }
+
     /// Adds the currently playing track/episode to a playlist.
     func addCurrentItemToPlaylist() {
         
@@ -113,14 +160,14 @@ struct PlaylistCellView: View {
             return
         }
         
-        self.playerManager.playlistsLastModifiedDates[playlist.uri] = Date()
+        self.playerManager.playlistsLastModifiedDates[self.playlist.uri] = Date()
         
         let itemName = playerManager.currentTrack?.name ?? "nil"
         Loggers.playlistCellView.notice(
-            "adding '\(itemName)' to '\(playlist.name)'"
+            "adding '\(itemName)' to '\(self.playlist.name)'"
         )
         self.spotify.api.addToPlaylist(
-            playlist.uri, uris: [currentItemURI]
+            self.playlist, uris: [currentItemURI]
         )
         .receive(on: RunLoop.main)
         .sink(
@@ -132,7 +179,7 @@ struct PlaylistCellView: View {
                                 "Added \"%@\" to \"%@\"",
                                 comment: "Added [song name] to [playlist name]"
                             ),
-                            itemName, playlist.name
+                            itemName, self.playlist.name
                         )
                         let alert = AlertItem(title: alertTitle, message: "")
                         self.playerManager.notificationSubject.send(alert)
@@ -143,7 +190,7 @@ struct PlaylistCellView: View {
                                 "Couldn't Add \"%@\" to \"%@\"",
                                 comment: "Couldn't Add [song name] to [playlist name]"
                             ),
-                            itemName, playlist.name
+                            itemName, self.playlist.name
                         )
 
                         let alert = AlertItem(
@@ -165,7 +212,7 @@ struct PlaylistCellView: View {
     func playPlaylist() {
         
         self.playPlaylistCancellable = self.playerManager
-            .playPlaylist(playlist)
+            .playPlaylist(self.playlist)
             .sink(receiveCompletion: { completion in
                 switch completion {
                     case .finished:

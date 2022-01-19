@@ -15,11 +15,16 @@ struct NotificationView: View {
 
     @State private var cancelButtonIsShowing = false
 
+    let presentAnimation = Animation.spring(
+        response: 0.5,
+        dampingFraction: 0.9,
+        blendDuration: 0
+    )
+
     var body: some View {
         
         VStack {
             if isPresented || Self.debugIsPresented {
-                ZStack(alignment: .topLeading) {
                     VStack {
                         Text(title)
                             .fontWeight(.medium)
@@ -40,23 +45,27 @@ struct NotificationView: View {
                     .cornerRadius(5)
                     .padding(10)
                     .shadow(radius: 5)
-                    
-                    CancelButton(action: {
-                        withAnimation {
-                            self.isPresented = false
-                        }
-                    })
-                    .padding(5)
-                    .contentShape(Rectangle())
                     .onHover { isHovering in
-                        withAnimation(.linear(duration: 0.2)) {
+                        withAnimation(.easeOut(duration: 0.1)) {
                             self.cancelButtonIsShowing = isHovering
                         }
                     }
-                    .opacity(cancelButtonIsShowing ? 1 : 0)
-                    
-                }
-                .transition(.move(edge: .top))
+                    .overlay(
+                        Group {
+                            if self.cancelButtonIsShowing {
+                                CancelButton(action: {
+                                    withAnimation {
+                                        self.isPresented = false
+                                    }
+                                })
+                                .padding(5)
+                                .contentShape(Rectangle())
+                                .transition(.scale)
+                            }
+                        },
+                        alignment: .topLeading
+                    )
+                    .transition(.move(edge: .top))
                 
                 Spacer()
             }
@@ -66,16 +75,17 @@ struct NotificationView: View {
             let id = UUID()
             self.messageId = id
 
-            withAnimation {
-                self.title = alert.title
-                self.message = alert.message
+            self.title = alert.title
+            self.message = alert.message
+
+            withAnimation(self.presentAnimation) {
                 self.isPresented = true
             }
 
             let delay: Double = message.isEmpty ? 2 : 3
             DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
                 if self.messageId == id {
-                    withAnimation() {
+                    withAnimation(self.presentAnimation) {
                         self.isPresented = false
                     }
                 }
@@ -84,6 +94,7 @@ struct NotificationView: View {
         }
         
     }
+
 }
 
 struct NotificationView_Previews: PreviewProvider {
