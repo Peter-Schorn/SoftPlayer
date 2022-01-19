@@ -1482,8 +1482,10 @@ class PlayerManager: ObservableObject {
             )
             return
         }
-        
-        NSWorkspace.shared.open(uriURL)
+        // Ensure the Spotify application is active before opening the URL
+        self.openSpotifyDesktopApplication { _, _ in
+            NSWorkspace.shared.open(uriURL)
+        }
 
     }
     
@@ -1507,12 +1509,32 @@ class PlayerManager: ObservableObject {
                     }
                 },
                 receiveValue: { url in
-                    NSWorkspace.shared.open(url)
+                    // Ensure the Spotify application is active before
+                    // opening the URL
+                    self.openSpotifyDesktopApplication { _, _ in
+                        NSWorkspace.shared.open(url)
+                    }
                 }
             )
             
     }
     
+    func openSpotifyDesktopApplication(
+        _ completionHandler: ((NSRunningApplication?, Error?) -> Void)? = nil
+    ) {
+        
+        let spotifyPath = URL(fileURLWithPath: "/Applications/Spotify.app")
+        let configuration = NSWorkspace.OpenConfiguration()
+        configuration.activates = true
+        
+        NSWorkspace.shared.openApplication(
+            at: spotifyPath,
+            configuration: configuration,
+            completionHandler: completionHandler
+        )
+
+    }
+
     // MARK: - Key Events -
     
     /// Returns `true` if the key event was handled; else, `false`.
