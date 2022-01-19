@@ -8,7 +8,7 @@ struct NextTrackButton: View {
     @EnvironmentObject var spotify: Spotify
     @EnvironmentObject var playerManager: PlayerManager
     
-    @GestureState var isLongPressing = false
+    @GestureState private var gestureState = TapAndLongPressGestureState()
 
     @State private var seekForwardsTimerCancellable: Cancellable? = nil
     
@@ -23,6 +23,13 @@ struct NextTrackButton: View {
     
     var skipToPreviousTrackIsEnabled: Bool {
         return playerManager.allowedActions.contains(.skipToNext)
+    }
+    
+    var buttonOpacity: Double {
+        if gestureState.isTapping || gestureState.isLongPressing {
+            return 0.8
+        }
+        return 1
     }
     
     var body: some View {
@@ -41,11 +48,18 @@ struct NextTrackButton: View {
             // MARK: Next Track
             
             Image(systemName: "forward.end.fill")
-                .tapAndLongPressAndHoldGesture(
-                    onTap: self.playerManager.skipToNextTrack,
-                    isLongPressing: $isLongPressing
+                .opacity(buttonOpacity)
+                .scaleEffect(gestureState.isLongPressing ? 0.8 : 1)
+                .animation(
+                    .easeIn(duration: 0.1),
+                    value: gestureState.isLongPressing
                 )
-                .onChange(of: isLongPressing) { isLongPressing in
+                .tapAndLongPressAndHoldGesture(
+                    $gestureState,
+                    onTap: onTap
+                )
+                .help(Text("Skip to the next track\(shortcutName)"))
+                .onChange(of: gestureState.isLongPressing) { isLongPressing in
                     if isLongPressing {
                         self.playerManager.seekForwards15Seconds()
                         self.seekForwardsTimerCancellable = Timer.publish(
@@ -55,16 +69,20 @@ struct NextTrackButton: View {
                         .sink { _ in
                             self.playerManager.seekForwards15Seconds()
                         }
-                        
+
                     }
                     else {
                         self.seekForwardsTimerCancellable?.cancel()
-                        
+
                     }
                 }
-                .help(Text("Skip to the next track\(shortcutName)"))
+                
 
         }
+    }
+    
+    func onTap() {
+        self.playerManager.skipToNextTrack()
     }
     
 }

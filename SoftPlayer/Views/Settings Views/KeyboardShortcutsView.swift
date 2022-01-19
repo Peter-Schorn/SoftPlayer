@@ -10,8 +10,8 @@ struct KeyboardShortcutsView: View {
         VStack {
             Group {
                 shortcutView(
-                    for: .showPlaylists,
-                    label: Text("Show playlists")
+                    for: .showLibrary,
+                    label: Text("Show Library")
                 )
                 shortcutView(
                     for: .previousTrack,

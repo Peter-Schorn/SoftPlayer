@@ -76,6 +76,7 @@ class PlayerManager: ObservableObject {
             self.updateFormattedPlaybackPosition()
         }
     }
+    
     @Published var soundVolume: CGFloat = 100
     
     /// Whether or not the current track is in the current user's saved tracks.
@@ -273,7 +274,7 @@ class PlayerManager: ObservableObject {
                 }
 
                 if self.isShowingLibraryView {
-                    self.retrieveCurrentlyPlayingContext()
+                    self.retrieveCurrentlyPlayingContext(fromTimer: true)
                 }
                 else {
                     self.updateSoundVolumeAndPlayerPosition(fromTimer: true)
@@ -698,7 +699,10 @@ class PlayerManager: ObservableObject {
     
     /// Retrieves the currently playing context and sets the repeat state
     /// and whether play/pause is disabled.
-    func retrieveCurrentlyPlayingContext(recursionDepth: Int = 1) {
+    func retrieveCurrentlyPlayingContext(
+        fromTimer: Bool = false,
+        recursionDepth: Int = 1
+    ) {
         
         if recursionDepth >= 5 {
             Loggers.syncContext.trace("recursionDepth \(recursionDepth) >= 5")
@@ -721,6 +725,12 @@ class PlayerManager: ObservableObject {
                 .handleAuthenticationError(spotify: self.spotify)
                 .sink(
                     receiveCompletion: { completion in
+                        
+                        // Don't repeatedly show an error every two seconds
+                        if fromTimer {
+                            return
+                        }
+
                         if case .failure(let error) = completion {
                             Loggers.playerManager.error(
                                 "couldn't get currently playing context: \(error)"
@@ -908,6 +918,7 @@ class PlayerManager: ObservableObject {
         }
         let newPosition = max(0, currentPosition - 15)
         self.setPlayerPosition(to: CGFloat(newPosition))
+        self.lastAdjustedPlayerPositionDate = Date()
     }
     
     func playPause() {
@@ -935,6 +946,7 @@ class PlayerManager: ObservableObject {
             newPosition = currentPosition + 15
         }
         self.setPlayerPosition(to: CGFloat(newPosition))
+        self.lastAdjustedPlayerPositionDate = Date()
     }
     
     func addOrRemoveCurrentItemFromSavedTracks() {
@@ -1548,7 +1560,7 @@ class PlayerManager: ObservableObject {
                 let newSoundVolume = (self.soundVolume - 5)
                     .clamped(to: 0...100)
                 self.soundVolume = newSoundVolume
-            case .showPlaylists:
+            case .showLibrary:
                 if self.isShowingLibraryView {
                     self.dismissPlaylistsView(animated: true)
                 }

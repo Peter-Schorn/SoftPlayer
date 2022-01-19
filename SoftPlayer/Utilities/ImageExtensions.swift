@@ -12,7 +12,9 @@ extension NSImage {
 
     func resized(size: CGSize) -> NSImage {
         
-        let newImage = NSImage(size: size)
+        
+
+        let newImage = NSImage.init(size: size)
         newImage.lockFocus()
         self.draw(
             in: CGRect(
@@ -92,48 +94,42 @@ extension NSImage {
         
     }
 
-    func cropped(rect: CGRect) -> NSImage? {
-        
-        var rect = rect
+    /// Returns a new image cropped to a square centered on the original image
+    /// and with a length equal to the smallest dimension of the original image.
+    func croppedToSquare() -> NSImage? {
+
+        if self.size.width == self.size.height {
+            return self
+        }
+
+        var originalRect = CGRect(origin: .zero, size: self.size)
 
         guard let cgImage = self.cgImage(
-            forProposedRect: &rect,
+            forProposedRect: &originalRect,
             context: nil,
             hints: nil
         ) else {
             return nil
         }
+        
+        let smallestDimension = min(cgImage.width, cgImage.height)
+        
+        let croppedRect = CGRect(
+            x: (cgImage.width - smallestDimension) / 2,
+            y: (cgImage.height - smallestDimension) / 2,
+            width: smallestDimension,
+            height: smallestDimension
+        )
 
-        guard let croppedImage = cgImage.cropping(to: rect) else {
+        guard let croppedImage = cgImage.cropping(to: croppedRect) else {
             return nil
         }
 
         return NSImage(
             cgImage: croppedImage,
-            size: rect.size
+            size: croppedRect.size
         )
         
-    }
-    
-    /// Returns a new image cropped to a square centered on the original image
-    /// and with a length equal to the smallest dimension of the original image.
-    func croppedToSquare() -> NSImage? {
-        
-        if self.size.width == self.size.height {
-            return self
-        }
-
-        let smallestDimension = min(self.size.width, self.size.height)
-        
-        let rect = CGRect(
-            x: (self.size.width - smallestDimension) / 2,
-            y: (self.size.height - smallestDimension) / 2,
-            width: smallestDimension,
-            height: smallestDimension
-        )
-
-        return self.cropped(rect: rect)
-
     }
 
 }

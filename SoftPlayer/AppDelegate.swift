@@ -170,7 +170,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     func initializeKeyboardShortcutNames() {
         typealias Name = KeyboardShortcuts.Name
         var sink = ""
-        print(Name.showPlaylists, to: &sink)
+        print(Name.showLibrary, to: &sink)
         print(Name.previousTrack, to: &sink)
         print(Name.playPause, to: &sink)
         print(Name.nextTrack, to: &sink)
