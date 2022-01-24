@@ -319,9 +319,7 @@ class PlayerManager: ObservableObject {
             }
             .store(in: &cancellables)
 
-        if self.spotifyApplication == nil {
-            self.showSpotifyNotInstalledAlert()
-        }
+        self.checkIfSpotifyIsInstalled()
         
         // ensure the UI is updated after a keyboard shortcut changes
         NotificationCenter.default.publisher(for: .shortcutByNameDidChange)
@@ -351,6 +349,17 @@ class PlayerManager: ObservableObject {
 
     }
     
+    func checkIfSpotifyIsInstalled() {
+        let spotifyBundleIdentifier = "com.spotify.client"
+        let spotifyURL = NSWorkspace.shared
+            .urlForApplication(withBundleIdentifier: spotifyBundleIdentifier)
+        
+        if spotifyURL == nil {
+            self.showSpotifyNotInstalledAlert()
+        }
+
+    }
+
     func showSpotifyNotInstalledAlert() {
         
         let alert = NSAlert()
