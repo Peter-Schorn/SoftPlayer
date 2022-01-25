@@ -77,6 +77,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             )
         }
         
+        self.registerGlobalKeyboardShortcutHandler()
+
+    }
+    
+    func registerGlobalKeyboardShortcutHandler() {
+        KeyboardShortcuts.onKeyDown(for: .openApp) {
+            self.togglePopover(nil)
+        }
+  
     }
     
     func configureContextMenu() {
@@ -170,6 +179,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     func initializeKeyboardShortcutNames() {
         typealias Name = KeyboardShortcuts.Name
         var sink = ""
+        print(Name.openApp, to: &sink)
         print(Name.showLibrary, to: &sink)
         print(Name.previousTrack, to: &sink)
         print(Name.playPause, to: &sink)

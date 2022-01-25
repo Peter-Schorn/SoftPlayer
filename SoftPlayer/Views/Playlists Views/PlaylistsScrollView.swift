@@ -228,8 +228,8 @@ struct PlaylistsScrollView: View {
     /// Returns `true` if the key event was handled; else, `false`.
     func receiveKeyEvent(
         _ event: NSEvent,
-        scrollView: ScrollViewProxy?)
-    -> Bool {
+        scrollView: ScrollViewProxy?
+    ) -> Bool {
 
         Loggers.keyEvent.trace("PlaylistsScrollView: \(event)")
 
@@ -242,7 +242,7 @@ struct PlaylistsScrollView: View {
             return false
         }
 
-        if event.modifierFlags.contains(.command) {
+        if !event.modifierFlags.isEmpty {
             return self.playerManager.receiveKeyEvent(
                 event, requireModifierKey: true
             )

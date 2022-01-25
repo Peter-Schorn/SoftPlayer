@@ -43,7 +43,6 @@
 		478A64682692FEF400557DF3 /* LibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 478A64672692FEF400557DF3 /* LibraryView.swift */; };
 		4795210D25744AA6000A5B82 /* MiscellaneousUtilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4795210C25744AA6000A5B82 /* MiscellaneousUtilities.swift */; };
 		47C6472A2783FF4700EB1FD8 /* SaveTrackButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47C647292783FF4700EB1FD8 /* SaveTrackButton.swift */; };
-		47CDD2D8279ED75F0046ABDA /* TestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47CDD2D7279ED75F0046ABDA /* TestView.swift */; };
 		47CDDC8A2582D97F00E87918 /* RegularExpressions in Frameworks */ = {isa = PBXBuildFile; productRef = 47CDDC892582D97F00E87918 /* RegularExpressions */; };
 		47D8CF7F256663080034FA1E /* NotificationNames.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47D8CF7E256663080034FA1E /* NotificationNames.swift */; };
 		47D8CF83256664C60034FA1E /* PlayerManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47D8CF82256664C60034FA1E /* PlayerManager.swift */; };
@@ -108,13 +107,13 @@
 		4795210C25744AA6000A5B82 /* MiscellaneousUtilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MiscellaneousUtilities.swift; sourceTree = "<group>"; };
 		47B75D322687DFC6003F58A9 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/Main.strings; sourceTree = "<group>"; };
 		47C647292783FF4700EB1FD8 /* SaveTrackButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SaveTrackButton.swift; sourceTree = "<group>"; };
-		47CDD2D7279ED75F0046ABDA /* TestView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TestView.swift; sourceTree = "<group>"; };
 		47D8CF7E256663080034FA1E /* NotificationNames.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationNames.swift; sourceTree = "<group>"; };
 		47D8CF82256664C60034FA1E /* PlayerManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerManager.swift; sourceTree = "<group>"; };
 		47DC186825824B5800EF11BA /* Loggers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Loggers.swift; sourceTree = "<group>"; };
 		47DC186F2582712400EF11BA /* PlaylistCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaylistCellView.swift; sourceTree = "<group>"; };
 		47E9F5A2276ED0A50035349D /* ImageExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageExtensions.swift; sourceTree = "<group>"; };
 		47ECF9B42694509B00DD118E /* LibrarySegmentedControl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibrarySegmentedControl.swift; sourceTree = "<group>"; };
+		47EE0B5427A06EAB0043BA08 /* KeyboardShortcuts */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = KeyboardShortcuts; path = ../../../Libraries/KeyboardShortcuts; sourceTree = "<group>"; };
 		47F6EC50257C95D8007079D2 /* ShuffleButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShuffleButton.swift; sourceTree = "<group>"; };
 		47F6EC55257C963F007079D2 /* PreviousTrackButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviousTrackButton.swift; sourceTree = "<group>"; };
 		47F6EC59257C967D007079D2 /* PlayPauseButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayPauseButton.swift; sourceTree = "<group>"; };
@@ -166,6 +165,7 @@
 		47832F3B2566474300AADEA3 = {
 			isa = PBXGroup;
 			children = (
+				47EE0B5427A06EAB0043BA08 /* KeyboardShortcuts */,
 				47832F462566474300AADEA3 /* SoftPlayer */,
 				47832F452566474300AADEA3 /* Products */,
 			);
@@ -238,7 +238,6 @@
 		47CE919F267C7A47009BFF1C /* Other */ = {
 			isa = PBXGroup;
 			children = (
-				47CDD2D7279ED75F0046ABDA /* TestView.swift */,
 				4789987725747F0F00866EE1 /* PlaybackPositionView.swift */,
 				47ECF9B42694509B00DD118E /* LibrarySegmentedControl.swift */,
 				477450972706C2D4007CD45D /* NowPlayingAnimation.swift */,
@@ -427,7 +426,6 @@
 				47F6EC64257C96D7007079D2 /* SoundVolumeSlider.swift in Sources */,
 				47D8CF83256664C60034FA1E /* PlayerManager.swift in Sources */,
 				474C7C922570F713004A3DB5 /* AvailableDevicesButton.swift in Sources */,
-				47CDD2D8279ED75F0046ABDA /* TestView.swift in Sources */,
 				470315232583EED900B2BDF2 /* FocusView.swift in Sources */,
 				47FD3DDA256F642F000E2346 /* PlayerStateNotification.swift in Sources */,
 				47F6EC5D257C9699007079D2 /* RepeatModeButton.swift in Sources */,

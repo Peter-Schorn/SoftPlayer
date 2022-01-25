@@ -10,6 +10,10 @@ struct KeyboardShortcutsView: View {
         VStack {
             Group {
                 shortcutView(
+                    for: .openApp,
+                    label: Text("Open App")
+                )
+                shortcutView(
                     for: .showLibrary,
                     label: Text("Show Library")
                 )
@@ -45,12 +49,12 @@ struct KeyboardShortcutsView: View {
                     for: .volumeUp,
                     label: Text("Volume Up")
                 )
-                shortcutView(
-                    for: .onlyShowMyPlaylists,
-                    label: Text("Toggle only show my playlists")
-                )
             }
             Group {
+                shortcutView(
+                    for: .onlyShowMyPlaylists,
+                       label: Text("Toggle only show my playlists")
+                )
                 shortcutView(
                     for: .settings,
                     label: Text("Settings")

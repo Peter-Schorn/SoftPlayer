@@ -200,7 +200,7 @@ struct SavedAlbumsGridView: View {
             return false
         }
 
-        if event.modifierFlags.contains(.command) {
+        if !event.modifierFlags.isEmpty {
             return self.playerManager.receiveKeyEvent(
                 event, requireModifierKey: true
             )
