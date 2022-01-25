@@ -72,6 +72,12 @@ struct PlaylistCellView: View {
                     Spacer()
                 }
                 .contentShape(Rectangle())
+                .onDragOptional {
+                    if let url = try? SpotifyIdentifier(uri: self.playlist).url {
+                        return NSItemProvider(object: url as NSURL)
+                    }
+                    return nil
+                }
             })
             .buttonStyle(PlainButtonStyle())
             
@@ -95,7 +101,6 @@ struct PlaylistCellView: View {
         .padding(.trailing, 15)
         .contentShape(Rectangle())
         .contextMenu(menuItems: contextMenu)
-        
     }
     
     func contextMenu() -> some View {

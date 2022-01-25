@@ -13,9 +13,11 @@ struct LibrarySegmentedControl: View {
 
             Image(systemName: "music.note.list")
                 .tag(LibraryPage.playlists)
+                .help(Text("Playlists"))
         
             Image(systemName: "square.stack.fill")
                 .tag(LibraryPage.albums)
+                .help(Text("Albums"))
             
         }
         .pickerStyle(SegmentedPickerStyle())

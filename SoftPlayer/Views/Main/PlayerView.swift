@@ -128,6 +128,10 @@ struct PlayerView: View {
                     .onTapGesture(
                         perform: playerManager.openCurrentPlaybackInSpotify
                     )
+                    .onDragOptional(
+                        playingTitleItemProvider,
+                        preview: playingTitleDragPreview
+                    )
                     .help(playerManager.currentTrack?.name ?? "")
 
                 Text(playerManager.albumArtistTitle)
@@ -142,6 +146,10 @@ struct PlayerView: View {
                     .foregroundColor(Color.primary.opacity(0.9))
                     .onTapGesture(
                         perform: playerManager.openArtistOrShowInSpotify
+                    )
+                    .onDragOptional(
+                        albumArtistTitleItemProvider,
+                        preview: albumArtistTitleDragPreview
                     )
                     .help(playerManager.albumArtistTitle)
                 
@@ -216,6 +224,12 @@ struct PlayerView: View {
                     
                     SaveTrackButton()
 
+                    if let url = playerManager.currentItemIdentifier?.url {
+                        SharingServicesMenu(item: url)
+                            .frame(width: 33)
+                    }
+
+
                     Spacer()
 
                     AvailableDevicesButton()
@@ -284,6 +298,10 @@ struct PlayerView: View {
                         )
                         .lineLimit(1)
                         .frame(maxWidth: .infinity, alignment: .leading)
+                        .onDragOptional(
+                            playingTitleItemProvider,
+                            preview: playingTitleDragPreview
+                        )
                         .onTapGesture(
                             perform: playerManager.openCurrentPlaybackInSpotify
                         )
@@ -298,6 +316,10 @@ struct PlayerView: View {
                         )
                         .lineLimit(1)
                         .frame(maxWidth: .infinity, alignment: .leading)
+                        .onDragOptional(
+                            albumArtistTitleItemProvider,
+                            preview: albumArtistTitleDragPreview
+                        )
                         .onTapGesture(
                             perform: playerManager.openArtistOrShowInSpotify
                         )
@@ -388,6 +410,95 @@ struct PlayerView: View {
         
     }
     
+    // MARK: Dragging
+
+    func playingTitleItemProvider() -> NSItemProvider? {
+        guard let url = self.playerManager.currentItemIdentifier?.url else {
+            return nil
+        }
+        let provider = NSItemProvider(object: url as NSURL)
+        provider.suggestedName = self.playerManager.currentTrack?.name
+        return provider
+    }
+    
+    func playingTitleDragPreview() -> some View {
+        
+        let title = self.playerManager.currentTrack?.name ?? ""
+        let url = self.playerManager.currentItemIdentifier?.url
+        
+//        print(
+//            """
+//            playingTitleDragPreview: \
+//            title: \(title); \
+//            url: \(url as Any)
+//            """
+//        )
+
+        return self.dragPreview(
+            title: title,
+            url: url
+        )
+    }
+    
+    func albumArtistTitleItemProvider() -> NSItemProvider? {
+        
+        guard let url = self.playerManager.showOrArtistURL else {
+            return nil
+        }
+        let provider = NSItemProvider(object: url as NSURL)
+        provider.suggestedName = self.playerManager.showOrArtistName
+        return provider
+    }
+    
+    func albumArtistTitleDragPreview() -> some View {
+
+        let title = self.playerManager.showOrArtistName ?? ""
+        let url = self.playerManager.showOrArtistURL
+        
+//        print(
+//            """
+//            albumArtistTitleDragPreview: \
+//            title: \(title); \
+//            url: \(url as Any)
+//            """
+//        )
+
+        return self.dragPreview(
+            title: title,
+            url: url
+        )
+    }
+
+    func dragPreview(
+        title: String,
+        url: URL?
+    ) -> some View {
+        HStack {
+            VStack(alignment: .leading, spacing: nil) {
+                Text(verbatim: title)
+                    .fontWeight(.semibold)
+                    .font(.caption)
+                if let url = url {
+                    Text(verbatim: url.absoluteString)
+//                    Text(verbatim: "https://www.example.com")
+                        .foregroundColor(.secondary)
+                        .font(.caption)
+                        .truncationMode(.middle)
+                }
+                    
+            }
+        }
+        .padding(5)
+        .lineLimit(1)
+        .background(
+            Rectangle()
+                .fill(BackgroundStyle())
+        )
+        .cornerRadius(5)
+        .opacity(0.8)
+        .frame(minWidth: 200)
+    }
+
 }
 
 struct PlayerView_Previews: PreviewProvider {
@@ -419,7 +530,6 @@ struct PlayerView_Previews: PreviewProvider {
     }
     
     static func onAppear() {
-//        PlayerView.debugIsShowingPlaylistsView = true
         playerManager2.isShowingLibraryView = true
     }
     
