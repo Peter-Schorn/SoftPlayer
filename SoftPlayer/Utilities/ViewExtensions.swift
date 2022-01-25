@@ -110,6 +110,33 @@ extension View {
             self
         }
     }
+    
+    @ViewBuilder func onDragOptional(
+        _ data: @escaping () -> NSItemProvider?
+    ) -> some View {
+        if let provider = data() {
+            self.onDrag({ provider })
+        }
+        else {
+            self
+        }
+    }
+
+    @ViewBuilder func onDragOptional<V: View>(
+        _ data: @escaping () -> NSItemProvider?,
+        @ViewBuilder preview: () -> V
+    ) -> some View {
+        if let provider = data() {
+            if #available(macOS 12.0, *) {
+                self.onDrag({ provider }, preview: preview)
+            } else {
+                self.onDrag({ provider })
+            }
+        }
+        else {
+            self
+        }
+    }
 
 }
 

@@ -54,6 +54,14 @@ struct AlbumGridItemView: View {
                 }
                 Spacer()
             }
+            .contentShape(Rectangle())
+            .onDragOptional {
+                if let uri = self.album.uri,
+                        let url = try? SpotifyIdentifier(uri: uri).url {
+                    return NSItemProvider(object: url as NSURL)
+                }
+                return nil
+            }
         })
         .disabled(isSelected)
         .buttonStyle(PlainButtonStyle())
