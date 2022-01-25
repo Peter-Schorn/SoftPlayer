@@ -57,11 +57,37 @@ class PlayerManager: ObservableObject {
     /// Retrieved from the Spotify desktop application using AppleScript.
     var currentTrack: SpotifyTrack? = nil
     
-    /// The currently playing track or episode identifier
+    /// The currently playing track or episode identifier.
     var currentItemIdentifier: SpotifyIdentifier? = nil
 
     var albumArtistTitle = ""
     
+    /// The URL to the context of the current playback.
+    var contextURL: URL? {
+        self.storedSyncedCurrentlyPlayingContext?.context
+            .flatMap { try? SpotifyIdentifier(uri: $0.uri).url }
+    }
+    
+    /// The name of the show or artist of the current playback.
+    var showOrArtistName: String? {
+        guard let context = self.storedSyncedCurrentlyPlayingContext else {
+            return nil
+        }
+        if let artist = context.artist {
+            return artist.name
+        }
+        if let show = context.show {
+            return show.name
+        }
+        return nil
+        
+    }
+
+    /// The URL to the show or artist of the current playback
+    var showOrArtistURL: URL? {
+        self.storedSyncedCurrentlyPlayingContext?.showOrArtistIdentifier?.url
+    }
+
     /// Set only if the playback is occurring in the context of a playlist.
 //    @Published var currentlyPlayingPlaylistName: String? = nil
     @Published var shuffleIsOn = false
@@ -126,6 +152,8 @@ class PlayerManager: ObservableObject {
             }
         }
     }
+    
+    var storedSyncedCurrentlyPlayingContext: CurrentlyPlayingContext? = nil
     
     /// The image for the album/show of the currently playing
     /// track/episode.
@@ -236,6 +264,7 @@ class PlayerManager: ObservableObject {
     private var retrieveCurrentUserCancellable: AnyCancellable? = nil
     private var didUpdateCurrentlyPlayingContextCancellable: AnyCancellable? = nil
     private var openArtistOrShowCancellable: AnyCancellable? = nil
+    private var openAlbumCancellable: AnyCancellable? = nil
     private var cycleRepeatModeCancellable: AnyCancellable? = nil
     private var updatePlayerStateCancellable: AnyCancellable? = nil
     private var retrieveCurrentlyPlayingPlaylistCancellable: AnyCancellable? = nil
@@ -720,13 +749,18 @@ class PlayerManager: ObservableObject {
             return
         }
         
+        self.isUpdatingCurrentlyPlayingContext = true
+        self.storedSyncedCurrentlyPlayingContext = nil
+
+        Loggers.syncContext.trace(
+            """
+            isUpdatingCurrentlyPlayingContext = true; \
+            recursionDepth: \(recursionDepth)
+            """
+        )
         // This delay is necessary because this request is made right
         // after playback has changed. Without this delay, the web API
         // may return information for the previous playback.
-        self.isUpdatingCurrentlyPlayingContext = true
-        Loggers.syncContext.trace(
-            "isUpdatingCurrentlyPlayingContext = true; recursionDepth: \(recursionDepth)"
-        )
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             self.retrieveCurrentlyPlayingContextCancellable =
                 self.spotify.api.currentPlayback()
@@ -1498,16 +1532,42 @@ class PlayerManager: ObservableObject {
 
     }
     
+    func openAlbumInSpotify() {
+        
+        self.openAlbumCancellable = self.syncedCurrentlyPlayingContext
+            .receive(on: RunLoop.main)
+            .sink(
+                receiveCompletion: { completion in
+                    if case .failure(let error) = completion {
+                        Loggers.playerManager.error(
+                            "openAlbumInSpotify error: \(error)"
+                        )
+                    }
+                },
+                receiveValue: { context in
+                    
+                    guard case .track(let track) = context?.item else {
+                        return
+                    }
+                    guard let albumURI = track.album?.uri,
+                            let url = URL(string: albumURI) else {
+                        return
+                    }
+
+                    // Ensure the Spotify application is active before
+                    // opening the URL
+                    self.openSpotifyDesktopApplication { _, _ in
+                        NSWorkspace.shared.open(url)
+                    }
+                }
+            )
+
+    }
+
     /// Open the current artist/show in the browser.
     func openArtistOrShowInSpotify() {
         
         self.openArtistOrShowCancellable = self.syncedCurrentlyPlayingContext
-            .compactMap { context -> URL? in
-                if let uri = context?.showOrArtistIdentifier?.uri {
-                    return URL(string: uri)
-                }
-                return nil
-            }
             .receive(on: RunLoop.main)
             .sink(
                 receiveCompletion: { completion in
@@ -1517,7 +1577,13 @@ class PlayerManager: ObservableObject {
                         )
                     }
                 },
-                receiveValue: { url in
+                receiveValue: { context in
+                    
+                    guard let uri = context?.showOrArtistIdentifier?.uri,
+                            let url = URL(string: uri) else {
+                        return
+                    }
+
                     // Ensure the Spotify application is active before
                     // opening the URL
                     self.openSpotifyDesktopApplication { _, _ in
@@ -1693,6 +1759,7 @@ private extension PlayerManager {
         
         self.isUpdatingCurrentlyPlayingContext = false
         self.didUpdateCurrentlyPlayingContext.send()
+        self.storedSyncedCurrentlyPlayingContext = context
         Loggers.syncContext.trace(
             "isUpdatingCurrentlyPlayingContext = false\n"
         )

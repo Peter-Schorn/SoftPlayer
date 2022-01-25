@@ -29,12 +29,12 @@ struct ShowLibraryButton: View {
                 self.playerManager.presentPlaylistsView()
             }
         }, label: {
-            Image(systemName: "music.note.list")
+            Image(systemName: "music.note.house.fill")
         })
         .ifLet(keyboardShortcut) { view, shortcut in
             view.keyboardShortcut(shortcut)
         }
-        .help(Text("Show playlists\(shortcutName)"))
+        .help(Text("Show library\(shortcutName)"))
     }
 }
 
