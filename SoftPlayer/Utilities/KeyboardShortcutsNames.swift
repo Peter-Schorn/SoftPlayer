@@ -1,7 +1,10 @@
 import KeyboardShortcuts
 
 extension KeyboardShortcuts.Name {
-    
+
+    static let openApp = Self(
+        "openApp", isGlobal: true
+    )
     static let showLibrary = Self(
         "showLibrary",
         default: .init(.p, modifiers: [.command])
