@@ -4,27 +4,32 @@ import SpotifyWebAPI
 
 struct SettingsView: View {
     
+    enum Tab {
+        case general
+        case keyboardShortcuts
+    }
+
     @EnvironmentObject var spotify: Spotify
     @EnvironmentObject var playerManager: PlayerManager
     
-    @State private var selectedTab = 0
+    @State private var selectedTab = Tab.general
 
     var body: some View {
         TabView(selection: $selectedTab) {
             
             GeneralSettingsView()
                 .tabItem { Text("General") }
-                .tag(0)
+                .tag(Tab.general)
             
             KeyboardShortcutsView()
                 .tabItem { Text("Shortcuts") }
-                .tag(1)
+                .tag(Tab.keyboardShortcuts)
             
         }
         .padding()
         .frame(
-            width:  selectedTab == 0 ? 400 : 450,
-            height: selectedTab == 0 ? 300 : 500
+            width:  selectedTab == .general ? 400 : 450,
+            height: selectedTab == .general ? 300 : 520
         )
         .background(
             KeyEventHandler { event in
