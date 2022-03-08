@@ -311,10 +311,16 @@ struct PlaylistsScrollView: View {
 }
 
 struct PlaylistsScrollView_Previews: PreviewProvider {
+    
+    static let playerManager = PlayerManager(spotify: Spotify())
+
     static var previews: some View {
-        PlayerView_Previews.previews
-            .onAppear {
-                PlayerView.debugIsShowingLibraryView = true
-            }
+        PlaylistsScrollView()
+            .frame(
+                width: AppDelegate.popoverWidth,
+                height: AppDelegate.popoverHeight
+            )
+            .environmentObject(playerManager)
+            .environmentObject(playerManager.spotify)
     }
 }
