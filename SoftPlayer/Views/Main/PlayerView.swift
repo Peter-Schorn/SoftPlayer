@@ -41,9 +41,9 @@ struct PlayerView: View {
                 )
                 // MARK: Library View Transition
                 .transition(.move(edge: .bottom))
-                .onExitCommand {
-                    self.playerManager.dismissLibraryView(animated: true)
-                }
+//                .onExitCommand {
+//                    self.playerManager.dismissLibraryView(animated: true)
+//                }
                 .onReceive(playerManager.popoverDidClose) {
                     self.playerManager.dismissLibraryView(animated: false)
                 }
@@ -60,14 +60,14 @@ struct PlayerView: View {
             width: AppDelegate.popoverWidth,
             height: AppDelegate.popoverHeight
         )
-        .onExitCommand {
-            if self.playerManager.isShowingLibraryView {
-                self.playerManager.dismissLibraryView(animated: true)
-            }
-            else {
-                AppDelegate.shared.closePopover()
-            }
-        }
+//        .onExitCommand {
+//            if self.playerManager.isShowingLibraryView {
+//                self.playerManager.dismissLibraryView(animated: true)
+//            }
+//            else {
+//                AppDelegate.shared.closePopover()
+//            }
+//        }
         
     }
 
@@ -104,10 +104,13 @@ struct PlayerView: View {
 
 }
 
+
+@available(macOS 12.0, *)
 struct PlayerView_Previews: PreviewProvider {
     
-    static let playerManager = PlayerManager(spotify: Spotify())
-    static let playerManager2 = PlayerManager(spotify: Spotify())
+    static let spotify = Spotify()
+    static let playerManager = PlayerManager(spotify: spotify)
+    static let playerManager2 = PlayerManager(spotify: spotify)
     
     static var previews: some View {
 //        Self.withAllColorSchemes {
@@ -118,6 +121,8 @@ struct PlayerView_Previews: PreviewProvider {
                 width: AppDelegate.popoverWidth,
                 height: AppDelegate.popoverHeight
             )
+            .background(.regularMaterial)
+            .background()
             .onAppear(perform: onAppear)
         
         PlayerView()

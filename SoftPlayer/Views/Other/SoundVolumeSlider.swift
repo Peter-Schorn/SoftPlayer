@@ -38,7 +38,11 @@ struct SoundVolumeSlider: View {
 }
 
 struct SoundVolumeSlider_Previews: PreviewProvider {
+    
+    static let playerManager = PlayerManager(spotify: Spotify())
+
     static var previews: some View {
-        PlayerView_Previews.previews
+        SoundVolumeSlider()
+            .environmentObject(playerManager)
     }
 }

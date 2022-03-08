@@ -88,7 +88,16 @@ struct NextTrackButton: View {
 }
 
 struct NextTrackButton_Previews: PreviewProvider {
+    
+    static let playerManager = PlayerManager(spotify: Spotify())
+
     static var previews: some View {
-        PlayerView_Previews.previews
+        Group {
+            NextTrackButton(size: .large)
+            NextTrackButton(size: .small)
+        }
+        .environmentObject(playerManager)
+        .environmentObject(playerManager.spotify)
+        
     }
 }

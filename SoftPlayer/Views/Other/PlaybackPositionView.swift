@@ -96,8 +96,12 @@ struct PlaybackPositionView: View {
 }
 
 struct PlayerPositionView_Previews: PreviewProvider {
+    
+    static let playerManager = PlayerManager(spotify: Spotify())
+
     static var previews: some View {
-        PlayerView_Previews.previews
+        PlaybackPositionView()
+            .environmentObject(playerManager)
     }
 }
 
