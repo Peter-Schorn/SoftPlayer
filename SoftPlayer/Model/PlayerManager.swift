@@ -819,9 +819,10 @@ class PlayerManager: ObservableObject {
                     receiveValue: { context in
                         
                         if
-                            let uriFromContext = context?.item?.uri,
+                            let uriFromContext = context?.item?.uri
+                                .flatMap({ try? SpotifyIdentifier(uri: $0) }),
                             let uriFromAppleScript = self.spotifyApplication?
-                                    .currentTrack?.id?(),
+                                    .currentTrack?.identifier,
                             uriFromContext == uriFromAppleScript
                         {
                             let contextName = context?.item?.name ?? "nil"
@@ -1017,56 +1018,79 @@ class PlayerManager: ObservableObject {
         self.lastAdjustedPlayerPositionDate = Date()
     }
     
-    func addOrRemoveCurrentItemFromSavedTracks() {
+    // MARK: Save/Unsave Track
+
+    func addOrRemoveCurrentTrackFromSavedTracks() {
         if self.currentTrackIsSaved {
-            self.removeCurrentItemFromSavedTracks()
+            self.removeCurrentTrackFromSavedTracks()
         }
         else {
-            self.addCurrentItemToSavedTracks()
+            self.addCurrentTrackToSavedTracks()
         }
+        self.currentTrackIsSaved.toggle()
     }
     
-    func addCurrentItemToSavedTracks() {
-        guard let identifier = self.currentTrack?.identifier,
-                identifier.idCategory == .track else {
+    func addCurrentTrackToSavedTracks() {
+        guard let trackURI = self.currentTrack?.identifier,
+                trackURI.idCategory == .track else {
             return
         }
+        self.addTrackToSavedTracks(trackURI)
+    }
+    
+    func removeCurrentTrackFromSavedTracks() {
+        guard let trackURI = self.currentTrack?.identifier else {
+            return
+        }
+        self.removeTrackFromSavedTracks(trackURI)
+    }
+
+    func addTrackToSavedTracks(_ trackURI: SpotifyURIConvertible) {
         
-        self.spotify.api.saveTracksForCurrentUser([identifier])
+        self.undoManager.registerUndo(withTarget: self) { playerManager in
+            playerManager.removeTrackFromSavedTracks(trackURI)
+        }
+
+        self.spotify.api.saveTracksForCurrentUser([trackURI])
             .receive(on: RunLoop.main)
             .sink { completion in
                 Loggers.playerManager.trace(
-                    "saveTracksForCurrentUser completion: \(completion)"
+                    "addTrackToSavedTracks completion: \(completion)"
                 )
                 switch completion {
                     case .finished:
-                        self.currentTrackIsSaved = true
+//                        self.currentTrackIsSaved = true
+                        break
                     case .failure(_):
                         break
                 }
             }
             .store(in: &self.cancellables)
+        
     }
     
-    func removeCurrentItemFromSavedTracks() {
-        guard let itemURI = self.currentTrack?.id?() else {
-            return
-        }
+    func removeTrackFromSavedTracks(_ trackURI: SpotifyURIConvertible) {
         
-        self.spotify.api.removeSavedTracksForCurrentUser([itemURI])
+        self.undoManager.registerUndo(withTarget: self) { playerManager in
+            playerManager.addTrackToSavedTracks(trackURI)
+        }
+
+        self.spotify.api.removeSavedTracksForCurrentUser([trackURI])
             .receive(on: RunLoop.main)
             .sink { completion in
                 Loggers.playerManager.trace(
-                    "removeSavedTracksForCurrentUser completion: \(completion)"
+                    "removeTrackFromSavedTracks completion: \(completion)"
                 )
                 switch completion {
                     case .finished:
-                        self.currentTrackIsSaved = false
+//                        self.currentTrackIsSaved = false
+                        break
                     case .failure(_):
                         break
                 }
             }
             .store(in: &self.cancellables)
+        
     }
 
     // MARK: - Albums -
@@ -1247,8 +1271,7 @@ class PlayerManager: ObservableObject {
         playlist: Playlist<PlaylistItemsReference>
     ) {
 
-        guard let itemURI = self.currentTrack?.id?(),
-                !itemURI.isEmpty else {
+        guard let itemURI = self.currentTrack?.identifier else {
             Loggers.playerManager.error(
                 "PlaylistsView: no URI for the currently playing item"
             )
@@ -1962,7 +1985,7 @@ class PlayerManager: ObservableObject {
             case .shuffle:
                 self.toggleShuffle()
             case .likeTrack:
-                self.addOrRemoveCurrentItemFromSavedTracks()
+                self.addOrRemoveCurrentTrackFromSavedTracks()
             case .onlyShowMyPlaylists:
                 self.onlyShowMyPlaylists.toggle()
                 Loggers.keyEvent.notice(
