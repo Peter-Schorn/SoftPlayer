@@ -4,7 +4,9 @@ import SpotifyWebAPI
 import KeyboardShortcuts
 
 struct SaveTrackButton: View {
-    
+
+    static var debugIsShowing = false
+
     @EnvironmentObject var playerManager: PlayerManager
 
     var helpText: Text {
@@ -17,7 +19,8 @@ struct SaveTrackButton: View {
     }
 
     var body: some View {
-        if playerManager.currentTrack?.identifier?.idCategory == .track {
+        if playerManager.currentTrack?.identifier?.idCategory == .track ||
+                Self.debugIsShowing {
             Button(
                 action: playerManager.addOrRemoveCurrentItemFromSavedTracks
             ) {
@@ -37,7 +40,16 @@ struct SaveTrackButton: View {
 }
 
 struct SaveTrackButton_Previews: PreviewProvider {
+    
+    static let playerManager = PlayerManager(spotify: Spotify())
+
     static var previews: some View {
-        PlayerView_Previews.previews
+        SaveTrackButton()
+            .padding()
+            .environmentObject(playerManager)
+            .environmentObject(playerManager.spotify)
+            .onAppear {
+                SaveTrackButton.debugIsShowing = true
+            }
     }
 }

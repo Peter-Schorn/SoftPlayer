@@ -107,7 +107,5 @@ struct AvailableDevicesButton_Previews: PreviewProvider {
             .environmentObject(playerManager)
             .padding(20)
         
-        PlayerView_Previews.previews
-
     }
 }

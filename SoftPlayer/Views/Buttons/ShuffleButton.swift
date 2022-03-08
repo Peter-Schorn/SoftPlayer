@@ -32,7 +32,12 @@ struct ShuffleButton: View {
 }
 
 struct ShuffleButton_Previews: PreviewProvider {
+    
+    static let playerManager = PlayerManager(spotify: Spotify())
+
     static var previews: some View {
-        PlayerView_Previews.previews
+        ShuffleButton()
+            .environmentObject(playerManager)
+            .environmentObject(playerManager.spotify)
     }
 }

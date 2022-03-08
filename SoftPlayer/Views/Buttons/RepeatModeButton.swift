@@ -53,7 +53,12 @@ struct RepeatModeButton: View {
 
 
 struct RepeatModeButton_Previews: PreviewProvider {
+    
+    static let playerManager = PlayerManager(spotify: Spotify())
+
     static var previews: some View {
-        PlayerView_Previews.previews
+        RepeatModeButton()
+            .environmentObject(playerManager)
+            .environmentObject(playerManager.spotify)
     }
 }

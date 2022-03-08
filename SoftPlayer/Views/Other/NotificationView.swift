@@ -104,8 +104,11 @@ struct NotificationView: View {
 
 struct NotificationView_Previews: PreviewProvider {
     
+    static let playerManager = PlayerManager(spotify: Spotify())
+
     static var previews: some View {
-        PlayerView_Previews.previews
+        NotificationView()
+            .environmentObject(playerManager)
             .onAppear(perform: onAppear)
     }
     

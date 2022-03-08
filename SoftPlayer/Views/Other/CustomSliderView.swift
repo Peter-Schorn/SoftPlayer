@@ -197,7 +197,6 @@ struct PlayerPositionSliderView_Previews: PreviewProvider {
         .frame(width: 250)
         .padding()
         
-        PlayerView_Previews.previews
     }
     
     static func onEndedDragging(_ value: DragGesture.Value) {

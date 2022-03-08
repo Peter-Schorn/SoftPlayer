@@ -33,7 +33,12 @@ struct PlayPauseButton: View {
 }
 
 struct PlayPauseButton_Previews: PreviewProvider {
+    
+    static let playerManager = PlayerManager(spotify: Spotify())
+
     static var previews: some View {
-        PlayerView_Previews.previews
+        PlayPauseButton()
+            .environmentObject(playerManager)
+            .environmentObject(playerManager.spotify)
     }
 }
