@@ -42,6 +42,11 @@ extension View {
         }
     }
 
+    func modify<Content: View>(
+        @ViewBuilder _ content: (Self) -> Content
+    ) -> some View {
+        content(self)
+    }
     
     func adaptiveShadow(
         radius: CGFloat,

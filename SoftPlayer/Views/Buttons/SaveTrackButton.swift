@@ -22,7 +22,7 @@ struct SaveTrackButton: View {
         if playerManager.currentTrack?.identifier?.idCategory == .track ||
                 Self.debugIsShowing {
             Button(
-                action: playerManager.addOrRemoveCurrentItemFromSavedTracks
+                action: playerManager.addOrRemoveCurrentTrackFromSavedTracks
             ) {
                 let imageName = self.playerManager.currentTrackIsSaved ? "heart.fill" : "heart"
                 Image(systemName: imageName)

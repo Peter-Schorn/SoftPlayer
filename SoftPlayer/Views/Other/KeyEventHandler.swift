@@ -38,6 +38,7 @@ struct KeyEventHandler: NSViewRepresentable {
                 super.keyDown(with: event)
             }
         }
+        
     }
     
     func makeNSView(context: Context) -> NSView {
