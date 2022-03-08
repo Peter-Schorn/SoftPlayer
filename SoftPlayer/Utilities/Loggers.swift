@@ -59,7 +59,7 @@ enum Loggers {
     
     static let keyEvent = Logger(
         label: "KeyEvent",
-        level: .warning
+        level: .trace
     )
     
     static let playlistsScrollView = Logger(

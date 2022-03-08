@@ -1728,7 +1728,7 @@ class PlayerManager: ObservableObject {
             return false
         }
         
-        Loggers.keyEvent.trace("shortcutName: \(shortcutName)")
+        Loggers.keyEvent.trace("shortcut: \(shortcut); name: \(shortcutName)")
         switch shortcutName {
             case .previousTrack:
                 self.previousTrackOrSeekBackwards()
