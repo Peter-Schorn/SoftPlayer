@@ -1200,6 +1200,8 @@ class PlayerManager: ObservableObject {
         
     }
     
+    
+    
     /// Retrieve the current user's playlists.
     func retrievePlaylists() {
         
@@ -1237,6 +1239,176 @@ class PlayerManager: ObservableObject {
                     self.updatePlaylistsSortedByLastModifiedDate()
                 }
             )
+
+    }
+    
+    /// Adds the currently playing track/episode to a playlist.
+    func addCurrentItemToPlaylist(
+        playlist: Playlist<PlaylistItemsReference>
+    ) {
+
+        guard let itemURI = self.currentTrack?.id?(),
+                !itemURI.isEmpty else {
+            Loggers.playerManager.error(
+                "PlaylistsView: no URI for the currently playing item"
+            )
+            let title = NSLocalizedString(
+                "Couldn't Retrieve the Currently Playing Track or Episode",
+                comment: ""
+            )
+            let alert = AlertItem(title: title, message: "")
+            self.notificationSubject.send(alert)
+            return
+        }
+        
+        self.playlistsLastModifiedDates[playlist.uri] = Date()
+        
+        let itemName = self.currentTrack?.name ?? "unknown"
+        
+        self.addItemToPlaylist(
+            itemURI: itemURI,
+            itemName: itemName,
+            playlist: playlist
+        )
+
+    }
+
+    /**
+     Adds a track/episode to a playlist.
+     
+     - Parameters:
+       - itemURI: The URI of a track/episode.
+       - itemName: The name of the track/episode.
+       - playlist: The playlist to add the item to.
+     */
+    func addItemToPlaylist(
+        itemURI: SpotifyURIConvertible,
+        itemName: String,
+        playlist: Playlist<PlaylistItemsReference>
+    ) {
+        
+        Loggers.playerManager.notice(
+            "will add '\(itemName)' to '\(playlist.name)'"
+        )
+        
+        self.undoManager.registerUndo(withTarget: self) { playerManager in
+            playerManager.removeItemFromPlaylist(
+                itemURI: itemURI,
+                itemName: itemName,
+                playlist: playlist
+            )
+        }
+
+        self.spotify.api.addToPlaylist(
+            playlist, uris: [itemURI]
+        )
+        .receive(on: RunLoop.main)
+        .sink(
+            receiveCompletion: { completion in
+                switch completion {
+                    case .finished:
+                        let alertTitle = String.localizedStringWithFormat(
+                            NSLocalizedString(
+                                "Added \"%@\" to \"%@\"",
+                                comment: "Added [song name] to [playlist name]"
+                            ),
+                            itemName, playlist.name
+                        )
+                        let alert = AlertItem(title: alertTitle, message: "")
+                        self.notificationSubject.send(alert)
+                    case .failure(let error):
+                        
+                        let alertTitle = String.localizedStringWithFormat(
+                            NSLocalizedString(
+                                "Couldn't Add \"%@\" to \"%@\"",
+                                comment: "Couldn't Add [song name] to [playlist name]"
+                            ),
+                            itemName, playlist.name
+                        )
+
+                        let alert = AlertItem(
+                            title: alertTitle,
+                            message: error.customizedLocalizedDescription
+                        )
+                        self.notificationSubject.send(alert)
+                        Loggers.playlistCellView.error(
+                            "\(alertTitle): \(error)"
+                        )
+                }
+            },
+            receiveValue: { _ in }
+        )
+        .store(in: &self.cancellables)
+
+    }
+
+    /**
+     Removes a track/episode from a playlist.
+     
+     - Parameters:
+       - itemURI: The URI of a track/episode.
+       - itemName: The name of the track/episode.
+       - playlist: The playlist to remove the item from.
+     */
+    func removeItemFromPlaylist(
+        itemURI: SpotifyURIConvertible,
+        itemName: String,
+        playlist: Playlist<PlaylistItemsReference>
+    ) {
+       
+        Loggers.playerManager.notice(
+            "will remove '\(itemName)' from '\(playlist.name)'"
+        )
+
+        self.undoManager.registerUndo(withTarget: self) { playerManager in
+            playerManager.addItemToPlaylist(
+                itemURI: itemURI,
+                itemName: itemName,
+                playlist: playlist
+            )
+        }
+
+        self.spotify.api.removeAllOccurrencesFromPlaylist(
+            playlist,
+            of: [itemURI]
+        )
+        .receive(on: RunLoop.main)
+        .sink(
+            receiveCompletion: { completion in
+                switch completion {
+                    case .finished:
+                        let alertTitle = String.localizedStringWithFormat(
+                            NSLocalizedString(
+                                "Removed \"%@\" from \"%@\"",
+                                comment: "Removed [song name] from [playlist name]"
+                            ),
+                            itemName, playlist.name
+                        )
+                        let alert = AlertItem(title: alertTitle, message: "")
+                        self.notificationSubject.send(alert)
+                    case .failure(let error):
+                        
+                        let alertTitle = String.localizedStringWithFormat(
+                            NSLocalizedString(
+                                "Couldn't Remove \"%@\" from \"%@\"",
+                                comment: "Couldn't Remove [song name] from [playlist name]"
+                            ),
+                            itemName, playlist.name
+                        )
+
+                        let alert = AlertItem(
+                            title: alertTitle,
+                            message: error.customizedLocalizedDescription
+                        )
+                        self.notificationSubject.send(alert)
+                        Loggers.playlistCellView.error(
+                            "\(alertTitle): \(error)"
+                        )
+                }
+            },
+            receiveValue: { _ in }
+        )
+        .store(in: &self.cancellables)
 
     }
 
