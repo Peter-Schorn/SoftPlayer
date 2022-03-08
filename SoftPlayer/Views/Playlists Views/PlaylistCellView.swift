@@ -101,6 +101,7 @@ struct PlaylistCellView: View {
         .padding(.trailing, 15)
         .contentShape(Rectangle())
         .contextMenu(menuItems: contextMenu)
+        
     }
     
     func contextMenu() -> some View {
@@ -113,36 +114,7 @@ struct PlaylistCellView: View {
                 NSWorkspace.shared.open(url)
             }
             Button("Unfollow Playlist") {
-                self.spotify.api.unfollowPlaylistForCurrentUser(
-                    self.playlist
-                )
-                .receive(on: RunLoop.main)
-                .sink(receiveCompletion: { completion in
-                    switch completion {
-                        case .finished:
-                            self.playerManager.retrievePlaylists()
-                        case .failure(let error):
-                            let alertTitle = String.localizedStringWithFormat(
-                                NSLocalizedString(
-                                    "Couldn't Unfollow \"%@\"",
-                                    comment: "Couldn't Unfollow [playlist name]"
-                                ),
-                                self.playlist.name
-                            )
-
-                            let alert = AlertItem(
-                                title: alertTitle,
-                                message: error.customizedLocalizedDescription
-                            )
-                            self.playerManager.notificationSubject.send(alert)
-                            Loggers.playlistCellView.error(
-                                "\(alertTitle): \(error)"
-                            )
-                    }
-                })
-                .store(in: &cancellables)
-                
-
+                self.playerManager.unfollowPlaylist(self.playlist)
             }
             
         }
@@ -248,7 +220,7 @@ struct PlaylistCellView_Previews: PreviewProvider {
 
 //        PlayerView_Previews.previews
 //            .onAppear {
-//                PlayerView.debugIsShowingPlaylistsView = true
+//                PlayerView.debugIsShowingLibraryView = true
 //            }
     }
 }

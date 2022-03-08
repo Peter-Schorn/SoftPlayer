@@ -6,18 +6,15 @@ struct LibrarySegmentedControl: View {
     @EnvironmentObject var spotify: Spotify
 
     var body: some View {
-        Picker(
-            selection: playerManager.$libraryPage,
-            label: EmptyView()
-        ) {
+        Picker("", selection: playerManager.$libraryPage) {
 
             Image(systemName: "music.note.list")
-                .tag(LibraryPage.playlists)
                 .help(Text("Playlists"))
+                .tag(LibraryPage.playlists)
         
             Image(systemName: "square.stack.fill")
-                .tag(LibraryPage.albums)
                 .help(Text("Albums"))
+                .tag(LibraryPage.albums)
             
         }
         .pickerStyle(SegmentedPickerStyle())

@@ -12,28 +12,17 @@ struct ShowLibraryButton: View {
         return ""
     }
 
-    var keyboardShortcut: KeyboardShortcut? {
-        guard let shortcut = KeyboardShortcuts
-                .getShortcut(for: .showLibrary) else {
-            return nil
-        }
-        return KeyboardShortcut.init(shortcut)
-    }
-
     var body: some View {
         Button(action: {
             if self.playerManager.isShowingLibraryView {
-                self.playerManager.dismissPlaylistsView(animated: true)
+                self.playerManager.dismissLibraryView(animated: true)
             }
             else {
-                self.playerManager.presentPlaylistsView()
+                self.playerManager.presentLibraryView()
             }
         }, label: {
             Image(systemName: "music.note.house.fill")
         })
-        .ifLet(keyboardShortcut) { view, shortcut in
-            view.keyboardShortcut(shortcut)
-        }
         .help(Text("Show library\(shortcutName)"))
     }
 }

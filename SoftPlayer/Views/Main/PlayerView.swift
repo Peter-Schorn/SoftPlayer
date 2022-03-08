@@ -6,7 +6,7 @@ import KeyboardShortcuts
 
 struct PlayerView: View {
 
-    static var debugIsShowingPlaylistsView = false
+    static var debugIsShowingLibraryView = false
     
     static let animation = Animation.easeOut(duration: 0.5)
     
@@ -49,7 +49,7 @@ struct PlayerView: View {
     var body: some View {
         ZStack(alignment: .top) {
             if playerManager.isShowingLibraryView
-                    || Self.debugIsShowingPlaylistsView {
+                || Self.debugIsShowingLibraryView {
                 VStack(spacing: 0) {
                     
                     miniPlayerViewBackground
@@ -61,18 +61,18 @@ struct PlayerView: View {
                     Rectangle()
                         .fill(BackgroundStyle())
                 )
-                // MARK: Playlists View Transition
+                // MARK: Library View Transition
                 .transition(.move(edge: .bottom))
-                 .onExitCommand {
-                    self.playerManager.dismissPlaylistsView(animated: true)
-                 }
+//                .onExitCommand {
+//                    self.playerManager.dismissLibraryView(animated: true)
+//                }
                 .onReceive(playerManager.popoverDidClose) {
-                    self.playerManager.dismissPlaylistsView(animated: false)
+                    self.playerManager.dismissLibraryView(animated: false)
                 }
                 
                 miniPlayerView
                     .padding(.top, 40)
-                    
+                
             }
             else {
                 playerView
@@ -83,15 +83,15 @@ struct PlayerView: View {
             width: AppDelegate.popoverWidth,
             height: AppDelegate.popoverHeight
         )
-         .onExitCommand {
-             if self.playerManager.isShowingLibraryView {
-                 self.playerManager.dismissPlaylistsView(animated: true)
-             }
-             else {
-                 AppDelegate.shared.closePopover()
-             }
-         }
-
+//        .onExitCommand {
+//            if self.playerManager.isShowingLibraryView {
+//                self.playerManager.dismissLibraryView(animated: true)
+//            }
+//            else {
+//                AppDelegate.shared.closePopover()
+//            }
+//        }
+        
     }
 
     var playerView: some View {
@@ -383,7 +383,7 @@ struct PlayerView: View {
         VStack {
             HStack {
                 Button(action: {
-                    self.playerManager.dismissPlaylistsView(animated: true)
+                    self.playerManager.dismissLibraryView(animated: true)
                 }, label: {
                     Image(systemName: "chevron.down")
                         .padding(-3)
