@@ -83,7 +83,9 @@ struct PlaylistCellView: View {
             
             if playlistOwnedByCurrentUser {
                 Button(action: {
-                    self.addCurrentItemToPlaylist()
+                    self.playerManager.addCurrentItemToPlaylist(
+                        playlist: self.playlist
+                    )
                 }, label: {
                     Image(systemName: "text.badge.plus")
                 })
@@ -118,72 +120,6 @@ struct PlaylistCellView: View {
             }
             
         }
-    }
-
-    /// Adds the currently playing track/episode to a playlist.
-    func addCurrentItemToPlaylist() {
-        
-        guard let currentItemURI = playerManager.currentTrack?.id?(),
-                !currentItemURI.isEmpty else {
-            Loggers.playlistCellView.error(
-                "PlaylistsView: no URI for the currently playing item"
-            )
-            let title = NSLocalizedString(
-                "Couldn't Retrieve the Currently Playing Track or Episode",
-                comment: ""
-            )
-            let alert = AlertItem(title: title, message: "")
-            self.playerManager.notificationSubject.send(alert)
-            return
-        }
-        
-        self.playerManager.playlistsLastModifiedDates[self.playlist.uri] = Date()
-        
-        let itemName = playerManager.currentTrack?.name ?? "nil"
-        Loggers.playlistCellView.notice(
-            "adding '\(itemName)' to '\(self.playlist.name)'"
-        )
-        self.spotify.api.addToPlaylist(
-            self.playlist, uris: [currentItemURI]
-        )
-        .receive(on: RunLoop.main)
-        .sink(
-            receiveCompletion: { completion in
-                switch completion {
-                    case .finished:
-                        let alertTitle = String.localizedStringWithFormat(
-                            NSLocalizedString(
-                                "Added \"%@\" to \"%@\"",
-                                comment: "Added [song name] to [playlist name]"
-                            ),
-                            itemName, self.playlist.name
-                        )
-                        let alert = AlertItem(title: alertTitle, message: "")
-                        self.playerManager.notificationSubject.send(alert)
-                    case .failure(let error):
-                        
-                        let alertTitle = String.localizedStringWithFormat(
-                            NSLocalizedString(
-                                "Couldn't Add \"%@\" to \"%@\"",
-                                comment: "Couldn't Add [song name] to [playlist name]"
-                            ),
-                            itemName, self.playlist.name
-                        )
-
-                        let alert = AlertItem(
-                            title: alertTitle,
-                            message: error.customizedLocalizedDescription
-                        )
-                        self.playerManager.notificationSubject.send(alert)
-                        Loggers.playlistCellView.error(
-                            "\(alertTitle): \(error)"
-                        )
-                }
-            },
-            receiveValue: { _ in }
-        )
-        .store(in: &cancellables)
-        
     }
 
     func playPlaylist() {
