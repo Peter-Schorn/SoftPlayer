@@ -174,7 +174,7 @@ struct PlaylistsScrollView: View {
                 
             }
             .onExitCommand {
-                self.playerManager.dismissPlaylistsView(animated: true)
+                self.playerManager.dismissLibraryView(animated: true)
             }
             .background(
                 KeyEventHandler { event in
@@ -254,7 +254,7 @@ struct PlaylistsScrollView: View {
         }
         // escape key
         else if event.keyCode == 53 {
-            self.playerManager.dismissPlaylistsView(animated: true)
+            self.playerManager.dismissLibraryView(animated: true)
             return true
         }
         else if let scrollView = scrollView, event.specialKey == nil,
@@ -314,7 +314,7 @@ struct PlaylistsScrollView_Previews: PreviewProvider {
     static var previews: some View {
         PlayerView_Previews.previews
             .onAppear {
-                PlayerView.debugIsShowingPlaylistsView = true
+                PlayerView.debugIsShowingLibraryView = true
             }
     }
 }

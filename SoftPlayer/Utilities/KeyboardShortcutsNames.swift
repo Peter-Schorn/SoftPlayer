@@ -7,7 +7,15 @@ extension KeyboardShortcuts.Name {
     )
     static let showLibrary = Self(
         "showLibrary",
+        default: .init(.l, modifiers: [.command])
+    )
+    static let showPlayists = Self(
+        "showPlayists",
         default: .init(.p, modifiers: [.command])
+    )
+    static let showAlbums = Self(
+        "showAlbums",
+        default: .init(.a, modifiers: [.command])
     )
     static let previousTrack = Self(
         "previousTrack",
@@ -31,7 +39,7 @@ extension KeyboardShortcuts.Name {
     )
     static let likeTrack = Self(
         "likeTrack",
-        default: .init(.l, modifiers: [.command])
+        default: .init(.h, modifiers: [.command])
     )
     static let volumeDown = Self(
         "volumeDown",
@@ -53,4 +61,13 @@ extension KeyboardShortcuts.Name {
         "quit",
         default: .init(.q, modifiers: [.command])
     )
+    static let undo = Self(
+        "Undo",
+        default: .init(.z, modifiers: [.command])
+    )
+    static let redo = Self(
+        "Redo",
+        default: .init(.z, modifiers: [.command, .shift])
+    )
+    
 }

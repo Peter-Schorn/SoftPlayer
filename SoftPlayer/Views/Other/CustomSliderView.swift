@@ -179,7 +179,31 @@ struct CustomSliderView: View {
 }
 
 struct PlayerPositionSliderView_Previews: PreviewProvider {
+    
+    @State static var value: CGFloat = 70
+
+    @State static var isDragging = false
+
     static var previews: some View {
+        CustomSliderView(
+            value: $value,
+            isDragging: $isDragging,
+            range: 0...100,
+            knobDiameter: 15,
+            knobColor: .white,
+            leadingRectangleColor: .green,
+            onEndedDragging: onEndedDragging(_:)
+        )
+        .frame(width: 250)
+        .padding()
+        
         PlayerView_Previews.previews
     }
+    
+    static func onEndedDragging(_ value: DragGesture.Value) {
+        
+    }
+
 }
+
+

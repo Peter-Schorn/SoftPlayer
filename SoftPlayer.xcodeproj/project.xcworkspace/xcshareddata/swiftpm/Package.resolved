@@ -6,7 +6,7 @@
         "repositoryURL": "https://github.com/Peter-Schorn/KeyboardShortcuts",
         "state": {
           "branch": "master",
-          "revision": "3ea26e17a66d82be70318216e5394cdd81a254bc",
+          "revision": "f0bacef1c849159f370c4875bbe906c1f96c36ff",
           "version": null
         }
       },
@@ -24,8 +24,8 @@
         "repositoryURL": "https://github.com/OpenCombine/OpenCombine.git",
         "state": {
           "branch": null,
-          "revision": "28993ae57de5a4ea7e164787636cafad442d568c",
-          "version": "0.12.0"
+          "revision": "9cf67e363738dbab61b47fb5eaed78d3db31e5ee",
+          "version": "0.13.0"
         }
       },
       {
@@ -42,8 +42,8 @@
         "repositoryURL": "https://github.com/Peter-Schorn/SpotifyAPI",
         "state": {
           "branch": null,
-          "revision": "94525f1afa0cb60b60707838708d9bbef0e0607c",
-          "version": "2.0.2"
+          "revision": "067861d89cd73be129259e4edb607d822ff63d45",
+          "version": "2.0.3"
         }
       },
       {

@@ -154,7 +154,7 @@ struct SavedAlbumsGridView: View {
                 
             }
             .onExitCommand {
-                self.playerManager.dismissPlaylistsView(animated: true)
+                self.playerManager.dismissLibraryView(animated: true)
             }
             .background(
                 KeyEventHandler { event in
@@ -212,7 +212,7 @@ struct SavedAlbumsGridView: View {
         }
         // escape key
         else if event.keyCode == 53 {
-            self.playerManager.dismissPlaylistsView(animated: true)
+            self.playerManager.dismissLibraryView(animated: true)
             return true
         }
         else if let scrollView = scrollView, event.specialKey == nil,

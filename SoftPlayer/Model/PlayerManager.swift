@@ -16,6 +16,8 @@ class PlayerManager: ObservableObject {
 
     let spotify: Spotify
     
+    let undoManager: UndoManager
+
     @AppStorage("libraryPage") var libraryPage = LibraryPage.playlists
 
     @AppStorage("onlyShowMyPlaylists") var onlyShowMyPlaylists = false
@@ -273,9 +275,10 @@ class PlayerManager: ObservableObject {
     private var retrieveSavedAlbumsCancellable: AnyCancellable? = nil
     private var playAlbumCancellable: AnyCancellable? = nil
     
-    init(spotify: Spotify) {
+    init(spotify: Spotify, undoManager: UndoManager = .init()) {
         
         self.spotify = spotify
+        self.undoManager = undoManager
         
         self.playerStateDidChangeCancellable = self.playerStateDidChange
             .receive(on: RunLoop.main)
@@ -1215,6 +1218,92 @@ class PlayerManager: ObservableObject {
 
     }
 
+    func followPlaylist(_ playlist: Playlist<PlaylistItemsReference>) {
+        
+        Loggers.playerManager.trace("will follow playlist \(playlist.name)")
+
+        self.undoManager.registerUndo(
+            withTarget: self
+        ) { playerManager in
+            playerManager.unfollowPlaylist(playlist)
+        }
+
+        self.spotify.api.followPlaylistForCurrentUser(
+            playlist.uri
+        )
+        .receive(on: RunLoop.main)
+        .sink(receiveCompletion: { completion in
+            switch completion {
+                case .finished:
+                    Loggers.playerManager.trace(
+                        "did follow playlist \(playlist.name)"
+                    )
+                    self.retrievePlaylists()
+                case .failure(let error):
+                    let alertTitle = String.localizedStringWithFormat(
+                        NSLocalizedString(
+                            "Couldn't Follow \"%@\"",
+                            comment: "Couldn't Follow [playlist name]"
+                        ),
+                        playlist.name
+                    )
+
+                    let alert = AlertItem(
+                        title: alertTitle,
+                        message: error.customizedLocalizedDescription
+                    )
+                    self.notificationSubject.send(alert)
+                    Loggers.spotify.error(
+                        "\(alertTitle): \(error)"
+                    )
+            }
+        })
+        .store(in: &self.cancellables)
+    }
+    
+    func unfollowPlaylist(_ playlist: Playlist<PlaylistItemsReference>) {
+        
+        Loggers.playerManager.trace("will unfollow playlist \(playlist.name)")
+
+        self.undoManager.registerUndo(
+            withTarget: self
+        ) { playerManager in
+            playerManager.followPlaylist(playlist)
+        }
+
+        self.spotify.api.unfollowPlaylistForCurrentUser(
+            playlist.uri
+        )
+        .receive(on: RunLoop.main)
+        .sink(receiveCompletion: { completion in
+            switch completion {
+                case .finished:
+                    Loggers.playerManager.trace(
+                        "did unfollow playlist \(playlist.name)"
+                    )
+                    self.retrievePlaylists()
+                case .failure(let error):
+                    let alertTitle = String.localizedStringWithFormat(
+                        NSLocalizedString(
+                            "Couldn't Unfollow \"%@\"",
+                            comment: "Couldn't Unfollow [playlist name]"
+                        ),
+                        playlist.name
+                    )
+
+                    let alert = AlertItem(
+                        title: alertTitle,
+                        message: error.customizedLocalizedDescription
+                    )
+                    self.notificationSubject.send(alert)
+                    Loggers.spotify.error(
+                        "\(alertTitle): \(error)"
+                    )
+            }
+        })
+        .store(in: &self.cancellables)
+    }
+
     /// Re-sorts the playlists by the last date they were played or items
     /// were added to them, whichever was more recent.
     func updatePlaylistsSortedByLastModifiedDate() {
@@ -1659,10 +1748,20 @@ class PlayerManager: ObservableObject {
                 self.soundVolume = newSoundVolume
             case .showLibrary:
                 if self.isShowingLibraryView {
-                    self.dismissPlaylistsView(animated: true)
+                    self.dismissLibraryView(animated: true)
                 }
                 else {
-                    self.presentPlaylistsView()
+                    self.presentLibraryView()
+                }
+            case .showPlayists, .showAlbums:
+                if !self.isShowingLibraryView {
+                    self.presentLibraryView()
+                }
+                if shortcutName == .showAlbums {
+                    self.libraryPage = .albums
+                }
+                else if shortcutName == .showPlayists {
+                    self.libraryPage = .playlists
                 }
             case .repeatMode:
                 self.cycleRepeatMode()
@@ -1679,13 +1778,17 @@ class PlayerManager: ObservableObject {
                 AppDelegate.shared.openSettingsWindow()
             case .quit:
                 NSApplication.shared.terminate(nil)
+            case .undo:
+                self.undoManager.undo()
+            case .redo:
+                self.undoManager.redo()
             default:
                 return false
         }
         return true
     }
 
-    func presentPlaylistsView() {
+    func presentLibraryView() {
         self.retrievePlaylists()
         self.retrieveSavedAlbums()
         self.retrieveCurrentlyPlayingContext()
@@ -1693,7 +1796,7 @@ class PlayerManager: ObservableObject {
         os_signpost(
             .event,
             log: Self.osLog,
-            name: "present playlists view"
+            name: "present library view"
         )
 
         withAnimation(PlayerView.animation) {
@@ -1701,12 +1804,12 @@ class PlayerManager: ObservableObject {
         }
     }
 
-    func dismissPlaylistsView(animated: Bool) {
+    func dismissLibraryView(animated: Bool) {
         
         os_signpost(
             .event,
             log: Self.osLog,
-            name: "dismiss playlists view"
+            name: "dismiss library view"
         )
 
         if animated {
@@ -1827,7 +1930,7 @@ private extension PlayerManager {
                 return true
             case (nil, .some(_)):
                 return false
-            default:
+            case (nil, nil):
                 return lhs.index < rhs.index
         }
     }
