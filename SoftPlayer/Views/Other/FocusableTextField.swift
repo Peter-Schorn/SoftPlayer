@@ -40,14 +40,14 @@ struct FocusableTextField: NSViewRepresentable {
         
         searchField.stringValue = text
         
-        Loggers.keyEvent.info(
-            """
-            \(self.name): FocusableTextField.updateNSView: self.isFirstResponder: \
-            \(self.isFirstResponder); searchField.currentEditor() == nil: \
-            \(searchField.currentEditor() == nil)
-            searchField.stringValue: \(searchField.stringValue)
-            """
-        )
+//        Loggers.keyEvent.info(
+//            """
+//            \(self.name): FocusableTextField.updateNSView: self.isFirstResponder: \
+//            \(self.isFirstResponder); searchField.currentEditor() == nil: \
+//            \(searchField.currentEditor() == nil)
+//            searchField.stringValue: \(searchField.stringValue)
+//            """
+//        )
 
         // If the `searchField` has a `currentEditor`, then it is the first
         // responder. Only make the search field the first responder if it is
@@ -56,7 +56,7 @@ struct FocusableTextField: NSViewRepresentable {
             /* && !context.coordinator.didMakeFirstResponder */
 //            context.coordinator.didMakeFirstResponder = true
             searchField.window?.makeFirstResponder(searchField)
-            Loggers.keyEvent.info("\(self.name): made first responder")
+//            Loggers.keyEvent.info("\(self.name): made first responder")
             let range = NSRange(location: text.count, length: 0)
             searchField.currentEditor()?.selectedRange = range
         }
@@ -87,9 +87,9 @@ struct FocusableTextField: NSViewRepresentable {
             guard notification.object is CustomNSSearchField else {
                 return
             }
-            Loggers.keyEvent.trace(
-                "controlTextDidEndEditing: \(notification.userInfo as Any)"
-            )
+//            Loggers.keyEvent.trace(
+//                "controlTextDidEndEditing: \(notification.userInfo as Any)"
+//            )
             
             let textMovement = notification.userInfo?["NSTextMovement"] as? Int
             
