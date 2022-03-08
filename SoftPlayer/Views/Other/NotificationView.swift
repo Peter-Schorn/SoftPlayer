@@ -70,29 +70,34 @@ struct NotificationView: View {
                 Spacer()
             }
         }
-        .onReceive(playerManager.notificationSubject) { alert in
+        .onReceive(
+            playerManager.notificationSubject,
+            perform: recieveAlert(_:)
+        )
+        
+    }
     
-            let id = UUID()
-            self.messageId = id
+    func recieveAlert(_ alert: AlertItem) {
+        
+        let id = UUID()
+        self.messageId = id
 
-            self.title = alert.title
-            self.message = alert.message
+        self.title = alert.title
+        self.message = alert.message
 
-            withAnimation(self.presentAnimation) {
-                self.isPresented = true
-            }
+        withAnimation(self.presentAnimation) {
+            self.isPresented = true
+        }
 
-            let delay: Double = message.isEmpty ? 2 : 3
-            DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
-                if self.messageId == id {
-                    withAnimation(self.presentAnimation) {
-                        self.isPresented = false
-                    }
+        let delay: Double = message.isEmpty ? 2 : 3
+        DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+            if self.messageId == id {
+                withAnimation(self.presentAnimation) {
+                    self.isPresented = false
                 }
             }
-
         }
-        
+
     }
 
 }

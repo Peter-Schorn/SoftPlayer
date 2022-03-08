@@ -22,11 +22,13 @@ struct PlayerView: View {
     // MARK: Geometry Effect Constants
     
     var playerViewIsSource: Bool {
-        !playerManager.isShowingLibraryView
+//        !playerManager.isShowingLibraryView
+        true
     }
     
     var playlistsViewIsSource: Bool {
-        playerManager.isShowingLibraryView
+//        playerManager.isShowingLibraryView
+        true
     }
     
     let albumImageId = "albumImage"
@@ -83,14 +85,14 @@ struct PlayerView: View {
             width: AppDelegate.popoverWidth,
             height: AppDelegate.popoverHeight
         )
-//        .onExitCommand {
-//            if self.playerManager.isShowingLibraryView {
-//                self.playerManager.dismissLibraryView(animated: true)
-//            }
-//            else {
-//                AppDelegate.shared.closePopover()
-//            }
-//        }
+        .onExitCommand {
+            if self.playerManager.isShowingLibraryView {
+                self.playerManager.dismissLibraryView(animated: true)
+            }
+            else {
+                AppDelegate.shared.closePopover()
+            }
+        }
         
     }
 
