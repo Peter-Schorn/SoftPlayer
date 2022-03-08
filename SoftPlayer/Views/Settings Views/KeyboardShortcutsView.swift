@@ -11,7 +11,7 @@ struct KeyboardShortcutsView: View {
             Group {
                 shortcutView(
                     for: .openApp,
-                    label: Text("Open App")
+                    label: Text("Open App (global)")
                 )
                 shortcutView(
                     for: .showLibrary,

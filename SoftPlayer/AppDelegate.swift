@@ -26,6 +26,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var spotify: Spotify!
     var playerManager: PlayerManager!
 
+    let undoManager = UndoManager()
+
     func applicationDidFinishLaunching(_ notification: Notification) {
         
         SoftPlayerLogHandler.bootstrap()
@@ -37,15 +39,17 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         self.configureContextMenu()
 
         self.spotify = Spotify()
-        
-        self.playerManager = PlayerManager(spotify: spotify)
+
+        self.playerManager = PlayerManager(
+            spotify: spotify,
+            undoManager: self.undoManager
+        )
         
         // MARK: Root View
         let rootView = RootView()
             .environmentObject(spotify)
             .environmentObject(playerManager)
             
-
         let popover = NSPopover()
         popover.contentSize = CGSize(
             width: Self.popoverWidth, height: Self.popoverHeight
@@ -93,16 +97,20 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         self.contextMenu = NSMenu(
             title: NSLocalizedString("Options", comment: "")
         )
+        
         self.contextMenu.addItem(
             withTitle: NSLocalizedString("Settings", comment: ""),
             action: #selector(self.openSettingsWindow),
             keyEquivalent: ""
         )
+        .setShortcut(for: .settings)
+        
         self.contextMenu.addItem(
             withTitle: NSLocalizedString("Quit", comment: ""),
             action: #selector(NSApplication.shared.terminate(_:)),
             keyEquivalent: ""
         )
+        .setShortcut(for: .quit)
         
     }
 
@@ -170,7 +178,17 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         )
         
         self.settingsWindow?.orderFrontRegardless()
-        self.settingsWindow?.makeKey()
+//        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+//            self.settingsWindow?.makeKey()
+//        }
+//        NSApplication.shared.activate(ignoringOtherApps: true)
+//        self.settingsWindow?.makeKey()
+        
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+            let isKey = self.settingsWindow?.isKeyWindow == true
+            print("settings window is key: \(isKey)")
+        }
             
     }
     
@@ -192,6 +210,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         print(Name.onlyShowMyPlaylists, to: &sink)
         print(Name.settings, to: &sink)
         print(Name.quit, to: &sink)
+        print(Name.undo, to: &sink)
+        print(Name.redo, to: &sink)
     }
 
 }
