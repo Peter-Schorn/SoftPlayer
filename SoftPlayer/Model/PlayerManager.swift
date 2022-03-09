@@ -333,6 +333,7 @@ class PlayerManager: ObservableObject {
                 else {
                     self.updateSoundVolumeAndPlayerPosition(fromTimer: true)
                     self.retrieveAvailableDevices()
+                    self.checkIfCurrentTrackIsSaved()
                 }
             }
             
@@ -530,6 +531,7 @@ class PlayerManager: ObservableObject {
         Loggers.playerState.trace("will update player state")
         
         self.retrieveAvailableDevices()
+        self.checkIfCurrentTrackIsSaved()
 
         if self.isTransferringPlayback {
             Loggers.artwork.notice(
@@ -1018,8 +1020,8 @@ class PlayerManager: ObservableObject {
         self.lastAdjustedPlayerPositionDate = Date()
     }
     
-    // MARK: Save/Unsave Track
-
+    // MARK: - Save/Unsave Track -
+ 
     func addOrRemoveCurrentTrackFromSavedTracks() {
         if self.currentTrackIsSaved {
             self.removeCurrentTrackFromSavedTracks()
@@ -1059,8 +1061,7 @@ class PlayerManager: ObservableObject {
                 )
                 switch completion {
                     case .finished:
-//                        self.currentTrackIsSaved = true
-                        break
+                        self.checkIfCurrentTrackIsSaved()
                     case .failure(_):
                         break
                 }
@@ -1083,13 +1084,44 @@ class PlayerManager: ObservableObject {
                 )
                 switch completion {
                     case .finished:
-//                        self.currentTrackIsSaved = false
-                        break
+                        self.checkIfCurrentTrackIsSaved()
                     case .failure(_):
                         break
                 }
             }
             .store(in: &self.cancellables)
+        
+    }
+    
+    /// Check if the currently playing track is in the user's saved tracks.
+    func checkIfCurrentTrackIsSaved() {
+        
+        guard let trackURI = self.currentTrack?.identifier,
+                trackURI.idCategory == .track else {
+            self.currentTrackIsSaved = false
+            return
+        }
+
+        self.currentUserSavedTracksContainsCancellable = self.spotify.api
+            .currentUserSavedTracksContains([trackURI])
+            .receive(on: RunLoop.main)
+            .sink(
+                receiveCompletion: { completion in
+                    if case .failure(let error) = completion {
+                        Loggers.playerManager.trace(
+                            """
+                            error for currentUserSavedTracksContains \
+                            with uri \(trackURI): \(error)
+                            """
+                        )
+                    }
+                },
+                receiveValue: { results in
+                    if let trackIsSaved = results.first {
+                        self.currentTrackIsSaved = trackIsSaved
+                    }
+                }
+            )
         
     }
 
@@ -2176,34 +2208,6 @@ private extension PlayerManager {
 
 //        self.retrieveCurrentlyPlayingPlaylist()
         
-        if case .track(let track) = context.item, let uri = track.uri,
-                !track.isLocal {
-            
-            self.currentUserSavedTracksContainsCancellable =
-                self.spotify.api.currentUserSavedTracksContains([uri])
-                    .receive(on: RunLoop.main)
-                    .sink(
-                        receiveCompletion: { completion in
-                            if case .failure(let error) = completion {
-                                Loggers.playerManager.trace(
-                                    """
-                                    error for currentUserSavedTracksContains \
-                                    with uri \(uri): \(error)
-                                    """
-                                )
-                            }
-                        },
-                        receiveValue: { results in
-                            if let trackIsSaved = results.first {
-                                self.currentTrackIsSaved = trackIsSaved
-                            }
-                        }
-                    )
-        }
-        else {
-            self.currentTrackIsSaved = false
-        }
-
     }
     
     private func areInDecreasingOrderByDateThenIncreasingOrderByIndex(
