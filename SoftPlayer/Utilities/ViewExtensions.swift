@@ -10,7 +10,7 @@ extension View {
 
     @ViewBuilder func `if`<TrueContent: View>(
         _ condition: Bool,
-        then trueContent: (Self) -> TrueContent
+        @ViewBuilder then trueContent: (Self) -> TrueContent
     ) -> some View {
         if condition {
             trueContent(self)
@@ -21,8 +21,8 @@ extension View {
 
     @ViewBuilder func `if`<TrueContent: View, FalseContent: View>(
         _ condition: Bool,
-        then trueContent: (Self) -> TrueContent,
-        else falseContent: (Self) -> FalseContent
+        @ViewBuilder then trueContent: (Self) -> TrueContent,
+        @ViewBuilder else falseContent: (Self) -> FalseContent
     ) -> some View {
         if condition {
             trueContent(self)
@@ -32,7 +32,7 @@ extension View {
     }
     
     @ViewBuilder func ifLet<T, Content: View>(
-        _ t: T?, _ content: (Self, T) -> Content
+        _ t: T?, @ViewBuilder _ content: (Self, T) -> Content
     ) -> some View {
         if let t = t {
             content(self, t)
