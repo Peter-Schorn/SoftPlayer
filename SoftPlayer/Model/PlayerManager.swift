@@ -257,28 +257,6 @@ class PlayerManager: ObservableObject {
     private var isUpdatingCurrentlyPlayingContext = false
     private var didUpdateCurrentlyPlayingContext = PassthroughSubject<Void, Never>()
     
-    // MARK: - Geometry Effect Constansts -
-    
-    var playerViewIsSource: Bool {
-//        !self.isShowingLibraryView
-        true
-    }
-    
-    var playlistsViewIsSource: Bool {
-//        self.isShowingLibraryView
-        true
-    }
-    
-    let albumImageId = "albumImage"
-    let trackEpisodeNameId = "trackEpisodeTitle"
-    let albumArtisTitleId = "albumArtistTitle"
-
-    let shuffleButtonId = "shuffleButton"
-    let previousTrackButtonId = "previousTrack"
-    let playPauseButtonId = "playPauseButton"
-    let nextTrackButtonId = "nextTrack"
-    let repeatModeButtonId = "repeatModeButton"
-
     // MARK: - Cancellables -
     private var cancellables: Set<AnyCancellable> = []
     private var retrieveAvailableDevicesCancellable: AnyCancellable? = nil
@@ -2076,79 +2054,6 @@ class PlayerManager: ObservableObject {
         self.didScrollToPlaylistsSearchBar = false
     }
     
-    // MARK: - Dragging -
-    
-    func playingTitleItemProvider() -> NSItemProvider? {
-        guard let url = self.currentItemIdentifier?.url else {
-            return nil
-        }
-        let provider = NSItemProvider(object: url as NSURL)
-        provider.suggestedName = self.currentTrack?.name
-        return provider
-    }
-    
-    func playingTitleDragPreview() -> some View {
-        
-        let title = self.currentTrack?.name ?? ""
-        let url = self.currentItemIdentifier?.url
-        
-        return self.dragPreview(
-            title: title,
-            url: url
-        )
-    }
-    
-    func albumArtistTitleItemProvider() -> NSItemProvider? {
-        
-        guard let url = self.showOrArtistURL else {
-            return nil
-        }
-        let provider = NSItemProvider(object: url as NSURL)
-        provider.suggestedName = self.showOrArtistName
-        return provider
-    }
-    
-    func albumArtistTitleDragPreview() -> some View {
-
-        let title = self.showOrArtistName ?? ""
-        let url = self.showOrArtistURL
-        
-        return self.dragPreview(
-            title: title,
-            url: url
-        )
-    }
-
-    func dragPreview(
-        title: String,
-        url: URL?
-    ) -> some View {
-        HStack {
-            VStack(alignment: .leading, spacing: nil) {
-                Text(verbatim: title)
-                    .fontWeight(.semibold)
-                    .font(.caption)
-                if let url = url {
-                    Text(verbatim: url.absoluteString)
-//                    Text(verbatim: "https://www.example.com")
-                        .foregroundColor(.secondary)
-                        .font(.caption)
-                        .truncationMode(.middle)
-                }
-                    
-            }
-        }
-        .padding(5)
-        .lineLimit(1)
-        .background(
-            Rectangle()
-                .fill(BackgroundStyle())
-        )
-        .cornerRadius(5)
-        .opacity(0.8)
-        .frame(minWidth: 200)
-    }
-
 }
 
 // MARK: - Private Members -
