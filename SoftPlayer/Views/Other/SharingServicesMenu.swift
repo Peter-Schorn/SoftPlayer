@@ -15,12 +15,40 @@ struct SharingServicesMenu: View {
         self.items = [item]
     }
 
+    func makeCopyLinkService() -> NSSharingService {
+        return NSSharingService(
+            title: "Copy Link",
+            image: NSImage(
+                systemSymbolName: "doc.on.doc.fill",
+                accessibilityDescription: nil
+            )!,
+            alternateImage: nil,
+            handler: {
+                guard let item = self.items.first else {
+                    return
+                }
+                guard let url = item as? URL else {
+                    return
+                }
+                NSPasteboard.general.clearContents()
+                NSPasteboard.general.setString(url.absoluteString, forType: .URL)
+            }
+        )
+    }
+    
+    func sharingServices() -> [NSSharingService] {
+        var services = NSSharingService.sharingServices(
+            forItems: self.items
+        )
+        let copyLinkService = self.makeCopyLinkService()
+        services.insert(copyLinkService, at: 0)
+        return services
+    }
+
     var body: some View {
         Menu {
             ForEach(
-                NSSharingService.sharingServices(
-                    forItems: items
-                ),
+                sharingServices(),
                 id: \.title
             ) { service in
                 Button {
