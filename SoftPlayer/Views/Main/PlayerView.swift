@@ -73,7 +73,7 @@ struct PlayerView: View {
                 }
                 
                 miniPlayerView
-                    .padding(.top, 40)
+                    
                 
             }
             else {
@@ -379,6 +379,7 @@ struct PlayerView: View {
             .padding(.vertical, 10)
             .frame(height: 70)
         }
+        .padding(.top, 40)
     }
 
     var miniPlayerViewBackground: some View {
