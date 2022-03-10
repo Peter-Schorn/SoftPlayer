@@ -52,7 +52,7 @@ struct FocusableTextField: NSViewRepresentable {
         // If the `searchField` has a `currentEditor`, then it is the first
         // responder. Only make the search field the first responder if it is
         // not already the first responder.
-        if self.isFirstResponder /* && searchField.currentEditor() == nil */ {
+        if self.isFirstResponder && searchField.currentEditor() == nil {
             /* && !context.coordinator.didMakeFirstResponder */
 //            context.coordinator.didMakeFirstResponder = true
             searchField.window?.makeFirstResponder(searchField)
@@ -60,6 +60,9 @@ struct FocusableTextField: NSViewRepresentable {
             let range = NSRange(location: text.count, length: 0)
             searchField.currentEditor()?.selectedRange = range
         }
+//        else {
+//            searchField.window?.makeFirstResponder(nil)
+//        }
         
     }
     
@@ -114,17 +117,19 @@ class CustomNSSearchField: NSSearchField {
     }
     
     override func becomeFirstResponder() -> Bool {
-//        Loggers.keyEvent.info(
-//            "\(self.name!): CustomNSSearchField.becomeFirstResponder"
-//        )
-        return super.becomeFirstResponder()
+        let result = super.becomeFirstResponder()
+        Loggers.keyEvent.info(
+            "\(self.name!): CustomNSSearchField.becomeFirstResponder: \(result)"
+        )
+        return result
     }
     
     override func resignFirstResponder() -> Bool {
-//        Loggers.keyEvent.info(
-//            "\(self.name!): CustomNSSearchField.resignFirstResponder"
-//        )
-        return super.resignFirstResponder()
+        let result = super.resignFirstResponder()
+        Loggers.keyEvent.info(
+            "\(self.name!): CustomNSSearchField.resignFirstResponder: \(result)"
+        )
+        return result
     }
 
 }

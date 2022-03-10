@@ -6,8 +6,18 @@ import Combine
 /// https://stackoverflow.com/a/61155272/12394554
 struct KeyEventHandler: NSViewRepresentable {
     
+    @Binding var isFirstResponder: Bool?
+
     let receiveKeyEvent: (NSEvent) -> Bool
     
+    init(
+        isFirstResponder: Binding<Bool?> = .constant(nil),
+        receiveKeyEvent: @escaping (NSEvent) -> Bool
+    ) {
+        self._isFirstResponder = isFirstResponder
+        self.receiveKeyEvent = receiveKeyEvent
+    }
+
     private class KeyHandlerView: NSView {
         
         let receiveKeyEvent: (NSEvent) -> Bool
@@ -44,13 +54,24 @@ struct KeyEventHandler: NSViewRepresentable {
     func makeNSView(context: Context) -> NSView {
         let view = KeyHandlerView(receiveKeyEvent: self.receiveKeyEvent)
         DispatchQueue.main.async {
-            view.window?.makeFirstResponder(view)
+            if self.isFirstResponder == true {
+                if view.window?.firstResponder != view {
+                    view.window?.makeFirstResponder(view)
+                }
+            }
         }
         return view
     }
     
     func updateNSView(_ nsView: NSView, context: Context) {
-        
+        if self.isFirstResponder == true {
+            if nsView.window?.firstResponder != nsView {
+                nsView.window?.makeFirstResponder(nsView)
+            }
+        }
+        else if self.isFirstResponder == false {
+            nsView.window?.makeFirstResponder(nil)
+        }
     }
     
 }
