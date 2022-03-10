@@ -113,7 +113,9 @@ struct PlaylistCellView: View {
                     NSSound.beep()
                     return
                 }
-                NSWorkspace.shared.open(url)
+                self.playerManager.openSpotifyDesktopApplication { _, _ in
+                    NSWorkspace.shared.open(url)
+                }
             }
             Button("Unfollow Playlist") {
                 self.playerManager.unfollowPlaylist(self.playlist)
