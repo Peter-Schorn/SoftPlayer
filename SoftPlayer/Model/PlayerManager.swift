@@ -210,11 +210,32 @@ class PlayerManager: ObservableObject {
     /// Each album is guaranteed to have a non-`nil` id.
     @Published var savedAlbums: [Album] = []
 
+    @Published var isLoadingSavedAlbums = false
+
+    private let albumsLastModifiedDatesKey = "albumsLastModifiedDates"
+    
+    /// The dates that albums were last played. Dictionary key: album URI.
+    var albumsLastModifiedDates: [String: Date] {
+        get {
+            return UserDefaults.standard.dictionary(
+                forKey: self.albumsLastModifiedDatesKey
+            ) as? [String: Date] ?? [:]
+        }
+        set {
+            UserDefaults.standard.setValue(
+                newValue,
+                forKey: self.albumsLastModifiedDatesKey
+            )
+        }
+    }
+
     // MARK: - Playlists -
 
     /// Sorted based on the last time they were played or an item was added to
     /// them, whichever was later.
     @Published var playlists: [Playlist<PlaylistItemsReference>] = []
+    
+    @Published var isLoadingPlaylists = false
     
     private let playlistsLastModifiedDatesKey = "playlistsLastModifiedDates"
     
@@ -230,23 +251,6 @@ class PlayerManager: ObservableObject {
             UserDefaults.standard.setValue(
                 newValue,
                 forKey: self.playlistsLastModifiedDatesKey
-            )
-        }
-    }
-    
-    private let albumsLastModifiedDatesKey = "albumsLastModifiedDates"
-    
-    /// The dates that albums were last played. Dictionary key: album URI.
-    var albumsLastModifiedDates: [String: Date] {
-        get {
-            return UserDefaults.standard.dictionary(
-                forKey: self.albumsLastModifiedDatesKey
-            ) as? [String: Date] ?? [:]
-        }
-        set {
-            UserDefaults.standard.setValue(
-                newValue,
-                forKey: self.albumsLastModifiedDatesKey
             )
         }
     }
@@ -1148,6 +1152,8 @@ class PlayerManager: ObservableObject {
     
     func retrieveSavedAlbums(sort: Bool) {
         
+        self.isLoadingSavedAlbums = true
+
         self.retrieveSavedAlbumsCancellable = spotify.api
             .currentUserSavedAlbums(limit: 50)
             .extendPagesConcurrently(spotify.api)
@@ -1156,6 +1162,7 @@ class PlayerManager: ObservableObject {
             .handleAuthenticationError(spotify: self.spotify)
             .sink(
                 receiveCompletion: { completion in
+                    self.isLoadingSavedAlbums = false
                     switch completion {
                         case .finished:
                             break
@@ -1372,6 +1379,8 @@ class PlayerManager: ObservableObject {
     /// Retrieve the current user's playlists.
     func retrievePlaylists(sort: Bool) {
         
+        self.isLoadingPlaylists = true
+
         self.retrievePlaylistsCancellable = self.spotify.api
             .currentUserPlaylists(limit: 50)
             .extendPagesConcurrently(self.spotify.api)
@@ -1380,6 +1389,7 @@ class PlayerManager: ObservableObject {
             .handleAuthenticationError(spotify: self.spotify)
             .sink(
                 receiveCompletion: { completion in
+                    self.isLoadingPlaylists = false
                     Loggers.playerManager.trace(
                         "retrievePlaylists completion: \(completion)"
                     )
