@@ -78,6 +78,17 @@ final class Spotify: ObservableObject {
     /// authorizes or denies authorization for your application.
     let loginCallbackURL: URL
     
+    let scopes: Set<Scope> = [
+        .userReadPlaybackState,
+        .userModifyPlaybackState,
+        .playlistReadPrivate,
+        .playlistReadCollaborative,
+        .playlistModifyPublic,
+        .playlistModifyPrivate,
+        .userLibraryRead,
+        .userLibraryModify
+    ]
+
     // MARK: Authorization Parameters
     /// A cryptographically-secure random string used to ensure
     /// than an incoming redirect from Spotify was the result of a request
@@ -234,16 +245,7 @@ final class Spotify: ObservableObject {
             redirectURI: self.loginCallbackURL,
             codeChallenge: self.codeChallenge,
             state: self.authorizationState,
-            scopes: [
-                .userReadPlaybackState,
-                .userModifyPlaybackState,
-                .playlistReadPrivate,
-                .playlistReadCollaborative,
-                .playlistModifyPublic,
-                .playlistModifyPrivate,
-                .userLibraryRead,
-                .userLibraryModify
-            ]
+            scopes: self.scopes
         ) else {
             fatalError("could not create authorization URL")
         }
