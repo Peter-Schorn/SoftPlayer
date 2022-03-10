@@ -39,8 +39,8 @@ struct RootView: View {
 
         // peter-schorn-soft-player://login-callback
 
-        guard url.scheme == "peter-schorn-soft-player",
-                url.host == "login-callback" else {
+        guard url.scheme == self.spotify.loginCallbackURL.scheme,
+              url.host == self.spotify.loginCallbackURL.host else {
                   
             self.showAlert(
                 title: NSLocalizedString(

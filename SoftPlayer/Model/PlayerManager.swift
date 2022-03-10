@@ -277,6 +277,10 @@ class PlayerManager: ObservableObject {
         self.spotify = spotify
         self.undoManager = undoManager
         
+        self.checkIfNotAuthorizedForNewScopes()
+        self.checkIfSpotifyIsInstalled()
+        self.observeColorScheme()
+
         self.playerStateDidChangeCancellable = self.playerStateDidChange
             .receive(on: RunLoop.main)
             .sink(receiveValue: self.receivePlayerStateDidChange(notification:))
@@ -348,8 +352,6 @@ class PlayerManager: ObservableObject {
             }
             .store(in: &self.cancellables)
 
-        self.checkIfSpotifyIsInstalled()
-        
         // ensure the UI is updated after a keyboard shortcut changes
         NotificationCenter.default.publisher(for: .shortcutByNameDidChange)
             .sink { _ in
@@ -357,10 +359,20 @@ class PlayerManager: ObservableObject {
             }
             .store(in: &self.cancellables)
 
-        self.observeColorScheme()
-
     }
     
+    /// Newer versions of this app have added new authorization scopes. Check
+    /// if the user is only authorized for the scopes from previous versions.
+    func checkIfNotAuthorizedForNewScopes() {
+        
+        if !self.spotify.api.authorizationManager.isAuthorized(
+            for: self.spotify.scopes
+        ) {
+            self.spotify.api.authorizationManager.deauthorize()
+        }
+
+    }
+
     func observeColorScheme() {
         
         self.colorSchemeObservation = NSApplication.shared.observe(

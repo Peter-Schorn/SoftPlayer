@@ -73,7 +73,6 @@ struct PlayerView: View {
                 }
                 
                 miniPlayerView
-                    
                 
             }
             else {
