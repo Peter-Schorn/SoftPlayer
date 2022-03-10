@@ -126,10 +126,16 @@ struct SavedAlbumsGridView: View {
                 .id(searchFieldId)
                 
                 if self.filteredAlbums.isEmpty {
-                    Text("No Albums Found")
-                        .foregroundColor(.secondary)
-                        .font(.headline)
-                        .padding(.top, 135)
+                    if playerManager.isLoadingSavedAlbums {
+                            ProgressView("Loading Albums")
+                            .padding(.top, 120)
+                    }
+                    else {
+                        Text("No Albums Found")
+                            .foregroundColor(.secondary)
+                            .font(.headline)
+                            .padding(.top, 135)
+                    }
                 }
                 else {
                     LazyVGrid(

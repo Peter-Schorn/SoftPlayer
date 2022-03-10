@@ -135,20 +135,26 @@ struct PlaylistsScrollView: View {
                 
                 LazyVStack {
                     if self.filteredPlaylists.isEmpty {
-                        VStack {
-                            Text("No Playlists Found")
-                                .foregroundColor(.secondary)
-                                .font(.headline)
-                            if onlyShowMyPlaylists {
-                                Button(action: {
-                                    onlyShowMyPlaylists = false
-                                }, label: {
-                                    Text("Remove Filters")
-                                })
-                                .padding(.top, 5)
-                            }
+                        if playerManager.isLoadingPlaylists {
+                            ProgressView("Loading Playlists")
+                                .padding(.top, 120)
                         }
-                        .padding(.top, 135)
+                        else {
+                            VStack {
+                                Text("No Playlists Found")
+                                    .foregroundColor(.secondary)
+                                    .font(.headline)
+                                if onlyShowMyPlaylists {
+                                    Button(action: {
+                                        onlyShowMyPlaylists = false
+                                    }, label: {
+                                        Text("Remove Filters")
+                                    })
+                                    .padding(.top, 5)
+                                }
+                            }
+                            .padding(.top, 135)
+                        }
                     }
                     else {
                         ForEach(
