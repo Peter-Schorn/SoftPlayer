@@ -44,6 +44,10 @@
 		478A64662692FBC600557DF3 /* AlbumGridItemView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 478A64652692FBC600557DF3 /* AlbumGridItemView.swift */; };
 		478A64682692FEF400557DF3 /* LibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 478A64672692FEF400557DF3 /* LibraryView.swift */; };
 		4795210D25744AA6000A5B82 /* MiscellaneousUtilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4795210C25744AA6000A5B82 /* MiscellaneousUtilities.swift */; };
+		47AA076E27D9D96200F6C140 /* ShapeExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AA076D27D9D96200F6C140 /* ShapeExtensions.swift */; };
+		47AA077027D9D9B800F6C140 /* HeartShape.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AA076F27D9D9B800F6C140 /* HeartShape.swift */; };
+		47AA077227D9D9FA00F6C140 /* BubblingHeartsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AA077127D9D9FA00F6C140 /* BubblingHeartsView.swift */; };
+		47AA077427D9DA0D00F6C140 /* HeartButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AA077327D9DA0D00F6C140 /* HeartButton.swift */; };
 		47C6472A2783FF4700EB1FD8 /* SaveTrackButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47C647292783FF4700EB1FD8 /* SaveTrackButton.swift */; };
 		47CDDC8A2582D97F00E87918 /* RegularExpressions in Frameworks */ = {isa = PBXBuildFile; productRef = 47CDDC892582D97F00E87918 /* RegularExpressions */; };
 		47D8CF7F256663080034FA1E /* NotificationNames.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47D8CF7E256663080034FA1E /* NotificationNames.swift */; };
@@ -109,6 +113,10 @@
 		478A64652692FBC600557DF3 /* AlbumGridItemView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlbumGridItemView.swift; sourceTree = "<group>"; };
 		478A64672692FEF400557DF3 /* LibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryView.swift; sourceTree = "<group>"; };
 		4795210C25744AA6000A5B82 /* MiscellaneousUtilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MiscellaneousUtilities.swift; sourceTree = "<group>"; };
+		47AA076D27D9D96200F6C140 /* ShapeExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShapeExtensions.swift; sourceTree = "<group>"; };
+		47AA076F27D9D9B800F6C140 /* HeartShape.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeartShape.swift; sourceTree = "<group>"; };
+		47AA077127D9D9FA00F6C140 /* BubblingHeartsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BubblingHeartsView.swift; sourceTree = "<group>"; };
+		47AA077327D9DA0D00F6C140 /* HeartButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeartButton.swift; sourceTree = "<group>"; };
 		47B75D322687DFC6003F58A9 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/Main.strings; sourceTree = "<group>"; };
 		47C647292783FF4700EB1FD8 /* SaveTrackButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SaveTrackButton.swift; sourceTree = "<group>"; };
 		47D8CF7E256663080034FA1E /* NotificationNames.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationNames.swift; sourceTree = "<group>"; };
@@ -217,13 +225,22 @@
 			path = "Settings Views";
 			sourceTree = "<group>";
 		};
-		478A64602692F6CC00557DF3 /* Albums View */ = {
+		478A64602692F6CC00557DF3 /* Albums Views */ = {
 			isa = PBXGroup;
 			children = (
 				478A64632692F85700557DF3 /* SavedAlbumsGridView.swift */,
 				478A64652692FBC600557DF3 /* AlbumGridItemView.swift */,
 			);
-			path = "Albums View";
+			path = "Albums Views";
+			sourceTree = "<group>";
+		};
+		47A5BA3427D869260014BCB5 /* Shapes */ = {
+			isa = PBXGroup;
+			children = (
+				4735521727A351B7009C967A /* XShape.swift */,
+				47AA076F27D9D9B800F6C140 /* HeartShape.swift */,
+			);
+			path = Shapes;
 			sourceTree = "<group>";
 		};
 		47CE919E267C7A40009BFF1C /* Main */ = {
@@ -241,6 +258,7 @@
 			isa = PBXGroup;
 			children = (
 				4789987725747F0F00866EE1 /* PlaybackPositionView.swift */,
+				47AA077127D9D9FA00F6C140 /* BubblingHeartsView.swift */,
 				47ECF9B42694509B00DD118E /* LibrarySegmentedControl.swift */,
 				477450972706C2D4007CD45D /* NowPlayingAnimation.swift */,
 				47F6EC63257C96D7007079D2 /* SoundVolumeSlider.swift */,
@@ -253,7 +271,6 @@
 				47891C942583128900063460 /* KeyEventHandler.swift */,
 				4748B8BF27D756A600ACF95E /* MouseEventHandler.swift */,
 				477447AF2797E1730074CB7E /* SharingServicesMenu.swift */,
-				4735521727A351B7009C967A /* XShape.swift */,
 			);
 			path = Other;
 			sourceTree = "<group>";
@@ -264,6 +281,7 @@
 				4795210C25744AA6000A5B82 /* MiscellaneousUtilities.swift */,
 				47E9F5A2276ED0A50035349D /* ImageExtensions.swift */,
 				47699874257DDE8400B7D6F5 /* ViewExtensions.swift */,
+				47AA076D27D9D96200F6C140 /* ShapeExtensions.swift */,
 				47FD3DFA256FA7CF000E2346 /* ImageNames.swift */,
 				477560DF2580083200B7FFED /* SpotifyWebAPIExtensions.swift */,
 				47DC186825824B5800EF11BA /* Loggers.swift */,
@@ -290,6 +308,7 @@
 			isa = PBXGroup;
 			children = (
 				47F6EC50257C95D8007079D2 /* ShuffleButton.swift */,
+				47AA077327D9DA0D00F6C140 /* HeartButton.swift */,
 				47C647292783FF4700EB1FD8 /* SaveTrackButton.swift */,
 				47F6EC55257C963F007079D2 /* PreviousTrackButton.swift */,
 				47F6EC59257C967D007079D2 /* PlayPauseButton.swift */,
@@ -304,8 +323,9 @@
 		47FD3DF0256FA71C000E2346 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				47A5BA3427D869260014BCB5 /* Shapes */,
 				47CE919E267C7A40009BFF1C /* Main */,
-				478A64602692F6CC00557DF3 /* Albums View */,
+				478A64602692F6CC00557DF3 /* Albums Views */,
 				47F6EC4F257C95BD007079D2 /* Buttons */,
 				47343A662582C90F00EF6750 /* Playlists Views */,
 				47343A672582C92200EF6750 /* Touchbar Views */,
@@ -402,6 +422,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				47AA077227D9D9FA00F6C140 /* BubblingHeartsView.swift in Sources */,
 				47699875257DDE8400B7D6F5 /* ViewExtensions.swift in Sources */,
 				47F6EC5A257C967D007079D2 /* PlayPauseButton.swift in Sources */,
 				47F6EC51257C95D8007079D2 /* ShuffleButton.swift in Sources */,
@@ -409,11 +430,13 @@
 				472A742A25859431008998C5 /* SettingsView.swift in Sources */,
 				47ECF9B52694509B00DD118E /* LibrarySegmentedControl.swift in Sources */,
 				477450982706C2D4007CD45D /* NowPlayingAnimation.swift in Sources */,
+				47AA077427D9DA0D00F6C140 /* HeartButton.swift in Sources */,
 				4712E607257FD19500A881D5 /* PlayPlaylistsTouchBarView.swift in Sources */,
 				475878CE258731F1007EB435 /* CancelButton.swift in Sources */,
 				47FD3DE3256F9599000E2346 /* SpotifyBridge.swift in Sources */,
 				4735521827A351B7009C967A /* XShape.swift in Sources */,
 				47891C952583128900063460 /* KeyEventHandler.swift in Sources */,
+				47AA076E27D9D96200F6C140 /* ShapeExtensions.swift in Sources */,
 				4789987825747F0F00866EE1 /* PlaybackPositionView.swift in Sources */,
 				47D8CF7F256663080034FA1E /* NotificationNames.swift in Sources */,
 				47FD3E03256FB031000E2346 /* PlayerView.swift in Sources */,
@@ -441,6 +464,7 @@
 				47FD3DF3256FA726000E2346 /* LoginView.swift in Sources */,
 				4789A5B725885F0800A5E1E3 /* KeyboardShortcutsView.swift in Sources */,
 				47DC18702582712400EF11BA /* PlaylistCellView.swift in Sources */,
+				47AA077027D9D9B800F6C140 /* HeartShape.swift in Sources */,
 				47E9F5A3276ED0A50035349D /* ImageExtensions.swift in Sources */,
 				4795210D25744AA6000A5B82 /* MiscellaneousUtilities.swift in Sources */,
 				4789A5B425885ECC00A5E1E3 /* GeneralSettingsView.swift in Sources */,

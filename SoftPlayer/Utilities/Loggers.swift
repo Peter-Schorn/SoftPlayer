@@ -182,6 +182,11 @@ struct SoftPlayerLogHandler: LogHandler {
         function: String,
         line: UInt
     ) {
+        
+        if ProcessInfo.processInfo.environment["DISABLE_LOGGING"] == "1" {
+            return
+        }
+        
         let logMessage = """
             [\(label): \(self._logLevel): \(function) line \(line)] \(message)
             """

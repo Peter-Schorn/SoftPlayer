@@ -163,12 +163,12 @@ final class Spotify: ObservableObject {
             // updating the @Published `isAuthorized` property.
             .receive(on: RunLoop.main)
             .sink(receiveValue: authorizationManagerDidChange)
-            .store(in: &cancellables)
+            .store(in: &self.cancellables)
         
         self.api.authorizationManagerDidDeauthorize
             .receive(on: RunLoop.main)
             .sink(receiveValue: authorizationManagerDidDeauthorize)
-            .store(in: &cancellables)
+            .store(in: &self.cancellables)
         
         // Check to see if the authorization information is saved in
         // the keychain.
@@ -241,7 +241,8 @@ final class Spotify: ObservableObject {
                 .playlistReadCollaborative,
                 .playlistModifyPublic,
                 .playlistModifyPrivate,
-                .userLibraryRead
+                .userLibraryRead,
+                .userLibraryModify
             ]
         ) else {
             fatalError("could not create authorization URL")

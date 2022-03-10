@@ -65,9 +65,9 @@ struct PlayerView: View {
                 )
                 // MARK: Library View Transition
                 .transition(.move(edge: .bottom))
-//                .onExitCommand {
-//                    self.playerManager.dismissLibraryView(animated: true)
-//                }
+                .onExitCommand {
+                    self.playerManager.dismissLibraryView(animated: true)
+                }
                 .onReceive(playerManager.popoverDidClose) {
                     self.playerManager.dismissLibraryView(animated: false)
                 }
@@ -513,28 +513,28 @@ struct PlayerView_Previews: PreviewProvider {
     static let playerManager2 = PlayerManager(spotify: spotify)
     
     static var previews: some View {
-//        Self.withAllColorSchemes {
-        PlayerView()
-            .environmentObject(playerManager.spotify)
-            .environmentObject(playerManager)
-            .frame(
-                width: AppDelegate.popoverWidth,
-                height: AppDelegate.popoverHeight
-            )
-            .background(.regularMaterial)
-            .background()
-            .onAppear(perform: onAppear)
-        
-        PlayerView()
-            .environmentObject(playerManager2.spotify)
-            .environmentObject(playerManager2)
-            .frame(
-                width: AppDelegate.popoverWidth,
-                height: AppDelegate.popoverHeight
-            )
-            .onAppear(perform: onAppear)
+        Self.withAllColorSchemes {
+            PlayerView()
+                .environmentObject(playerManager.spotify)
+                .environmentObject(playerManager)
+                .frame(
+                    width: AppDelegate.popoverWidth,
+                    height: AppDelegate.popoverHeight
+                )
+                .background(.regularMaterial)
+                .background()
+                .onAppear(perform: onAppear)
+            
+            PlayerView()
+                .environmentObject(playerManager2.spotify)
+                .environmentObject(playerManager2)
+                .frame(
+                    width: AppDelegate.popoverWidth,
+                    height: AppDelegate.popoverHeight
+                )
+                .onAppear(perform: onAppear)
 
-//        }
+        }
     }
     
     static func onAppear() {
