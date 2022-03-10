@@ -9,14 +9,6 @@ extension KeyboardShortcuts.Name {
         "showLibrary",
         default: .init(.l, modifiers: [.command])
     )
-    static let showPlayists = Self(
-        "showPlayists",
-        default: .init(.p, modifiers: [.command])
-    )
-    static let showAlbums = Self(
-        "showAlbums",
-        default: .init(.a, modifiers: [.command])
-    )
     static let previousTrack = Self(
         "previousTrack",
         default: .init(.leftArrow, modifiers: [.command])
