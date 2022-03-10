@@ -23,33 +23,12 @@ public struct XShape: InsettableShape {
     }
 
     public func path(in rect: CGRect) -> Path {
-        
-        // Inset the shape
-        let rect = rect.insetBy(dx: self.inset, dy: self.inset)
-        
-        // Make the rect square, centered on the inset rect
-        let squareRect: CGRect
-        
-        if rect.width == rect.height {
-            squareRect = rect
-        }
-        
-        else {
-            let smallestDimension = min(rect.width, rect.height)
-            
-            squareRect = CGRect(
-                x: (rect.width - smallestDimension) / 2,
-                y: (rect.height - smallestDimension) / 2,
-                width: smallestDimension,
-                height: smallestDimension
-            )
-        }
-        
+        let insetRect = rect.insetBy(dx: self.inset, dy: self.inset)
+        let squareRect = insetRect.croppedToSquare()
         return self.pathInRectCore(squareRect)
-
     }
 
-    /// The rect is already inset and square
+    /// The rect is already inset and square.
     private func pathInRectCore(_ rect: CGRect) -> Path {
         
         var path = Path()
@@ -206,14 +185,6 @@ public struct XShape: InsettableShape {
 
     }
 
-}
-
-extension CGRect {
-    
-    var center: CGPoint {
-        CGPoint(x: self.midX, y: self.midY)
-    }
-    
 }
 
 struct XShape_Previews: PreviewProvider {

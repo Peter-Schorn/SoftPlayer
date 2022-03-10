@@ -80,39 +80,7 @@ struct AlbumGridItemView: View {
                 NSWorkspace.shared.open(url)
             }
             Button("Remove From Library") {
-                guard let albumURI = self.album.uri else {
-                    NSSound.beep()
-                    return
-                }
-                self.spotify.api.removeSavedAlbumsForCurrentUser(
-                    [albumURI]
-                )
-                .receive(on: RunLoop.main)
-                .sink(receiveCompletion: { completion in
-                    switch completion {
-                        case .finished:
-                            self.playerManager.retrieveSavedAlbums()
-                        case .failure(let error):
-                            let alertTitle = String.localizedStringWithFormat(
-                                NSLocalizedString(
-                                    "Couldn't Remove Album \"%@\"",
-                                    comment: "Couldn't Remove Album [album name]"
-                                ),
-                                self.album.name
-                            )
-
-                            let alert = AlertItem(
-                                title: alertTitle,
-                                message: error.customizedLocalizedDescription
-                            )
-                            self.playerManager.notificationSubject.send(alert)
-                            Loggers.playlistCellView.error(
-                                "\(alertTitle): \(error)"
-                            )
-                    }
-                })
-                .store(in: &cancellables)
-
+                self.playerManager.removeAlbumFromLibrary(self.album)
             }
             
         }

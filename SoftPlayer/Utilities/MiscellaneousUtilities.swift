@@ -156,3 +156,49 @@ extension Sequence where Element: Hashable {
         return !self.allSatisfy { seen.insert($0).inserted }
     }
 }
+
+extension CGRect {
+    
+    var center: CGPoint {
+        CGPoint(x: self.midX, y: self.midY)
+    }
+    
+    func croppedToSquare() -> CGRect {
+        
+        if self.width == self.height {
+            return self
+        }
+        
+        else {
+            let smallestDimension = min(self.width, self.height)
+            
+            return CGRect(
+                x: self.minX + (self.width - smallestDimension) / 2,
+                y: self.minY + (self.height - smallestDimension) / 2,
+                width: smallestDimension,
+                height: smallestDimension
+            )
+        }
+    }
+    
+}
+
+extension CGAffineTransform {
+    
+    init(rotationAngle: CGFloat, anchor: CGPoint) {
+        self.init(
+            a: cos(rotationAngle),
+            b: sin(rotationAngle),
+            c: -sin(rotationAngle),
+            d: cos(rotationAngle),
+            tx: anchor.x - anchor.x * cos(rotationAngle) + anchor.y * sin(rotationAngle),
+            ty: anchor.y - anchor.x * sin(rotationAngle) - anchor.y * cos(rotationAngle)
+        )
+    }
+
+    func rotated(by angle: CGFloat, anchor: CGPoint) -> Self {
+        let transform = Self(rotationAngle: angle, anchor: anchor)
+        return self.concatenating(transform)
+    }
+
+}

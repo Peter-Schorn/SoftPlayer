@@ -44,7 +44,7 @@ struct PlaylistsScrollView: View {
         let lowercasedSearch = searchText.strip().lowercased()
 
         if lowercasedSearch.isEmpty {
-            let playlists = self.playerManager.playlistsSortedByLastModifiedDate
+            let playlists = self.playerManager.playlists
                 .filter { playlist in
                     if self.onlyShowMyPlaylists,
                             let userId = playlist.owner?.id,
@@ -60,7 +60,7 @@ struct PlaylistsScrollView: View {
         
         let searchWords = lowercasedSearch.words
         
-        let playlists = self.playerManager.playlistsSortedByLastModifiedDate
+        let playlists = self.playerManager.playlists
             .compactMap { playlist -> RatedPlaylist? in
                 
                 if self.onlyShowMyPlaylists,

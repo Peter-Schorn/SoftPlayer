@@ -5,36 +5,39 @@ import KeyboardShortcuts
 
 struct SaveTrackButton: View {
 
-    static var debugIsShowing = false
-
     @EnvironmentObject var playerManager: PlayerManager
 
+    let debugIsShowing: Bool
+
+    init(debugIsShowing: Bool = false) {
+        self.debugIsShowing = debugIsShowing
+    }
+     
     var helpText: Text {
+        let shortcutName = KeyboardShortcuts.getShortcut(for: .likeTrack)
+            .map { " \($0)"} ?? ""
         if self.playerManager.currentTrackIsSaved {
-            return Text("Remove from Liked Songs")
+            return Text("Remove from Liked Songs\(shortcutName)")
         }
         else {
-            return Text("Add to Liked Songs")
+            return Text("Add to Liked Songs\(shortcutName)")
         }
     }
 
     var body: some View {
         if playerManager.currentTrack?.identifier?.idCategory == .track ||
-                Self.debugIsShowing {
-            Button(
-                action: playerManager.addOrRemoveCurrentTrackFromSavedTracks
-            ) {
-                let imageName = self.playerManager.currentTrackIsSaved ? "heart.fill" : "heart"
-                Image(systemName: imageName)
-                    .font(.title2)
-                    .foregroundColor(
-                        self.playerManager.currentTrackIsSaved ?
-                            .green : nil
-                    )
-            }
-            .buttonStyle(PlainButtonStyle())
+                debugIsShowing {
+            HeartButton(
+                isHearted: $playerManager.currentTrackIsSaved,
+                action: didTap
+            )
             .help(helpText)
+            .aspectRatio(1, contentMode: .fit)
         }
+    }
+    
+    func didTap() {
+        self.playerManager.addOrRemoveCurrentTrackFromSavedTracks()
     }
     
 }
@@ -44,12 +47,10 @@ struct SaveTrackButton_Previews: PreviewProvider {
     static let playerManager = PlayerManager(spotify: Spotify())
 
     static var previews: some View {
-        SaveTrackButton()
+        SaveTrackButton(debugIsShowing: true)
             .padding()
+            .frame(width: 100, height: 100)
             .environmentObject(playerManager)
             .environmentObject(playerManager.spotify)
-            .onAppear {
-                SaveTrackButton.debugIsShowing = true
-            }
     }
 }

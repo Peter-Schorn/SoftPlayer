@@ -208,12 +208,9 @@ class PlayerManager: ObservableObject {
 
     // MARK: - Playlists -
 
-    @Published var playlists: [Playlist<PlaylistItemsReference>] = []
-    
     /// Sorted based on the last time they were played or an item was added to
     /// them, whichever was later.
-    @Published var playlistsSortedByLastModifiedDate:
-        [Playlist<PlaylistItemsReference>] = []
+    @Published var playlists: [Playlist<PlaylistItemsReference>] = []
     
     private let playlistsLastModifiedDatesKey = "playlistsLastModifiedDates"
     
@@ -286,7 +283,7 @@ class PlayerManager: ObservableObject {
         
         self.artworkURLDidChange
             .sink(receiveValue: self.loadArtworkImage)
-            .store(in: &cancellables)
+            .store(in: &self.cancellables)
         
         self.popoverWillShow.sink {
             
@@ -316,14 +313,14 @@ class PlayerManager: ObservableObject {
             }
             
         }
-        .store(in: &cancellables)
+        .store(in: &self.cancellables)
         
         self.popoverDidClose.sink {
             Loggers.playerManager.trace("popoverDidDismiss")
             self.updatePlayerStateCancellable = nil
             self.updatePlaylistsSortedByLastModifiedDate()
         }
-        .store(in: &cancellables)
+        .store(in: &self.cancellables)
         
         self.spotify.$isAuthorized.sink { isAuthorized in
             Loggers.playerManager.notice(
@@ -336,7 +333,7 @@ class PlayerManager: ObservableObject {
                 self.retrieveSavedAlbums()
             }
         }
-        .store(in: &cancellables)
+        .store(in: &self.cancellables)
 
         self.spotify.api.authorizationManager.didDeauthorize
             .receive(on: RunLoop.main)
@@ -347,10 +344,9 @@ class PlayerManager: ObservableObject {
                 self.playlistsLastModifiedDates = [:]
                 self.playlists = []
                 self.savedAlbums = []
-                self.playlistsSortedByLastModifiedDate = []
                 self.removeImagesCache()
             }
-            .store(in: &cancellables)
+            .store(in: &self.cancellables)
 
         self.checkIfSpotifyIsInstalled()
         
@@ -359,7 +355,7 @@ class PlayerManager: ObservableObject {
             .sink { _ in
                 self.objectWillChange.send()
             }
-            .store(in: &cancellables)
+            .store(in: &self.cancellables)
 
         self.observeColorScheme()
 
@@ -863,6 +859,7 @@ class PlayerManager: ObservableObject {
 //        self.retrieveCurrentlyPlayingPlaylistCancellable = self.spotify.api
 //            .playlistName(playlistURI)
 //            .receive(on: RunLoop.main)
+//            .handleAuthenticationError(spotify: self.spotify)
 //            .sink(
 //                receiveCompletion: { completion in
 //                    if case .failure(let error) = completion {
@@ -889,6 +886,7 @@ class PlayerManager: ObservableObject {
         self.cycleRepeatModeCancellable = self.spotify.api
             .setRepeatMode(to: self.repeatMode)
             .receive(on: RunLoop.main)
+            .handleAuthenticationError(spotify: self.spotify)
             .sink(receiveCompletion: { completion in
                 let repeatModeString = self.repeatMode.localizedDescription
                 switch completion {
@@ -1002,12 +1000,11 @@ class PlayerManager: ObservableObject {
  
     func addOrRemoveCurrentTrackFromSavedTracks() {
         if self.currentTrackIsSaved {
-            self.removeCurrentTrackFromSavedTracks()
-        }
-        else {
             self.addCurrentTrackToSavedTracks()
         }
-        self.currentTrackIsSaved.toggle()
+        else {
+            self.removeCurrentTrackFromSavedTracks()
+        }
     }
     
     func addCurrentTrackToSavedTracks() {
@@ -1033,6 +1030,7 @@ class PlayerManager: ObservableObject {
 
         self.spotify.api.saveTracksForCurrentUser([trackURI])
             .receive(on: RunLoop.main)
+            .handleAuthenticationError(spotify: self.spotify)
             .sink { completion in
                 Loggers.playerManager.trace(
                     "addTrackToSavedTracks completion: \(completion)"
@@ -1040,8 +1038,10 @@ class PlayerManager: ObservableObject {
                 switch completion {
                     case .finished:
                         self.checkIfCurrentTrackIsSaved()
-                    case .failure(_):
-                        break
+                    case .failure(let error):
+                        Loggers.playerManager.error(
+                            "Couldn't save track \(trackURI.uri): \(error)"
+                        )
                 }
             }
             .store(in: &self.cancellables)
@@ -1056,6 +1056,7 @@ class PlayerManager: ObservableObject {
 
         self.spotify.api.removeSavedTracksForCurrentUser([trackURI])
             .receive(on: RunLoop.main)
+            .handleAuthenticationError(spotify: self.spotify)
             .sink { completion in
                 Loggers.playerManager.trace(
                     "removeTrackFromSavedTracks completion: \(completion)"
@@ -1063,8 +1064,10 @@ class PlayerManager: ObservableObject {
                 switch completion {
                     case .finished:
                         self.checkIfCurrentTrackIsSaved()
-                    case .failure(_):
-                        break
+                    case .failure(let error):
+                        Loggers.playerManager.error(
+                            "Couldn't unsave track \(trackURI.uri): \(error)"
+                        )
                 }
             }
             .store(in: &self.cancellables)
@@ -1083,6 +1086,7 @@ class PlayerManager: ObservableObject {
         self.currentUserSavedTracksContainsCancellable = self.spotify.api
             .currentUserSavedTracksContains([trackURI])
             .receive(on: RunLoop.main)
+            .handleAuthenticationError(spotify: self.spotify)
             .sink(
                 receiveCompletion: { completion in
                     if case .failure(let error) = completion {
@@ -1096,7 +1100,10 @@ class PlayerManager: ObservableObject {
                 },
                 receiveValue: { results in
                     if let trackIsSaved = results.first {
-                        self.currentTrackIsSaved = trackIsSaved
+                        // prevent unecessary updates
+                        if self.currentTrackIsSaved != trackIsSaved {
+                            self.currentTrackIsSaved = trackIsSaved
+                        }
                     }
                 }
             )
@@ -1112,6 +1119,7 @@ class PlayerManager: ObservableObject {
             .extendPagesConcurrently(spotify.api)
             .collectAndSortByOffset()
             .receive(on: RunLoop.main)
+            .handleAuthenticationError(spotify: self.spotify)
             .sink(
                 receiveCompletion: { completion in
                     switch completion {
@@ -1152,6 +1160,92 @@ class PlayerManager: ObservableObject {
                 }
             )
 
+    }
+
+    func addAlbumToLibrary(_ album: Album) {
+        
+        guard let albumURI = album.uri else {
+            NSSound.beep()
+            return
+        }
+
+        self.undoManager.registerUndo(withTarget: self) { playerManager in
+            playerManager.removeAlbumFromLibrary(album)
+        }
+
+        self.spotify.api.saveAlbumsForCurrentUser(
+            [albumURI]
+        )
+        .receive(on: RunLoop.main)
+        .handleAuthenticationError(spotify: self.spotify)
+        .sink(receiveCompletion: { completion in
+            switch completion {
+                case .finished:
+                    self.retrieveSavedAlbums()
+                case .failure(let error):
+                    let alertTitle = String.localizedStringWithFormat(
+                        NSLocalizedString(
+                            "Couldn't Save Album \"%@\"",
+                            comment: "Couldn't Save Album [album name]"
+                        ),
+                        album.name
+                    )
+
+                    let alert = AlertItem(
+                        title: alertTitle,
+                        message: error.customizedLocalizedDescription
+                    )
+                    self.notificationSubject.send(alert)
+                    Loggers.playerManager.error(
+                        "\(alertTitle): \(error)"
+                    )
+            }
+        })
+        .store(in: &self.cancellables)
+        
+    }
+    
+    func removeAlbumFromLibrary(_ album: Album) {
+
+        guard let albumURI = album.uri else {
+            NSSound.beep()
+            return
+        }
+
+        self.undoManager.registerUndo(withTarget: self) { playerManager in
+            playerManager.addAlbumToLibrary(album)
+        }
+
+        self.spotify.api.removeSavedAlbumsForCurrentUser(
+            [albumURI]
+        )
+        .receive(on: RunLoop.main)
+        .handleAuthenticationError(spotify: self.spotify)
+        .sink(receiveCompletion: { completion in
+            switch completion {
+                case .finished:
+                    self.retrieveSavedAlbums()
+                case .failure(let error):
+                    let alertTitle = String.localizedStringWithFormat(
+                        NSLocalizedString(
+                            "Couldn't Remove Album \"%@\"",
+                            comment: "Couldn't Remove Album [album name]"
+                        ),
+                        album.name
+                    )
+
+                    let alert = AlertItem(
+                        title: alertTitle,
+                        message: error.customizedLocalizedDescription
+                    )
+                    self.notificationSubject.send(alert)
+                    Loggers.playerManager.error(
+                        "\(alertTitle): \(error)"
+                    )
+            }
+        })
+        .store(in: &self.cancellables)
+        
     }
 
     func playAlbum(_ album: Album) {
@@ -1336,6 +1430,7 @@ class PlayerManager: ObservableObject {
             playlist, uris: [itemURI]
         )
         .receive(on: RunLoop.main)
+        .handleAuthenticationError(spotify: self.spotify)
         .sink(
             receiveCompletion: { completion in
                 switch completion {
@@ -1406,6 +1501,7 @@ class PlayerManager: ObservableObject {
             of: [itemURI]
         )
         .receive(on: RunLoop.main)
+        .handleAuthenticationError(spotify: self.spotify)
         .sink(
             receiveCompletion: { completion in
                 switch completion {
@@ -1459,6 +1555,7 @@ class PlayerManager: ObservableObject {
             playlist.uri
         )
         .receive(on: RunLoop.main)
+        .handleAuthenticationError(spotify: self.spotify)
         .sink(receiveCompletion: { completion in
             switch completion {
                 case .finished:
@@ -1502,6 +1599,7 @@ class PlayerManager: ObservableObject {
             playlist.uri
         )
         .receive(on: RunLoop.main)
+        .handleAuthenticationError(spotify: self.spotify)
         .sink(receiveCompletion: { completion in
             switch completion {
                 case .finished:
@@ -1553,7 +1651,7 @@ class PlayerManager: ObservableObject {
             .map(\.1)
             
             DispatchQueue.main.async {
-                self.playlistsSortedByLastModifiedDate = sortedPlaylists
+                self.playlists = sortedPlaylists
             }
         }
     }
@@ -1995,6 +2093,7 @@ class PlayerManager: ObservableObject {
             case .shuffle:
                 self.toggleShuffle()
             case .likeTrack:
+                self.currentTrackIsSaved.toggle()
                 self.addOrRemoveCurrentTrackFromSavedTracks()
             case .onlyShowMyPlaylists:
                 self.onlyShowMyPlaylists.toggle()

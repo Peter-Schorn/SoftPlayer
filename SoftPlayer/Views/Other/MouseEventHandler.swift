@@ -3,20 +3,19 @@ import SwiftUI
 import AppKit
 import Combine
 
-/// https://stackoverflow.com/a/61155272/12394554
 struct MouseEventHandler: NSViewRepresentable {
     
-    let mouseDown: (NSEvent) -> Void
-    let mouseUp: (NSEvent) -> Void
+    let mouseDown: (NSView, NSEvent) -> Void
+    let mouseUp: (NSView, NSEvent) -> Void
 
     private class MouseHandlerView: NSView {
         
-        let mouseDown: (NSEvent) -> Void
-        let mouseUp: (NSEvent) -> Void
+        let mouseDown: (NSView, NSEvent) -> Void
+        let mouseUp: (NSView, NSEvent) -> Void
 
         init(
-            mouseDown: @escaping (NSEvent) -> Void,
-            mouseUp: @escaping (NSEvent) -> Void
+            mouseDown: @escaping (NSView, NSEvent) -> Void,
+            mouseUp: @escaping (NSView, NSEvent) -> Void
         ) {
             self.mouseDown = mouseDown
             self.mouseUp = mouseUp
@@ -30,11 +29,11 @@ struct MouseEventHandler: NSViewRepresentable {
         override var acceptsFirstResponder: Bool { true }
         
         override func mouseDown(with event: NSEvent) {
-            self.mouseDown(event)
+            self.mouseDown(self, event)
         }
         
         override func mouseUp(with event: NSEvent) {
-            self.mouseUp(event)
+            self.mouseUp(self, event)
         }
         
     }
@@ -56,8 +55,8 @@ struct MouseEventHandler: NSViewRepresentable {
 extension View {
     
     @ViewBuilder func handleMouseEvents(
-        mouseDown: @escaping (NSEvent) -> Void,
-        mouseUp: @escaping (NSEvent) -> Void
+        mouseDown: @escaping (NSView, NSEvent) -> Void,
+        mouseUp: @escaping (NSView, NSEvent) -> Void
     ) -> some View {
         
         let handler = MouseEventHandler(
