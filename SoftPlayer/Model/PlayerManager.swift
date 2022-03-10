@@ -215,17 +215,34 @@ class PlayerManager: ObservableObject {
     private let playlistsLastModifiedDatesKey = "playlistsLastModifiedDates"
     
     /// The dates that playlists were last played or items were
-    /// added to them.
+    /// added to them. Dictionary key: playlist URI.
     var playlistsLastModifiedDates: [String: Date] {
         get {
             return UserDefaults.standard.dictionary(
-                forKey: playlistsLastModifiedDatesKey
+                forKey: self.playlistsLastModifiedDatesKey
             ) as? [String: Date] ?? [:]
         }
         set {
             UserDefaults.standard.setValue(
                 newValue,
-                forKey: playlistsLastModifiedDatesKey
+                forKey: self.playlistsLastModifiedDatesKey
+            )
+        }
+    }
+    
+    private let albumsLastModifiedDatesKey = "albumsLastModifiedDates"
+    
+    /// The dates that albums were last played. Dictionary key: album URI.
+    var albumsLastModifiedDates: [String: Date] {
+        get {
+            return UserDefaults.standard.dictionary(
+                forKey: self.albumsLastModifiedDatesKey
+            ) as? [String: Date] ?? [:]
+        }
+        set {
+            UserDefaults.standard.setValue(
+                newValue,
+                forKey: self.albumsLastModifiedDatesKey
             )
         }
     }
@@ -322,7 +339,8 @@ class PlayerManager: ObservableObject {
         self.popoverDidClose.sink {
             Loggers.playerManager.trace("popoverDidDismiss")
             self.updatePlayerStateCancellable = nil
-            self.updatePlaylistsSortedByLastModifiedDate()
+            self.sortPlaylistsByLastModifiedDate()
+            self.sortAlbumsByLastModifiedDate()
         }
         .store(in: &self.cancellables)
         
@@ -332,9 +350,9 @@ class PlayerManager: ObservableObject {
             )
             if isAuthorized {
                 self.retrieveCurrentUser()
-                self.retrievePlaylists()
+                self.retrievePlaylists(sort: true)
+                self.retrieveSavedAlbums(sort: true)
                 self.updatePlayerState()
-                self.retrieveSavedAlbums()
             }
         }
         .store(in: &self.cancellables)
@@ -1124,7 +1142,7 @@ class PlayerManager: ObservableObject {
 
     // MARK: - Albums -
     
-    func retrieveSavedAlbums() {
+    func retrieveSavedAlbums(sort: Bool) {
         
         self.retrieveSavedAlbumsCancellable = spotify.api
             .currentUserSavedAlbums(limit: 50)
@@ -1168,6 +1186,9 @@ class PlayerManager: ObservableObject {
                         .filter { $0.id != nil }
                     
                     self.retrieveAlbumImages()
+                    if sort {
+                        self.sortAlbumsByLastModifiedDate()
+                    }
 
                 }
             )
@@ -1193,7 +1214,7 @@ class PlayerManager: ObservableObject {
         .sink(receiveCompletion: { completion in
             switch completion {
                 case .finished:
-                    self.retrieveSavedAlbums()
+                    self.retrieveSavedAlbums(sort: false)
                 case .failure(let error):
                     let alertTitle = String.localizedStringWithFormat(
                         NSLocalizedString(
@@ -1236,7 +1257,7 @@ class PlayerManager: ObservableObject {
         .sink(receiveCompletion: { completion in
             switch completion {
                 case .finished:
-                    self.retrieveSavedAlbums()
+                    self.retrieveSavedAlbums(sort: false)
                 case .failure(let error):
                     let alertTitle = String.localizedStringWithFormat(
                         NSLocalizedString(
@@ -1279,6 +1300,8 @@ class PlayerManager: ObservableObject {
             self.notificationSubject.send(alert)
             return
         }
+
+        self.albumsLastModifiedDates[albumURI] = Date()
 
         let playbackRequest = PlaybackRequest(
             context: .contextURI(albumURI),
@@ -1343,7 +1366,7 @@ class PlayerManager: ObservableObject {
     
     
     /// Retrieve the current user's playlists.
-    func retrievePlaylists() {
+    func retrievePlaylists(sort: Bool) {
         
         self.retrievePlaylistsCancellable = self.spotify.api
             .currentUserPlaylists(limit: 50)
@@ -1376,7 +1399,9 @@ class PlayerManager: ObservableObject {
                 receiveValue: { playlists in
                     self.playlists = playlists
                     self.retrievePlaylistImages()
-                    self.updatePlaylistsSortedByLastModifiedDate()
+                    if sort {
+                        self.sortPlaylistsByLastModifiedDate()
+                    }
                 }
             )
 
@@ -1574,7 +1599,7 @@ class PlayerManager: ObservableObject {
                     Loggers.playerManager.trace(
                         "did follow playlist \(playlist.name)"
                     )
-                    self.retrievePlaylists()
+                    self.retrievePlaylists(sort: false)
                 case .failure(let error):
                     let alertTitle = String.localizedStringWithFormat(
                         NSLocalizedString(
@@ -1618,7 +1643,7 @@ class PlayerManager: ObservableObject {
                     Loggers.playerManager.trace(
                         "did unfollow playlist \(playlist.name)"
                     )
-                    self.retrievePlaylists()
+                    self.retrievePlaylists(sort: false)
                 case .failure(let error):
                     let alertTitle = String.localizedStringWithFormat(
                         NSLocalizedString(
@@ -1643,18 +1668,19 @@ class PlayerManager: ObservableObject {
 
     /// Re-sorts the playlists by the last date they were played or items
     /// were added to them, whichever was more recent.
-    func updatePlaylistsSortedByLastModifiedDate() {
-        Loggers.playerManager.notice(
-            "updatePlaylistsSortedByLastPlayedOrLastAddedDate"
+    func sortPlaylistsByLastModifiedDate() {
+        Loggers.playerManager.trace(
+            "sortPlaylistsByLastModifiedDate"
         )
+        let dates = self.playlistsLastModifiedDates
         DispatchQueue.global().async {
             let sortedPlaylists = self.playlists.enumerated().sorted {
                 lhs, rhs in
                 
                 // return true if lhs should be ordered before rhs
 
-                let lhsDate = self.playlistsLastModifiedDates[lhs.1.uri]
-                let rhsDate = self.playlistsLastModifiedDates[rhs.1.uri]
+                let lhsDate = dates[lhs.1.uri]
+                let rhsDate = dates[rhs.1.uri]
                 return self.areInDecreasingOrderByDateThenIncreasingOrderByIndex(
                     lhs: (index: lhs.offset, date: lhsDate),
                     rhs: (index: rhs.offset, date: rhsDate)
@@ -1664,6 +1690,33 @@ class PlayerManager: ObservableObject {
             
             DispatchQueue.main.async {
                 self.playlists = sortedPlaylists
+            }
+        }
+    }
+    
+    /// Re-sorts the albums by the last date they were played.
+    func sortAlbumsByLastModifiedDate() {
+        Loggers.playerManager.trace(
+            "sortAlbumsByLastModifiedDate"
+        )
+        let dates = self.albumsLastModifiedDates
+        DispatchQueue.global().async {
+            let sortedAlbums = self.savedAlbums.enumerated().sorted {
+                lhs, rhs in
+                
+                // return true if lhs should be ordered before rhs
+
+                let lhsDate = lhs.1.uri.flatMap { dates[$0] }
+                let rhsDate = rhs.1.uri.flatMap { dates[$0] }
+                return self.areInDecreasingOrderByDateThenIncreasingOrderByIndex(
+                    lhs: (index: lhs.offset, date: lhsDate),
+                    rhs: (index: rhs.offset, date: rhsDate)
+                )
+            }
+            .map(\.1)
+            
+            DispatchQueue.main.async {
+                self.savedAlbums = sortedAlbums
             }
         }
     }
@@ -2090,17 +2143,7 @@ class PlayerManager: ObservableObject {
                 else {
                     self.presentLibraryView()
                 }
-            case .showPlayists, .showAlbums:
-                if !self.isShowingLibraryView {
-                    self.presentLibraryView()
-                }
-                if shortcutName == .showAlbums {
-                    self.libraryPage = .albums
-                }
-                else if shortcutName == .showPlayists {
-                    self.libraryPage = .playlists
-                }
-            case .repeatMode:
+             case .repeatMode:
                 self.cycleRepeatMode()
             case .shuffle:
                 self.toggleShuffle()
@@ -2127,8 +2170,8 @@ class PlayerManager: ObservableObject {
     }
 
     func presentLibraryView() {
-        self.retrievePlaylists()
-        self.retrieveSavedAlbums()
+        self.retrievePlaylists(sort: true)
+        self.retrieveSavedAlbums(sort: true)
         self.retrieveCurrentlyPlayingContext()
         
         os_signpost(
@@ -2155,7 +2198,8 @@ class PlayerManager: ObservableObject {
                 self.isShowingLibraryView = false
             }
             self.updateSoundVolumeAndPlayerPosition()
-            self.updatePlaylistsSortedByLastModifiedDate()
+            self.sortPlaylistsByLastModifiedDate()
+            self.sortAlbumsByLastModifiedDate()
             self.retrieveAvailableDevices()
         }
         else {
