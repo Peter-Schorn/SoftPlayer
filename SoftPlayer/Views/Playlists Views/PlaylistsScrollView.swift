@@ -189,6 +189,10 @@ struct PlaylistsScrollView: View {
                 }
                 searchFieldIsFocused = true
             }
+            .onDisappear {
+                print("PlaylistsScrollView disapeared")
+                searchFieldIsFocused = false
+            }
             .onChange(of: searchText) { text in
                 scrollView.scrollTo(searchFieldId, anchor: .top)
             }
