@@ -48,6 +48,10 @@ class PlayerManager: ObservableObject {
     /// library view.
     @Published var didScrollToAlbumsSearchBar = false
 
+    // MARK: First Responder
+    
+    @Published var playerViewIsFirstResponder: Bool? = true
+
     // MARK: - Images -
     
     var images: [SpotifyIdentifier: Image] = [:]
@@ -2170,6 +2174,7 @@ class PlayerManager: ObservableObject {
     }
 
     func presentLibraryView() {
+        self.playerViewIsFirstResponder = false
         self.retrievePlaylists(sort: true)
         self.retrieveSavedAlbums(sort: true)
         self.retrieveCurrentlyPlayingContext()
@@ -2207,6 +2212,9 @@ class PlayerManager: ObservableObject {
         }
         self.didScrollToAlbumsSearchBar = false
         self.didScrollToPlaylistsSearchBar = false
+        DispatchQueue.main.async {
+            self.playerViewIsFirstResponder = true
+        }
     }
     
 }

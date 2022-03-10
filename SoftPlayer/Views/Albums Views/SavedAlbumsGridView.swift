@@ -169,6 +169,10 @@ struct SavedAlbumsGridView: View {
                 }
                 searchFieldIsFocused = true
             }
+            .onDisappear {
+//                print("SavedAlbumsGridView disapeared")
+                searchFieldIsFocused = false
+            }
             .onChange(of: searchText) { text in
                 scrollView.scrollTo(searchFieldId, anchor: .top)
             }
@@ -218,7 +222,7 @@ struct SavedAlbumsGridView: View {
         else if let scrollView = scrollView, event.specialKey == nil,
                 let character = event.charactersIgnoringModifiers {
             
-//            self.searchFieldIsFocused = true
+            self.searchFieldIsFocused = true
             self.searchText += character
             scrollView.scrollTo(searchFieldId, anchor: .top)
             return true

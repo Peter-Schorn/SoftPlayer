@@ -47,7 +47,7 @@ struct PlayerView: View {
 //    let albumArtistTitle = "Gustavo Cerati - Bocanada"
 
     // MARK: - Begin Views -
-    
+
     var body: some View {
         ZStack(alignment: .top) {
             if playerManager.isShowingLibraryView
@@ -79,6 +79,17 @@ struct PlayerView: View {
                 playerView
             }
         }
+//        .background(
+//            KeyEventHandler(
+//                isFirstResponder: $playerManager.playerViewIsFirstResponder
+//            ) { event in
+//                return self.playerManager.receiveKeyEvent(
+//                    event,
+//                    requireModifierKey: false
+//                )
+//            }
+//            .touchBar(content: PlayPlaylistsTouchBarView.init)
+//        )
         .overlay(NotificationView())
         .frame(
             width: AppDelegate.popoverWidth,
@@ -223,6 +234,7 @@ struct PlayerView: View {
                     // MARK: Show LibraryView Button
                     ShowLibraryButton()
                     
+                    // MARK: Save Track Button
                     SaveTrackButton()
 
                     if let url = playerManager.currentItemIdentifier?.url {
@@ -256,7 +268,9 @@ struct PlayerView: View {
             Spacer()
         }
         .background(
-            KeyEventHandler { event in
+            KeyEventHandler(
+                isFirstResponder: $playerManager.playerViewIsFirstResponder
+            ) { event in
                 return self.playerManager.receiveKeyEvent(
                     event,
                     requireModifierKey: false
