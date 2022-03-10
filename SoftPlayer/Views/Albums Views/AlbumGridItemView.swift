@@ -49,7 +49,7 @@ struct AlbumGridItemView: View {
                         NowPlayingAnimation(
                             isAnimating: $playerManager.isPlaying
                         )
-                            .frame(width: 12, height: 10)
+                        .frame(width: 12, height: 10)
                     }
                 }
                 Spacer()
@@ -77,7 +77,9 @@ struct AlbumGridItemView: View {
                     NSSound.beep()
                     return
                 }
-                NSWorkspace.shared.open(url)
+                self.playerManager.openSpotifyDesktopApplication { _, _ in
+                    NSWorkspace.shared.open(url)
+                }
             }
             Button("Remove From Library") {
                 self.playerManager.removeAlbumFromLibrary(self.album)
