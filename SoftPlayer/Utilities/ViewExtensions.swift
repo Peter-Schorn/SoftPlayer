@@ -48,6 +48,33 @@ extension View {
         content(self)
     }
     
+    @ViewBuilder func versionedBackground<V>(
+        alignment: Alignment = .center,
+        @ViewBuilder content: () -> V
+    ) -> some View where V : View {
+        
+        if #available(macOS 12.0, *) {
+            self.background(alignment: alignment, content: content)
+        } else {
+            self.background(content(), alignment: alignment)
+        }
+
+    }
+    
+    @ViewBuilder func versionedOverlay<V>(
+        alignment: Alignment = .center,
+        @ViewBuilder content: () -> V
+    ) -> some View where V : View {
+        
+        if #available(macOS 12.0, *) {
+            self.overlay(alignment: alignment, content: content)
+        } else {
+            self.overlay(content(), alignment: alignment)
+        }
+
+    }
+    
+    
     func adaptiveShadow(
         radius: CGFloat,
         x: CGFloat = 0,
