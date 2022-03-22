@@ -255,6 +255,10 @@ class PlayerManager: ObservableObject {
         }
     }
     
+    // MARK: - Saved Tracks -
+    
+//    var savedTracks: [Track] = []
+
     // MARK: - Notification -
     
     let notificationSubject = PassthroughSubject<AlertItem, Never>()
@@ -1034,7 +1038,7 @@ class PlayerManager: ObservableObject {
         self.lastAdjustedPlayerPositionDate = Date()
     }
     
-    // MARK: - Save/Unsave Track -
+    // MARK: - Saved Tracks -
  
     func addOrRemoveCurrentTrackFromSavedTracks() {
         if self.currentTrackIsSaved {
@@ -1147,6 +1151,30 @@ class PlayerManager: ObservableObject {
             )
         
     }
+
+//    func retrieveSavedTracks() {
+//
+//        self.spotify.api.currentUserSavedTracks(
+//            limit: 50
+//        )
+//        .extendPagesConcurrently(self.spotify.api)
+//        .collectAndSortByOffset()
+//        .receive(on: RunLoop.main)
+//        .handleAuthenticationError(spotify: self.spotify)
+//        .sink(
+//            receiveCompletion: { completion in
+//                Loggers.playerManager.trace(
+//                    "retrieveSavedTracks completion: \(completion)"
+//                )
+//            },
+//            receiveValue: { savedTracks in
+//                let tracks = savedTracks.map(\.item)
+//                self.savedTracks = tracks
+//            }
+//        )
+//        .store(in: &self.cancellables)
+//
+//    }
 
     // MARK: - Albums -
     
@@ -1374,8 +1402,6 @@ class PlayerManager: ObservableObject {
         
     }
     
-    
-    
     /// Retrieve the current user's playlists.
     func retrievePlaylists(sort: Bool) {
         
@@ -1411,6 +1437,30 @@ class PlayerManager: ObservableObject {
                     
                 },
                 receiveValue: { playlists in
+                    
+                    var playlists = playlists
+
+                    if let currentUser = self.currentUser {
+                        
+                        let uri = "spotify:user:\(currentUser.id):collection"
+
+                        let savedTracksPlaylist = Playlist(
+                            name: "Liked Songs",
+                            items: PlaylistItemsReference(href: nil, total: 0),
+                            owner: currentUser,
+                            isPublic: nil,
+                            isCollaborative: false,
+                            snapshotId: "",
+                            href: .example,
+                            id: "collection",
+                            uri: uri,
+                            images: []
+                        )
+                        
+                        playlists.insert(savedTracksPlaylist, at: 0)
+
+                    }
+
                     self.playlists = playlists
                     self.retrievePlaylistImages()
                     if sort {
@@ -1476,48 +1526,61 @@ class PlayerManager: ObservableObject {
                 playlist: playlist
             )
         }
+        
+        let publisher: AnyPublisher<Void, Error>
+        
+        if playlist.uri.isSavedTracksURI {
+            publisher = self.spotify.api.saveTracksForCurrentUser(
+                [itemURI]
+            )
+        }
+        else {
+            publisher = self.spotify.api.addToPlaylist(
+                playlist, uris: [itemURI]
+            )
+            .map { _ in }
+            .eraseToAnyPublisher()
+        }
+        
+        publisher
+            .receive(on: RunLoop.main)
+            .handleAuthenticationError(spotify: self.spotify)
+            .sink(
+                receiveCompletion: { completion in
+                    switch completion {
+                        case .finished:
+                            let alertTitle = String.localizedStringWithFormat(
+                                NSLocalizedString(
+                                    "Added \"%@\" to \"%@\"",
+                                    comment: "Added [song name] to [playlist name]"
+                                ),
+                                itemName, playlist.name
+                            )
+                            let alert = AlertItem(title: alertTitle, message: "")
+                            self.notificationSubject.send(alert)
+                        case .failure(let error):
 
-        self.spotify.api.addToPlaylist(
-            playlist, uris: [itemURI]
-        )
-        .receive(on: RunLoop.main)
-        .handleAuthenticationError(spotify: self.spotify)
-        .sink(
-            receiveCompletion: { completion in
-                switch completion {
-                    case .finished:
-                        let alertTitle = String.localizedStringWithFormat(
-                            NSLocalizedString(
-                                "Added \"%@\" to \"%@\"",
-                                comment: "Added [song name] to [playlist name]"
-                            ),
-                            itemName, playlist.name
-                        )
-                        let alert = AlertItem(title: alertTitle, message: "")
-                        self.notificationSubject.send(alert)
-                    case .failure(let error):
-                        
-                        let alertTitle = String.localizedStringWithFormat(
-                            NSLocalizedString(
-                                "Couldn't Add \"%@\" to \"%@\"",
-                                comment: "Couldn't Add [song name] to [playlist name]"
-                            ),
-                            itemName, playlist.name
-                        )
+                            let alertTitle = String.localizedStringWithFormat(
+                                NSLocalizedString(
+                                    "Couldn't Add \"%@\" to \"%@\"",
+                                    comment: "Couldn't Add [song name] to [playlist name]"
+                                ),
+                                itemName, playlist.name
+                            )
 
-                        let alert = AlertItem(
-                            title: alertTitle,
-                            message: error.customizedLocalizedDescription
-                        )
-                        self.notificationSubject.send(alert)
-                        Loggers.playlistCellView.error(
-                            "\(alertTitle): \(error)"
-                        )
-                }
-            },
-            receiveValue: { _ in }
-        )
-        .store(in: &self.cancellables)
+                            let alert = AlertItem(
+                                title: alertTitle,
+                                message: error.customizedLocalizedDescription
+                            )
+                            self.notificationSubject.send(alert)
+                            Loggers.playlistCellView.error(
+                                "\(alertTitle): \(error)"
+                            )
+                    }
+                },
+                receiveValue: { }
+            )
+            .store(in: &self.cancellables)
 
     }
 
@@ -1546,49 +1609,61 @@ class PlayerManager: ObservableObject {
                 playlist: playlist
             )
         }
+        
+        let publisher: AnyPublisher<Void, Error>
+        
+        if playlist.uri.isSavedTracksURI {
+            publisher = self.spotify.api.removeSavedTracksForCurrentUser(
+                [itemURI]
+            )
+        }
+        else {
+            publisher = self.spotify.api.removeAllOccurrencesFromPlaylist(
+                playlist, of: [itemURI]
+            )
+            .map { _ in }
+            .eraseToAnyPublisher()
+        }
+       
+        publisher
+            .receive(on: RunLoop.main)
+            .handleAuthenticationError(spotify: self.spotify)
+            .sink(
+                receiveCompletion: { completion in
+                    switch completion {
+                        case .finished:
+                            let alertTitle = String.localizedStringWithFormat(
+                                NSLocalizedString(
+                                    "Removed \"%@\" from \"%@\"",
+                                    comment: "Removed [song name] from [playlist name]"
+                                ),
+                                itemName, playlist.name
+                            )
+                            let alert = AlertItem(title: alertTitle, message: "")
+                            self.notificationSubject.send(alert)
+                        case .failure(let error):
+                            
+                            let alertTitle = String.localizedStringWithFormat(
+                                NSLocalizedString(
+                                    "Couldn't Remove \"%@\" from \"%@\"",
+                                    comment: "Couldn't Remove [song name] from [playlist name]"
+                                ),
+                                itemName, playlist.name
+                            )
 
-        self.spotify.api.removeAllOccurrencesFromPlaylist(
-            playlist,
-            of: [itemURI]
-        )
-        .receive(on: RunLoop.main)
-        .handleAuthenticationError(spotify: self.spotify)
-        .sink(
-            receiveCompletion: { completion in
-                switch completion {
-                    case .finished:
-                        let alertTitle = String.localizedStringWithFormat(
-                            NSLocalizedString(
-                                "Removed \"%@\" from \"%@\"",
-                                comment: "Removed [song name] from [playlist name]"
-                            ),
-                            itemName, playlist.name
-                        )
-                        let alert = AlertItem(title: alertTitle, message: "")
-                        self.notificationSubject.send(alert)
-                    case .failure(let error):
-                        
-                        let alertTitle = String.localizedStringWithFormat(
-                            NSLocalizedString(
-                                "Couldn't Remove \"%@\" from \"%@\"",
-                                comment: "Couldn't Remove [song name] from [playlist name]"
-                            ),
-                            itemName, playlist.name
-                        )
-
-                        let alert = AlertItem(
-                            title: alertTitle,
-                            message: error.customizedLocalizedDescription
-                        )
-                        self.notificationSubject.send(alert)
-                        Loggers.playlistCellView.error(
-                            "\(alertTitle): \(error)"
-                        )
-                }
-            },
-            receiveValue: { _ in }
-        )
-        .store(in: &self.cancellables)
+                            let alert = AlertItem(
+                                title: alertTitle,
+                                message: error.customizedLocalizedDescription
+                            )
+                            self.notificationSubject.send(alert)
+                            Loggers.playlistCellView.error(
+                                "\(alertTitle): \(error)"
+                            )
+                    }
+                },
+                receiveValue: { }
+            )
+            .store(in: &self.cancellables)
 
     }
 
@@ -2174,9 +2249,19 @@ class PlayerManager: ObservableObject {
             case .quit:
                 NSApplication.shared.terminate(nil)
             case .undo:
-                self.undoManager.undo()
+                if self.undoManager.canUndo {
+                    self.undoManager.undo()
+                }
+                else {
+                    return false
+                }
             case .redo:
-                self.undoManager.redo()
+                if self.undoManager.canRedo {
+                    self.undoManager.redo()
+                }
+                else {
+                    return false
+                }
             default:
                 return false
         }

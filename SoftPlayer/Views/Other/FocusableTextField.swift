@@ -39,7 +39,9 @@ struct FocusableTextField: NSViewRepresentable {
     func updateNSView(_ searchField: CustomNSSearchField, context: Context) {
         
         searchField.stringValue = text
-        
+
+//        print("FocusableTextField.updateNSView: isFirstResponder: \(self.isFirstResponder)")
+
 //        Loggers.keyEvent.info(
 //            """
 //            \(self.name): FocusableTextField.updateNSView: self.isFirstResponder: \
@@ -60,9 +62,9 @@ struct FocusableTextField: NSViewRepresentable {
             let range = NSRange(location: text.count, length: 0)
             searchField.currentEditor()?.selectedRange = range
         }
-//        else {
-//            searchField.window?.makeFirstResponder(nil)
-//        }
+        else {
+            searchField.window?.makeFirstResponder(nil)
+        }
         
     }
     
