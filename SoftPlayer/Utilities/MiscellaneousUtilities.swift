@@ -202,3 +202,21 @@ extension CGAffineTransform {
     }
 
 }
+
+extension String {
+    
+    var isSavedTracksURI: Bool {
+        let pattern = try! Regex("^spotify:user:.+:collection$")
+        return try! self.regexMatch(pattern) != nil
+        
+    }
+
+}
+
+extension URL {
+    
+    static let savedTracksURL = Self(
+        string: "https://open.spotify.com/collection/tracks"
+    )!
+
+}

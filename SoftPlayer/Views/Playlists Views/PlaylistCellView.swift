@@ -25,13 +25,20 @@ struct PlaylistCellView: View {
         self.isSelected = isSelected
     }
     
-    var playlistImage: Image {
-        
-        if let identifier = try? SpotifyIdentifier(uri: playlist.uri),
-                let image = self.playerManager.image(for: identifier) {
-            return image
+    @ViewBuilder var playlistImage: some View {
+
+        if self.playlist.uri.isSavedTracksURI {
+            SavedTracksImage()
         }
-        return Image(.spotifyAlbumPlaceholder)
+        else if let identifier = try? SpotifyIdentifier(uri: self.playlist.uri),
+                let image = self.playerManager.image(for: identifier) {
+            image
+                .resizable()
+        }
+        else {
+            Image(.spotifyAlbumPlaceholder)
+                .resizable()
+        }
         
     }
     
@@ -53,7 +60,6 @@ struct PlaylistCellView: View {
             Button(action: playPlaylist, label: {
                 HStack {
                     playlistImage
-                        .resizable()
                         .aspectRatio(contentMode: .fit)
                         .frame(width: 30, height: 30)
                         .cornerRadius(2)
@@ -73,15 +79,25 @@ struct PlaylistCellView: View {
                 }
                 .contentShape(Rectangle())
                 .onDragOptional {
-                    if let url = try? SpotifyIdentifier(uri: self.playlist).url {
-                        return NSItemProvider(object: url as NSURL)
+                    let playlistURL: URL
+
+                    if self.playlist.uri.isSavedTracksURI {
+                        playlistURL = URL.savedTracksURL
                     }
-                    return nil
+                    else if let url = try? SpotifyIdentifier(
+                        uri: self.playlist
+                    ).url {
+                        playlistURL = url
+                    }
+                    else {
+                        return nil
+                    }
+                    return NSItemProvider(object: playlistURL as NSURL)
                 }
             })
             .buttonStyle(PlainButtonStyle())
             
-            if playlistOwnedByCurrentUser {
+            if playlistOwnedByCurrentUser && !(playlist.uri.isSavedTracksURI && playerManager.currentTrack?.identifier?.idCategory != .track) {
                 Button(action: {
                     self.playerManager.addCurrentItemToPlaylist(
                         playlist: self.playlist
@@ -117,10 +133,11 @@ struct PlaylistCellView: View {
                     NSWorkspace.shared.open(url)
                 }
             }
-            Button("Unfollow Playlist") {
-                self.playerManager.unfollowPlaylist(self.playlist)
+            if !self.playlist.uri.isSavedTracksURI {
+                Button("Unfollow Playlist") {
+                    self.playerManager.unfollowPlaylist(self.playlist)
+                }
             }
-            
         }
     }
 

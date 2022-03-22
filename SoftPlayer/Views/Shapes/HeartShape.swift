@@ -20,7 +20,7 @@ struct HeartShape: InsettableShape {
         
         var path = Path()
 
-        // Calculate Radius of Arcs using Pythagoras
+        // Calculate Radius of Arcs using the Pythagorean theorem
         let sideOne = rect.width * 0.4
         let sideTwo = rect.height * 0.3
         let arcRadius = sqrt(sideOne * sideOne + sideTwo * sideTwo) / 2
