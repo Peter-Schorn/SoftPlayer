@@ -1476,25 +1476,58 @@ class PlayerManager: ObservableObject {
         playlist: Playlist<PlaylistItemsReference>
     ) {
 
-        guard let itemURI = self.currentTrack?.identifier else {
-            Loggers.playerManager.error(
-                "PlaylistsView: no URI for the currently playing item"
+        let itemName = self.currentTrack?.name ?? "unknown"
+
+        guard let itemIdentifier = self.currentTrack?.identifier else {
+            Loggers.playerManager.notice(
+                """
+                Couldn't parse SpotifyIdentifier from URI: \
+                \(self.currentTrack?.id?() ?? "nil")
+                """
             )
-            let title = NSLocalizedString(
-                "Couldn't Retrieve the Currently Playing Track or Episode",
-                comment: ""
-            )
+            let title: String
+            if self.currentTrack?.isLocal == true {
+                title = NSLocalizedString(
+                    "Local tracks cannot be added to a playlist",
+                    comment: ""
+                )
+            }
+            else {
+                title = NSLocalizedString(
+                    "This item cannot be added to a playlist",
+                    comment: ""
+                )
+            }
             let alert = AlertItem(title: title, message: "")
             self.notificationSubject.send(alert)
             return
         }
         
+        if itemIdentifier.idCategory != .track && playlist.uri.isSavedTracksURI {
+            // if the user is trying to add a non-track to the saved tracks
+            // playlist
+            let alertTitle = String.localizedStringWithFormat(
+                NSLocalizedString(
+                    "Cannot add \"%@\" to \"Liked Songs\"",
+                    comment: "Cannot add [song name] to Liked Songs"
+                ),
+                itemName
+            )
+            let message = String.localizedStringWithFormat(
+                "Only tracks can be added."
+            )
+            let alert = AlertItem(title: alertTitle, message: message)
+            self.notificationSubject.send(alert)
+            return
+            
+            
+        }
+        
+        
         self.playlistsLastModifiedDates[playlist.uri] = Date()
         
-        let itemName = self.currentTrack?.name ?? "unknown"
-        
         self.addItemToPlaylist(
-            itemURI: itemURI,
+            itemURI: itemIdentifier,
             itemName: itemName,
             playlist: playlist
         )
@@ -1518,7 +1551,7 @@ class PlayerManager: ObservableObject {
         Loggers.playerManager.notice(
             "will add '\(itemName)' to '\(playlist.name)'"
         )
-        
+
         self.undoManager.registerUndo(withTarget: self) { playerManager in
             playerManager.removeItemFromPlaylist(
                 itemURI: itemURI,

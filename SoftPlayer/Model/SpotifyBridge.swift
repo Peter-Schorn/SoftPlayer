@@ -289,6 +289,10 @@ extension SpotifyTrack {
         }
         return try? SpotifyIdentifier(uri: id)
     }
+    
+    var isLocal: Bool {
+        self.id?().starts(with: "spotify:local:") == true
+    }
 
 }
 
