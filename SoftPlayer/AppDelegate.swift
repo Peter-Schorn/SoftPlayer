@@ -26,8 +26,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var spotify: Spotify!
     var playerManager: PlayerManager!
 
-    let undoManager = UndoManager()
-
     func applicationDidFinishLaunching(_ notification: Notification) {
         
         SoftPlayerLogHandler.bootstrap()
@@ -40,10 +38,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         self.spotify = Spotify()
 
-        self.playerManager = PlayerManager(
-            spotify: spotify,
-            undoManager: self.undoManager
-        )
+        self.playerManager = PlayerManager(spotify: spotify)
         
         // MARK: Root View
         let rootView = RootView()
