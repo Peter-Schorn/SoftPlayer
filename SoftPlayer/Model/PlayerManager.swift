@@ -16,7 +16,7 @@ class PlayerManager: ObservableObject {
 
     let spotify: Spotify
     
-    let undoManager: UndoManager
+    let undoManager = UndoManager()
 
     @AppStorage("libraryPage") var libraryPage = LibraryPage.playlists
 
@@ -305,10 +305,9 @@ class PlayerManager: ObservableObject {
     private var retrieveSavedAlbumsCancellable: AnyCancellable? = nil
     private var playAlbumCancellable: AnyCancellable? = nil
     
-    init(spotify: Spotify, undoManager: UndoManager = .init()) {
+    init(spotify: Spotify) {
         
         self.spotify = spotify
-        self.undoManager = undoManager
         
         self.albumsLastModifiedDates = UserDefaults.standard.dictionary(
             forKey: self.albumsLastModifiedDatesKey
