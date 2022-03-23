@@ -224,7 +224,10 @@ struct PlaylistsScrollView: View {
                     if onlyShowMyPlaylists {
                         Image(systemName: "checkmark")
                     }
-                    Text("Only Show My Playlists\(onlyShowMyPlaylistsShortcut)")
+                    Text("Only Show My Playlists") +
+                    Text(onlyShowMyPlaylistsShortcut)
+                        .foregroundColor(.secondary)
+                    
                 }
             })
         } label: {
