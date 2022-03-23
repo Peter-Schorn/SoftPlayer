@@ -117,6 +117,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationWillTerminate(_ aNotification: Notification) {
         self.playerManager.spotifyApplication?.blockAppleEvents = true
         self.playerManager.playerStateDidChangeCancellable = nil
+        self.playerManager.commitModifiedDates()
+        
     }
 
     func application(_ application: NSApplication, open urls: [URL]) {

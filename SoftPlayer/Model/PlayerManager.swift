@@ -214,8 +214,10 @@ class PlayerManager: ObservableObject {
 
     private let albumsLastModifiedDatesKey = "albumsLastModifiedDates"
     
+    var albumsLastModifiedDates: [String: Date]
+    
     /// The dates that albums were last played. Dictionary key: album URI.
-    var albumsLastModifiedDates: [String: Date] {
+    var committedAlbumsLastModifiedDates: [String: Date] {
         get {
             return UserDefaults.standard.dictionary(
                 forKey: self.albumsLastModifiedDatesKey
@@ -239,9 +241,11 @@ class PlayerManager: ObservableObject {
     
     private let playlistsLastModifiedDatesKey = "playlistsLastModifiedDates"
     
+    var playlistsLastModifiedDates: [String: Date]
+
     /// The dates that playlists were last played or items were
     /// added to them. Dictionary key: playlist URI.
-    var playlistsLastModifiedDates: [String: Date] {
+    var committedPlaylistsLastModifiedDates: [String: Date] {
         get {
             return UserDefaults.standard.dictionary(
                 forKey: self.playlistsLastModifiedDatesKey
@@ -306,6 +310,14 @@ class PlayerManager: ObservableObject {
         self.spotify = spotify
         self.undoManager = undoManager
         
+        self.albumsLastModifiedDates = UserDefaults.standard.dictionary(
+            forKey: self.albumsLastModifiedDatesKey
+        ) as? [String: Date] ?? [:]
+        
+        self.playlistsLastModifiedDates = UserDefaults.standard.dictionary(
+            forKey: self.playlistsLastModifiedDatesKey
+        ) as? [String: Date] ?? [:]
+        
         self.checkIfNotAuthorizedForNewScopes()
         self.checkIfSpotifyIsInstalled()
         self.observeColorScheme()
@@ -351,8 +363,9 @@ class PlayerManager: ObservableObject {
         self.popoverDidClose.sink {
             Loggers.playerManager.trace("popoverDidDismiss")
             self.updatePlayerStateCancellable = nil
-            self.sortPlaylistsByLastModifiedDate()
-            self.sortAlbumsByLastModifiedDate()
+            self.commitModifiedDates()
+            self.sortPlaylistsByLastModifiedDate(&self.playlists)
+            self.sortAlbumsByLastModifiedDate(&self.savedAlbums)
         }
         .store(in: &self.cancellables)
         
@@ -362,8 +375,8 @@ class PlayerManager: ObservableObject {
             )
             if isAuthorized {
                 self.retrieveCurrentUser()
-                self.retrievePlaylists(sort: true)
-                self.retrieveSavedAlbums(sort: true)
+                self.retrievePlaylists()
+                self.retrieveSavedAlbums()
                 self.updatePlayerState()
             }
         }
@@ -376,6 +389,9 @@ class PlayerManager: ObservableObject {
                 self.availableDevices = []
                 self.currentUser = nil
                 self.playlistsLastModifiedDates = [:]
+                self.albumsLastModifiedDates = [:]
+                self.committedAlbumsLastModifiedDates = [:]
+                self.committedPlaylistsLastModifiedDates = [:]
                 self.playlists = []
                 self.savedAlbums = []
                 self.removeImagesCache()
@@ -1178,7 +1194,7 @@ class PlayerManager: ObservableObject {
 
     // MARK: - Albums -
     
-    func retrieveSavedAlbums(sort: Bool) {
+    func retrieveSavedAlbums() {
         
         self.isLoadingSavedAlbums = true
 
@@ -1208,12 +1224,12 @@ class PlayerManager: ObservableObject {
                     }
                 },
                 receiveValue: { savedAlbums in
-                    self.savedAlbums = savedAlbums
+                    var savedAlbums = savedAlbums
                         .map(\.item)
                         /*
                          Remove albums that have a `nil` id so that this
                          property can be used as the id in a ForEach.
-                         (The id must be unique, otherwise the app will crash.)
+                         (The id must be unique; otherwise, the app will crash.)
                          In theory, the id should never be `nil` when the albums
                          are retrieved using the `currentUserSavedAlbums()`
                          endpoint.
@@ -1225,9 +1241,8 @@ class PlayerManager: ObservableObject {
                         .filter { $0.id != nil }
                     
                     self.retrieveAlbumImages()
-                    if sort {
-                        self.sortAlbumsByLastModifiedDate()
-                    }
+                    self.sortAlbumsByLastModifiedDate(&savedAlbums)
+                    self.savedAlbums = savedAlbums
 
                 }
             )
@@ -1253,7 +1268,7 @@ class PlayerManager: ObservableObject {
         .sink(receiveCompletion: { completion in
             switch completion {
                 case .finished:
-                    self.retrieveSavedAlbums(sort: false)
+                    self.retrieveSavedAlbums()
                 case .failure(let error):
                     let alertTitle = String.localizedStringWithFormat(
                         NSLocalizedString(
@@ -1296,7 +1311,7 @@ class PlayerManager: ObservableObject {
         .sink(receiveCompletion: { completion in
             switch completion {
                 case .finished:
-                    self.retrieveSavedAlbums(sort: false)
+                    self.retrieveSavedAlbums()
                 case .failure(let error):
                     let alertTitle = String.localizedStringWithFormat(
                         NSLocalizedString(
@@ -1403,7 +1418,7 @@ class PlayerManager: ObservableObject {
     }
     
     /// Retrieve the current user's playlists.
-    func retrievePlaylists(sort: Bool) {
+    func retrievePlaylists() {
         
         self.isLoadingPlaylists = true
 
@@ -1461,11 +1476,9 @@ class PlayerManager: ObservableObject {
 
                     }
 
-                    self.playlists = playlists
                     self.retrievePlaylistImages()
-                    if sort {
-                        self.sortPlaylistsByLastModifiedDate()
-                    }
+                    self.sortPlaylistsByLastModifiedDate(&playlists)
+                    self.playlists = playlists
                 }
             )
 
@@ -1721,7 +1734,7 @@ class PlayerManager: ObservableObject {
                     Loggers.playerManager.trace(
                         "did follow playlist \(playlist.name)"
                     )
-                    self.retrievePlaylists(sort: false)
+                    self.retrievePlaylists()
                 case .failure(let error):
                     let alertTitle = String.localizedStringWithFormat(
                         NSLocalizedString(
@@ -1765,7 +1778,7 @@ class PlayerManager: ObservableObject {
                     Loggers.playerManager.trace(
                         "did unfollow playlist \(playlist.name)"
                     )
-                    self.retrievePlaylists(sort: false)
+                    self.retrievePlaylists()
                 case .failure(let error):
                     let alertTitle = String.localizedStringWithFormat(
                         NSLocalizedString(
@@ -1790,57 +1803,58 @@ class PlayerManager: ObservableObject {
 
     /// Re-sorts the playlists by the last date they were played or items
     /// were added to them, whichever was more recent.
-    func sortPlaylistsByLastModifiedDate() {
+    func sortPlaylistsByLastModifiedDate(
+        _ playlists: inout [Playlist<PlaylistItemsReference>]
+    ) {
+        
         Loggers.playerManager.trace(
             "sortPlaylistsByLastModifiedDate"
         )
-        let dates = self.playlistsLastModifiedDates
-        DispatchQueue.global().async {
-            let sortedPlaylists = self.playlists.enumerated().sorted {
-                lhs, rhs in
-                
-                // return true if lhs should be ordered before rhs
-
-                let lhsDate = dates[lhs.1.uri]
-                let rhsDate = dates[rhs.1.uri]
-                return self.areInDecreasingOrderByDateThenIncreasingOrderByIndex(
-                    lhs: (index: lhs.offset, date: lhsDate),
-                    rhs: (index: rhs.offset, date: rhsDate)
-                )
-            }
-            .map(\.1)
+        
+        let dates = self.committedPlaylistsLastModifiedDates
+        let sortedPlaylists = playlists.enumerated().sorted {
+            lhs, rhs in
             
-            DispatchQueue.main.async {
-                self.playlists = sortedPlaylists
-            }
+            // return true if lhs should be ordered before rhs
+
+            let lhsDate = dates[lhs.1.uri]
+            let rhsDate = dates[rhs.1.uri]
+            return self.areInDecreasingOrderByDateThenIncreasingOrderByIndex(
+                lhs: (index: lhs.offset, date: lhsDate),
+                rhs: (index: rhs.offset, date: rhsDate)
+            )
         }
+        .map(\.1)
+            
+        playlists = sortedPlaylists
     }
     
     /// Re-sorts the albums by the last date they were played.
-    func sortAlbumsByLastModifiedDate() {
+    func sortAlbumsByLastModifiedDate(
+        _ savedAlbums: inout [Album]
+    ) {
+        
         Loggers.playerManager.trace(
             "sortAlbumsByLastModifiedDate"
         )
-        let dates = self.albumsLastModifiedDates
-        DispatchQueue.global().async {
-            let sortedAlbums = self.savedAlbums.enumerated().sorted {
-                lhs, rhs in
-                
-                // return true if lhs should be ordered before rhs
-
-                let lhsDate = lhs.1.uri.flatMap { dates[$0] }
-                let rhsDate = rhs.1.uri.flatMap { dates[$0] }
-                return self.areInDecreasingOrderByDateThenIncreasingOrderByIndex(
-                    lhs: (index: lhs.offset, date: lhsDate),
-                    rhs: (index: rhs.offset, date: rhsDate)
-                )
-            }
-            .map(\.1)
+        
+        let dates = self.committedAlbumsLastModifiedDates
+        let sortedAlbums = savedAlbums.enumerated().sorted {
+            lhs, rhs in
             
-            DispatchQueue.main.async {
-                self.savedAlbums = sortedAlbums
-            }
+            // return true if lhs should be ordered before rhs
+            
+            let lhsDate = lhs.1.uri.flatMap { dates[$0] }
+            let rhsDate = rhs.1.uri.flatMap { dates[$0] }
+            return self.areInDecreasingOrderByDateThenIncreasingOrderByIndex(
+                lhs: (index: lhs.offset, date: lhsDate),
+                rhs: (index: rhs.offset, date: rhsDate)
+            )
         }
+        .map(\.1)
+        
+        savedAlbums = sortedAlbums
+            
     }
     
     // MARK: - User -
@@ -2303,8 +2317,8 @@ class PlayerManager: ObservableObject {
 
     func presentLibraryView() {
         self.playerViewIsFirstResponder = false
-        self.retrievePlaylists(sort: true)
-        self.retrieveSavedAlbums(sort: true)
+        self.retrievePlaylists()
+        self.retrieveSavedAlbums()
         self.retrieveCurrentlyPlayingContext()
         
         os_signpost(
@@ -2331,20 +2345,35 @@ class PlayerManager: ObservableObject {
                 self.isShowingLibraryView = false
             }
             self.updateSoundVolumeAndPlayerPosition()
-            self.sortPlaylistsByLastModifiedDate()
-            self.sortAlbumsByLastModifiedDate()
             self.retrieveAvailableDevices()
+            
+            // If `animated == false`, then the popover has been closed and this
+            // work will be done in the `popoverDidClose` sink in `.init`.
+            self.commitModifiedDates()
+            DispatchQueue.main.asyncAfter(
+                deadline: .now() + PlayerView.animationDuration
+            ) {
+                self.sortPlaylistsByLastModifiedDate(&self.playlists)
+                self.sortAlbumsByLastModifiedDate(&self.savedAlbums)
+            }
         }
         else {
             self.isShowingLibraryView = false
         }
+
         self.didScrollToAlbumsSearchBar = false
         self.didScrollToPlaylistsSearchBar = false
+        
         DispatchQueue.main.async {
             self.playerViewIsFirstResponder = true
         }
     }
     
+    func commitModifiedDates() {
+        self.committedPlaylistsLastModifiedDates = self.playlistsLastModifiedDates
+        self.committedAlbumsLastModifiedDates = self.albumsLastModifiedDates
+    }
+
 }
 
 // MARK: - Private Members -
