@@ -97,7 +97,10 @@ struct PlaylistCellView: View {
             })
             .buttonStyle(PlainButtonStyle())
             
-            if playlistOwnedByCurrentUser && !(playlist.uri.isSavedTracksURI && playerManager.currentTrack?.identifier?.idCategory != .track) {
+            if playlistOwnedByCurrentUser &&
+                    !(playlist.uri.isSavedTracksURI &&
+                    playerManager.currentTrack?.identifier?.idCategory != .track)
+                && playerManager.currentTrack?.isLocal != false {
                 Button(action: {
                     self.playerManager.addCurrentItemToPlaylist(
                         playlist: self.playlist
