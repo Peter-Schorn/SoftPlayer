@@ -55,6 +55,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             width: Self.popoverWidth, height: Self.popoverHeight
         )
         popover.behavior = .transient
+//        popover.behavior = .applicationDefined
         popover.animates = false
         popover.delegate = self
 
