@@ -7,8 +7,9 @@ import KeyboardShortcuts
 struct PlayerView: View {
 
     static var debugIsShowingLibraryView = false
-    
-    static let animation = Animation.easeOut(duration: 0.5)
+
+    static let animationDuration = 0.5
+    static let animation = Animation.easeOut(duration: Self.animationDuration)
     
     @EnvironmentObject var spotify: Spotify
     @EnvironmentObject var playerManager: PlayerManager
