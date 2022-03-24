@@ -17,20 +17,29 @@ struct TouchBarPlaylistButton: View {
     @State private var cancellables: Set<AnyCancellable> = []
     @State private var playPlaylistCancellable: AnyCancellable? = nil
     
-    var playlistImage: Image {
-        if let identifier = try? SpotifyIdentifier(uri: self.playlist.uri),
-                let image = self.playerManager.image(for: identifier) {
-            return image
+    @ViewBuilder var playlistImage: some View {
+
+        if self.playlist.uri.isSavedTracksURI {
+            SavedTracksImage()
         }
-        return Image(.spotifyAlbumPlaceholder)
+        else if let identifier = try? SpotifyIdentifier(uri: self.playlist.uri),
+                let image = self.playerManager.image(for: identifier) {
+            image
+                .resizable()
+                .aspectRatio(contentMode: .fill)
+        }
+        else {
+            Image(.spotifyAlbumPlaceholder)
+                .resizable()
+                .aspectRatio(contentMode: .fill)
+        }
+        
     }
     
     var body: some View {
         
         Button(action: playPlaylist, label: {
             playlistImage
-                .resizable()
-                .aspectRatio(contentMode: .fill)
                 .colorMultiply(Color(#colorLiteral(red: 0.4762042937, green: 0.4762042937, blue: 0.4762042937, alpha: 1)))
                 .blur(radius: 2)
                 .frame(width: 133, height: 28)
