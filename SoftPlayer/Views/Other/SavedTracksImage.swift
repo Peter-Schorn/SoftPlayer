@@ -23,7 +23,6 @@ struct SavedTracksImage: View {
                 .fill(.white)
                 .shadow(radius: 2)
         }
-        .aspectRatio(1, contentMode: .fit)
     }
 }
 
@@ -32,6 +31,10 @@ struct SavedTracksImage_Previews: PreviewProvider {
         withAllColorSchemes {
             SavedTracksImage()
                 .previewLayout(.sizeThatFits)
+            
+            SavedTracksImage()
+//                .aspectRatio(contentMode: .fill)
+                .frame(width: 133, height: 28)
         }
     }
 }
