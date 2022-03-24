@@ -8,8 +8,6 @@ struct PlayPlaylistsTouchBarView: View {
     @EnvironmentObject var playerManager: PlayerManager
     @EnvironmentObject var spotify: Spotify
     
-    @State private var offset = 0
-    
     @State private var isPlayingPlaylist = false
     
     @State private var cancellables: Set<AnyCancellable> = []
@@ -19,16 +17,27 @@ struct PlayPlaylistsTouchBarView: View {
         let playlistNames = playerManager.playlists
             .map(\.name)
 
-        for (index, playlist) in playlistNames.enumerated() {
-            Loggers.touchBarView.trace("\(index + 1). '\(playlist)'")
+        Loggers.touchBarView.trace("---------------------------")
+        for (index, name) in playlistNames.enumerated() {
+            Loggers.touchBarView.trace("\(index + 1). '\(name)'")
+        }
+        Loggers.touchBarView.trace("---------------------------")
+        
+        var indices = 0..<0
+        
+        while true {
+            let endIndex = playerManager.playlists.endIndex
+            let minIndex = min(self.playerManager.touchbarPlaylistsOffset * 4, endIndex)
+            let maxIndex = min(minIndex + 4, endIndex)
+            indices = minIndex..<maxIndex
+            if !indices.isEmpty || self.playerManager.touchbarPlaylistsOffset == 0 {
+                break
+            }
+            self.playerManager.touchbarPlaylistsOffset -= 1
         }
         
-        let endIndex = playerManager.playlists.endIndex
-        let minIndex = self.offset * 4
-        let maxIndex = min(minIndex + 4, endIndex)
-        let indices = minIndex..<maxIndex
         Loggers.touchBarView.trace(
-            "offset: \(offset); indices: \(indices)"
+            "offset: \(playerManager.touchbarPlaylistsOffset); indices: \(indices)"
         )
         return playerManager.playlists[indices]
         
@@ -36,6 +45,7 @@ struct PlayPlaylistsTouchBarView: View {
     }
     
     var body: some View {
+        
         HStack {
             HStack {
                 ForEach(
@@ -48,24 +58,20 @@ struct PlayPlaylistsTouchBarView: View {
                 navigationButtons
             }
         }
-        .offset(y: 2)
-        .onDisappear {
-            self.offset = 0
-        }
         .frame(height: 30)
     }
     
     var navigationButtons: some View {
         HStack(spacing: 2) {
             Button(action: {
-                self.offset -= 1
+                self.playerManager.touchbarPlaylistsOffset -= 1
             }, label: {
                 Image(systemName: "arrowtriangle.backward.fill")
                     .padding(.horizontal, 13)
             })
-            .disabled(self.offset <= 0)
+            .disabled(self.playerManager.touchbarPlaylistsOffset <= 0)
             Button(action: {
-                self.offset += 1
+                self.playerManager.touchbarPlaylistsOffset += 1
             }, label: {
                 Image(systemName: "arrowtriangle.forward.fill")
                     .padding(.horizontal, 13)
@@ -82,8 +88,14 @@ struct PlayPlaylistsTouchBarView: View {
         let playlistsCount = self.playerManager
                 .playlists.count
         
-        Loggers.touchBarView.trace("\((offset + 1) * 4) >= \(playlistsCount)")
-        return (offset + 1) * 4 >= playlistsCount
+        Loggers.touchBarView.trace(
+            """
+            \((playerManager.touchbarPlaylistsOffset + 1) * 4) \
+            >= \(playlistsCount)
+            """
+        )
+        return (playerManager.touchbarPlaylistsOffset + 1) * 4
+                >= playlistsCount
     }
     
 }

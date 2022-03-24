@@ -48,6 +48,10 @@ class PlayerManager: ObservableObject {
     /// library view.
     @Published var didScrollToAlbumsSearchBar = false
 
+    // MARK: Touch Bar
+    
+    @Published var touchbarPlaylistsOffset = 0
+
     // MARK: First Responder
     
     @Published var playerViewIsFirstResponder: Bool? = true
