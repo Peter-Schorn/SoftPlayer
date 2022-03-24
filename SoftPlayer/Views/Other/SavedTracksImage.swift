@@ -20,6 +20,7 @@ struct SavedTracksImage: View {
                 .fill(gradient)
             HeartShape()
                 .scale(0.5)
+                .fill(.white)
                 .shadow(radius: 2)
         }
         .aspectRatio(1, contentMode: .fit)
@@ -28,7 +29,9 @@ struct SavedTracksImage: View {
 
 struct SavedTracksImage_Previews: PreviewProvider {
     static var previews: some View {
-        SavedTracksImage()
-            .previewLayout(.sizeThatFits)
+        withAllColorSchemes {
+            SavedTracksImage()
+                .previewLayout(.sizeThatFits)
+        }
     }
 }
