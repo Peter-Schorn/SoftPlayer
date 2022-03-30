@@ -74,7 +74,7 @@ struct KeyboardShortcutsView: View {
 
         }
         .background(
-            KeyEventHandler { event in
+            KeyEventHandler(name: "KeyboardShortcutsView") { event in
                 return self.playerManager.receiveKeyEvent(
                     event,
                     requireModifierKey: true

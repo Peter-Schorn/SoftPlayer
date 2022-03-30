@@ -163,7 +163,7 @@ struct SavedAlbumsGridView: View {
                 self.playerManager.dismissLibraryView(animated: true)
             }
             .background(
-                KeyEventHandler { event in
+                KeyEventHandler(name: "SavedAlbumsGridView") { event in
                     return self.receiveKeyEvent(event, scrollView: scrollView)
                 }
                 .touchBar(content: PlayPlaylistsTouchBarView.init)
@@ -175,10 +175,10 @@ struct SavedAlbumsGridView: View {
                 }
                 searchFieldIsFocused = true
             }
-            .onDisappear {
-//                print("SavedAlbumsGridView disapeared")
-                searchFieldIsFocused = false
-            }
+//            .onDisappear {
+////                print("SavedAlbumsGridView disapeared")
+//                searchFieldIsFocused = false
+//            }
             .onChange(of: searchText) { text in
                 scrollView.scrollTo(searchFieldId, anchor: .top)
             }
@@ -187,6 +187,12 @@ struct SavedAlbumsGridView: View {
                     searchFieldIsFocused = true
                 }
                 else {
+                    searchFieldIsFocused = false
+                }
+            }
+            .onChange(of: playerManager.isShowingLibraryView) { isShowing in
+                if !isShowing {
+//                    print("SavedAlbumsGridView.onChange: searchFieldIsFocused = false")
                     searchFieldIsFocused = false
                 }
             }
@@ -210,7 +216,8 @@ struct SavedAlbumsGridView: View {
             return false
         }
 
-        if !event.modifierFlags.isEmpty {
+        // If at least one shortcut modifier was used
+        if !event.modifierFlags.intersection(.shortchutModifiers).isEmpty {
             return self.playerManager.receiveKeyEvent(
                 event, requireModifierKey: true
             )
@@ -226,7 +233,7 @@ struct SavedAlbumsGridView: View {
             return true
         }
         else if let scrollView = scrollView, event.specialKey == nil,
-                let character = event.charactersIgnoringModifiers {
+                let character = event.characters {
             
             self.searchFieldIsFocused = true
             self.searchText += character

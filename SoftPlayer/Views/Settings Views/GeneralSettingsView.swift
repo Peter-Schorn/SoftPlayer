@@ -62,7 +62,7 @@ struct GeneralSettingsView: View {
         }
         .padding(20)
         .background(
-            KeyEventHandler { event in
+            KeyEventHandler(name: "GeneralSettingsView") { event in
                 return self.playerManager.receiveKeyEvent(
                     event,
                     requireModifierKey: true

@@ -2367,9 +2367,7 @@ class PlayerManager: ObservableObject {
         self.didScrollToAlbumsSearchBar = false
         self.didScrollToPlaylistsSearchBar = false
         
-        DispatchQueue.main.async {
-            self.playerViewIsFirstResponder = true
-        }
+        self.playerViewIsFirstResponder = true
     }
     
     func commitModifiedDates() {
