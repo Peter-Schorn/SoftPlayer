@@ -220,3 +220,15 @@ extension URL {
     )!
 
 }
+
+extension NSEvent.ModifierFlags {
+    
+    /// The modifier keys that should be present in a keyboard shortcut:
+    /// control, option and command.
+    static let shortchutModifiers: Self = [
+        .control,
+        .option,
+        .command
+    ]
+
+}

@@ -32,7 +32,7 @@ struct SettingsView: View {
             height: selectedTab == .general ? 300 : 520
         )
         .background(
-            KeyEventHandler { event in
+            KeyEventHandler(name: "SettingsView") { event in
                 return self.playerManager.receiveKeyEvent(
                     event,
                     requireModifierKey: true

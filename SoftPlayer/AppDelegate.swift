@@ -183,11 +183,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 //        self.settingsWindow?.makeKey()
         
 
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-            let isKey = self.settingsWindow?.isKeyWindow == true
-            print("settings window is key: \(isKey)")
-        }
-            
     }
     
     /// Global variables are lazily initialized, but this program relies on the

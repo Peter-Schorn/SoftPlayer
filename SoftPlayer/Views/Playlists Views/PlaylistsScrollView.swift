@@ -183,7 +183,7 @@ struct PlaylistsScrollView: View {
                 self.playerManager.dismissLibraryView(animated: true)
             }
             .background(
-                KeyEventHandler { event in
+                KeyEventHandler(name: "PlaylistsScrollView") { event in
                     return self.receiveKeyEvent(event, scrollView: scrollView)
                 }
                 .touchBar(content: PlayPlaylistsTouchBarView.init)
@@ -207,6 +207,12 @@ struct PlaylistsScrollView: View {
                     searchFieldIsFocused = true
                 }
                 else {
+                    searchFieldIsFocused = false
+                }
+            }
+            .onChange(of: playerManager.isShowingLibraryView) { isShowing in
+                if !isShowing {
+//                    print("PlaylistsScrollView.onChange: searchFieldIsFocused = false")
                     searchFieldIsFocused = false
                 }
             }
@@ -255,7 +261,9 @@ struct PlaylistsScrollView: View {
             return false
         }
 
-        if !event.modifierFlags.isEmpty {
+        if !event.modifierFlags.isEmpty && !event.modifierFlags.isDisjoint(
+            with: NSEvent.ModifierFlags.shortchutModifiers
+        ) {
             return self.playerManager.receiveKeyEvent(
                 event, requireModifierKey: true
             )
@@ -271,7 +279,7 @@ struct PlaylistsScrollView: View {
             return true
         }
         else if let scrollView = scrollView, event.specialKey == nil,
-                let character = event.charactersIgnoringModifiers {
+                let character = event.characters {
 
             self.searchFieldIsFocused = true
             self.searchText += character

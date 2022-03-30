@@ -58,11 +58,12 @@ struct FocusableTextField: NSViewRepresentable {
             /* && !context.coordinator.didMakeFirstResponder */
 //            context.coordinator.didMakeFirstResponder = true
             searchField.window?.makeFirstResponder(searchField)
-//            Loggers.keyEvent.info("\(self.name): made first responder")
+            Loggers.keyEvent.info("\(self.name): made first responder")
             let range = NSRange(location: text.count, length: 0)
             searchField.currentEditor()?.selectedRange = range
         }
-        else {
+        else if !self.isFirstResponder && searchField.currentEditor() != nil {
+            Loggers.keyEvent.info("\(self.name): resigned first responder")
             searchField.window?.makeFirstResponder(nil)
         }
         
