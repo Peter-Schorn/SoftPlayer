@@ -270,6 +270,7 @@ struct PlayerView: View {
         }
         .background(
             KeyEventHandler(
+                name: "PlayerView",
                 isFirstResponder: $playerManager.playerViewIsFirstResponder
             ) { event in
                 return self.playerManager.receiveKeyEvent(

@@ -8,12 +8,15 @@ struct KeyEventHandler: NSViewRepresentable {
     
     @Binding var isFirstResponder: Bool?
 
+    let name: String
     let receiveKeyEvent: (NSEvent) -> Bool
-    
+
     init(
+        name: String = "",
         isFirstResponder: Binding<Bool?> = .constant(nil),
         receiveKeyEvent: @escaping (NSEvent) -> Bool
     ) {
+        self.name = name
         self._isFirstResponder = isFirstResponder
         self.receiveKeyEvent = receiveKeyEvent
     }
@@ -21,8 +24,13 @@ struct KeyEventHandler: NSViewRepresentable {
     private class KeyHandlerView: NSView {
         
         let receiveKeyEvent: (NSEvent) -> Bool
+        let name: String
        
-        init(receiveKeyEvent: @escaping (NSEvent) -> Bool) {
+        init(
+            name: String,
+            receiveKeyEvent: @escaping (NSEvent) -> Bool
+        ) {
+            self.name = name
             self.receiveKeyEvent = receiveKeyEvent
             super.init(frame: .zero)
         }
@@ -49,17 +57,36 @@ struct KeyEventHandler: NSViewRepresentable {
             }
         }
         
+        override func becomeFirstResponder() -> Bool {
+            let result = super.becomeFirstResponder()
+            Loggers.keyEvent.trace(
+                "\(self.name): becomeFirstResponder: \(result)"
+            )
+            return result
+        }
+        
+        override func resignFirstResponder() -> Bool {
+            let result = super.resignFirstResponder()
+            Loggers.keyEvent.trace(
+                "\(self.name): resignFirstResponder: \(result)"
+            )
+            return result
+        }
+        
     }
     
     func makeNSView(context: Context) -> NSView {
-        let view = KeyHandlerView(receiveKeyEvent: self.receiveKeyEvent)
-        DispatchQueue.main.async {
+        let view = KeyHandlerView(
+            name: self.name,
+            receiveKeyEvent: self.receiveKeyEvent
+        )
+//        DispatchQueue.main.async {
             if self.isFirstResponder == true {
                 if view.window?.firstResponder != view {
                     view.window?.makeFirstResponder(view)
                 }
             }
-        }
+//        }
         return view
     }
     
@@ -70,7 +97,9 @@ struct KeyEventHandler: NSViewRepresentable {
             }
         }
         else if self.isFirstResponder == false {
-            nsView.window?.makeFirstResponder(nil)
+            if nsView.window?.firstResponder == nsView {
+                nsView.window?.makeFirstResponder(nil)
+            }
         }
     }
     
