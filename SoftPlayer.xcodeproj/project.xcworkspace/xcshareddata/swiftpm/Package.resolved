@@ -38,30 +38,12 @@
         }
       },
       {
-        "package": "SpotifyAPI",
-        "repositoryURL": "https://github.com/Peter-Schorn/SpotifyAPI",
-        "state": {
-          "branch": null,
-          "revision": "067861d89cd73be129259e4edb607d822ff63d45",
-          "version": "2.0.3"
-        }
-      },
-      {
         "package": "swift-crypto",
         "repositoryURL": "https://github.com/apple/swift-crypto.git",
         "state": {
           "branch": null,
           "revision": "3bea268b223651c4ab7b7b9ad62ef9b2d4143eb6",
           "version": "1.1.6"
-        }
-      },
-      {
-        "package": "swift-log",
-        "repositoryURL": "https://github.com/apple/swift-log",
-        "state": {
-          "branch": null,
-          "revision": "5d66f7ba25daf4f94100e7022febf3c75e37a6c7",
-          "version": "1.4.2"
         }
       }
     ]
