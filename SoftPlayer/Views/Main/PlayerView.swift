@@ -293,7 +293,7 @@ struct PlayerView: View {
                 .matchedGeometryEffect(
                     id: albumImageId,
                     in: namespace,
-                    isSource: playlistsViewIsSource
+                    isSource: playlistsViewIsSource 
                 )
                 .frame(width: 70, height: 70)
                 .adaptiveShadow(radius: 2)
@@ -526,7 +526,7 @@ struct PlayerView_Previews: PreviewProvider {
     static let spotify = Spotify()
     static let playerManager = PlayerManager(spotify: spotify)
     static let playerManager2 = PlayerManager(spotify: spotify)
-    
+
     static var previews: some View {
         Self.withAllColorSchemes {
             PlayerView()
@@ -548,7 +548,7 @@ struct PlayerView_Previews: PreviewProvider {
                     height: AppDelegate.popoverHeight
                 )
                 .onAppear(perform: onAppear)
-
+ 
         }
     }
     

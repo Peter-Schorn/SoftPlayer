@@ -13,7 +13,7 @@ struct SavedAlbumsGridView: View {
     @EnvironmentObject var playerManager: PlayerManager
 
     @State private var searchText = ""
-    @State private var searchFieldIsFocused = false
+//    @State private var searchFieldIsFocused = false
     @State private var selectedAlbumURI: String? = nil
 
     @State private var loadAlbumsCancellable: AnyCancellable? = nil
@@ -112,7 +112,7 @@ struct SavedAlbumsGridView: View {
                 FocusableTextField(
                     name: "SavedAlbumsGridView",
                     text: $searchText,
-                    isFirstResponder: $searchFieldIsFocused,
+                    isFirstResponder: $playerManager.savedAlbumsGridViewIsFirstResponder,
                     onCommit: searchFieldDidCommit,
                     receiveKeyEvent: { event in
                         return self.receiveKeyEvent(
@@ -169,33 +169,23 @@ struct SavedAlbumsGridView: View {
                 .touchBar(content: PlayPlaylistsTouchBarView.init)
             )
             .onAppear {
+//                Loggers.firstResponder.trace(
+//                    "SavedAlbumsGridView.onAppear"
+//                )
                 if !self.playerManager.didScrollToAlbumsSearchBar {
                     scrollView.scrollTo(0, anchor: .top)
                     self.playerManager.didScrollToAlbumsSearchBar = true
                 }
-                searchFieldIsFocused = true
+//                playerManager.savedAlbumsGridViewIsFirstResponder = true
             }
 //            .onDisappear {
 ////                print("SavedAlbumsGridView disapeared")
-//                searchFieldIsFocused = false
+//                playerManager.savedAlbumsGridViewIsFirstResponder = false
 //            }
             .onChange(of: searchText) { text in
                 scrollView.scrollTo(searchFieldId, anchor: .top)
             }
-            .onChange(of: playerManager.libraryPage) { page in
-                if page == .albums {
-                    searchFieldIsFocused = true
-                }
-                else {
-                    searchFieldIsFocused = false
-                }
-            }
-            .onChange(of: playerManager.isShowingLibraryView) { isShowing in
-                if !isShowing {
-//                    print("SavedAlbumsGridView.onChange: searchFieldIsFocused = false")
-                    searchFieldIsFocused = false
-                }
-            }
+            
         }
     }
     
@@ -235,7 +225,7 @@ struct SavedAlbumsGridView: View {
         else if let scrollView = scrollView, event.specialKey == nil,
                 let character = event.characters {
             
-            self.searchFieldIsFocused = true
+            self.playerManager.savedAlbumsGridViewIsFirstResponder = true
             self.searchText += character
             scrollView.scrollTo(searchFieldId, anchor: .top)
             return true
