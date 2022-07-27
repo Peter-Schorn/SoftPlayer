@@ -59,6 +59,11 @@ enum Loggers {
     
     static let keyEvent = Logger(
         label: "KeyEvent",
+        level: .warning
+    )
+    
+    static let firstResponder = Logger(
+        label: "FirstResponder",
         level: .trace
     )
     
@@ -184,16 +189,16 @@ struct SoftPlayerLogHandler: LogHandler {
     ) {
         
         if ProcessInfo.processInfo.environment["DISABLE_LOGGING"] == "1" {
-            return
+            return 
         }
         
         let logMessage = """
-            [\(label): \(self._logLevel): \(function) line \(line)] \(message)
+            [\(label): \(level): \(function) line \(line)] \(message)
             """
         #if DEBUG
         print(logMessage)
         #else
-        let osLogLevel = Self.convertToOSLogLevel(self._logLevel)
+        let osLogLevel = Self.convertToOSLogLevel(level)
         self.osLogger.log(level: osLogLevel, "\(logMessage, privacy: .public)")
         #endif
     }

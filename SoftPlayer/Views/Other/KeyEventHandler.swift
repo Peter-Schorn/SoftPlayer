@@ -21,17 +21,14 @@ struct KeyEventHandler: NSViewRepresentable {
         self.receiveKeyEvent = receiveKeyEvent
     }
 
-    private class KeyHandlerView: NSView {
+    class KeyHandlerView: NSView {
         
-        let receiveKeyEvent: (NSEvent) -> Bool
-        let name: String
+        let parent: KeyEventHandler
        
         init(
-            name: String,
-            receiveKeyEvent: @escaping (NSEvent) -> Bool
+            parent: KeyEventHandler
         ) {
-            self.name = name
-            self.receiveKeyEvent = receiveKeyEvent
+            self.parent = parent
             super.init(frame: .zero)
         }
         
@@ -48,7 +45,7 @@ struct KeyEventHandler: NSViewRepresentable {
             
             // key code 53 = escape key
             if event.keyCode != 53 {
-                if !self.receiveKeyEvent(event) {
+                if !self.parent.receiveKeyEvent(event) {
                     super.keyDown(with: event)
                 }
             }
@@ -59,48 +56,103 @@ struct KeyEventHandler: NSViewRepresentable {
         
         override func becomeFirstResponder() -> Bool {
             let result = super.becomeFirstResponder()
-            Loggers.keyEvent.trace(
-                "\(self.name): becomeFirstResponder: \(result)"
+            Loggers.firstResponder.trace(
+                "\(self.parent.name): KeyEventHandler: \(result)"
             )
             return result
         }
         
         override func resignFirstResponder() -> Bool {
             let result = super.resignFirstResponder()
-            Loggers.keyEvent.trace(
-                "\(self.name): resignFirstResponder: \(result)"
+            Loggers.firstResponder.trace(
+                "\(self.parent.name): KeyEventHandler: \(result)"
             )
             return result
         }
         
+        override func viewDidMoveToWindow() {
+            super.viewDidMoveToWindow()
+            Loggers.firstResponder.trace(
+                """
+                \(self.parent.name): KeyEventHandler: viewDidMoveToWindow; \
+                window is nil: \(self.window == nil)
+                """
+            )
+            self.parent.updateFirstResponder(self)
+        }
+        
     }
     
-    func makeNSView(context: Context) -> NSView {
-        let view = KeyHandlerView(
-            name: self.name,
-            receiveKeyEvent: self.receiveKeyEvent
+    func makeNSView(context: Context) -> KeyHandlerView {
+        let keyHandlerView = KeyHandlerView(
+            parent: self
         )
 //        DispatchQueue.main.async {
-            if self.isFirstResponder == true {
-                if view.window?.firstResponder != view {
-                    view.window?.makeFirstResponder(view)
-                }
-            }
+//            if self.isFirstResponder == true {
+//                if view.window?.firstResponder != view {
+//                    view.window?.makeFirstResponder(view)
+//                }
+//            }
 //        }
-        return view
+        return keyHandlerView
     }
     
-    func updateNSView(_ nsView: NSView, context: Context) {
+    func updateNSView(_ keyHandlerView: KeyHandlerView, context: Context) {
+        self.updateFirstResponder(keyHandlerView)
+    }
+    
+    func updateFirstResponder(_ keyHandlerView: KeyHandlerView) {
+        
+        let iskeyFirstResponder: Bool
+        if let window = keyHandlerView.window,
+                window.firstResponder == keyHandlerView,
+               window.isKeyWindow {
+            iskeyFirstResponder = true
+        }
+        else {
+            iskeyFirstResponder = false
+        }
+
+        Loggers.firstResponder.trace(
+            """
+            \(self.name): KeyEventHandler: might update first responder; \
+            iskeyFirstResponder: \(iskeyFirstResponder); \
+            @Binding isFirstResponder: \(String(describing: self.isFirstResponder)); \
+            NSView is first responder: \(keyHandlerView.window?.firstResponder == keyHandlerView)
+            """
+        )
+        
         if self.isFirstResponder == true {
-            if nsView.window?.firstResponder != nsView {
-                nsView.window?.makeFirstResponder(nsView)
+            if keyHandlerView.window?.firstResponder != keyHandlerView {
+                let result = keyHandlerView.window?.makeFirstResponder(keyHandlerView)
+                Loggers.firstResponder.trace(
+                    """
+                    \(self.name): KeyEventHandler: made first responder: \
+                    \(String(describing: result))
+                    """
+                )
             }
         }
-        else if self.isFirstResponder == false {
-            if nsView.window?.firstResponder == nsView {
-                nsView.window?.makeFirstResponder(nil)
-            }
-        }
+//        else if self.isFirstResponder == false {
+//            if nsView.window?.firstResponder == nsView {
+//                let result = nsView.window?.makeFirstResponder(nil)
+//                Loggers.firstResponder.trace(
+//                    """
+//                    \(self.name): KeyEventHandler: resigned first responder: \
+//                    \(String(describing: result))
+//                    """
+//                )
+//            }
+//        }
     }
     
+}
+
+extension NSView {
+    
+    var isFirstResponder: Bool {
+        return self.window?.firstResponder == self &&
+                self.window?.isKeyWindow == true
+    }
+
 }

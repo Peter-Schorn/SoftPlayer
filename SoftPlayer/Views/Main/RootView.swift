@@ -12,6 +12,8 @@ struct RootView: View {
 
     @State private var requestTokensCancellable: AnyCancellable? = nil
     
+    // MARK: Begin View
+
     var body: some View {
         VStack {
             if spotify.isAuthorized && !Self.debugShowLoginView {
@@ -33,6 +35,8 @@ struct RootView: View {
         
     }
     
+    // MARK: Handle Redirect
+
     func handleRedirectURL(_ url: URL) {
 
         Loggers.general.trace("LoginView received redirect URL: \(url)")

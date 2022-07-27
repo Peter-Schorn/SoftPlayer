@@ -33,6 +33,7 @@ struct AvailableDevicesButton: View {
                             }
                         }
                     })
+                    .disabled(device.isRestricted || device.id == nil)
                 }
             }
         } label: {
