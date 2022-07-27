@@ -55,6 +55,8 @@ class PlayerManager: ObservableObject {
     // MARK: First Responder
     
     @Published var playerViewIsFirstResponder: Bool? = true
+    @Published var playlistsScrollViewIsFirstResponder = false
+    @Published var savedAlbumsGridViewIsFirstResponder = false
 
     // MARK: - Images -
     
@@ -407,6 +409,8 @@ class PlayerManager: ObservableObject {
                 self.objectWillChange.send()
             }
             .store(in: &self.cancellables)
+
+        self.debug()
 
     }
     
@@ -2333,6 +2337,15 @@ class PlayerManager: ObservableObject {
         withAnimation(PlayerView.animation) {
             self.isShowingLibraryView = true
         }
+        
+        switch self.libraryPage {
+            case .playlists:
+                self.savedAlbumsGridViewIsFirstResponder = false
+                self.playlistsScrollViewIsFirstResponder = true
+            case .albums:
+                self.playlistsScrollViewIsFirstResponder = false
+                self.savedAlbumsGridViewIsFirstResponder = true
+        }
     }
 
     func dismissLibraryView(animated: Bool) {
@@ -2367,6 +2380,8 @@ class PlayerManager: ObservableObject {
         self.didScrollToAlbumsSearchBar = false
         self.didScrollToPlaylistsSearchBar = false
         
+        self.savedAlbumsGridViewIsFirstResponder = false
+        self.playlistsScrollViewIsFirstResponder = false
         self.playerViewIsFirstResponder = true
     }
     
@@ -2453,6 +2468,24 @@ private extension PlayerManager {
             case (nil, nil):
                 return lhs.index < rhs.index
         }
+    }
+    
+    func debug() {
+        
+        self.$savedAlbumsGridViewIsFirstResponder.sink { isFirstResponder in
+            Loggers.firstResponder.trace(
+                "savedAlbumsGridViewIsFirstResponder: \(isFirstResponder)"
+            )
+        }
+        .store(in: &self.cancellables)
+        
+        self.$playlistsScrollViewIsFirstResponder.sink { isFirstResponder in
+            Loggers.firstResponder.trace(
+                "playlistsScrollViewIsFirstResponder: \(isFirstResponder)"
+            )
+        }
+        .store(in: &self.cancellables)
+        
     }
 
 }

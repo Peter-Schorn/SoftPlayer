@@ -33,6 +33,25 @@ struct LibraryView: View {
             }
         }
         .animation(animation, value: playerManager.libraryPage)
+        .onChange(of: playerManager.libraryPage) { page in
+            Loggers.firstResponder.info(
+                "--- ON CHANGE OF LIBRARY PAGE TO \(page) ---"
+            )
+            switch page {
+                case .playlists:
+                    playerManager.savedAlbumsGridViewIsFirstResponder = false
+                    playerManager.playlistsScrollViewIsFirstResponder = true
+                case .albums:
+                    playerManager.playlistsScrollViewIsFirstResponder = false
+                    playerManager.savedAlbumsGridViewIsFirstResponder = true
+            }
+        }
+//        .onChange(of: playerManager.isShowingLibraryView) { isShowing in
+//            if !isShowing {
+//                playerManager.savedAlbumsGridViewIsFirstResponder = false
+//                playerManager.playlistsScrollViewIsFirstResponder = false
+//            }
+//        }
     }
     
 }
