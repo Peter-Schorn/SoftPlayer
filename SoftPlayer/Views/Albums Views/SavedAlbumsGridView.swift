@@ -275,11 +275,14 @@ struct SavedAlbumsGridView_Previews: PreviewProvider {
     static var previews: some View {
         SavedAlbumsGridView()
             .frame(width: AppDelegate.popoverWidth, height: 320)
-            .onAppear {
-                playerManager.retrieveSavedAlbums()
-            }
+            .onAppear(perform: Self.onAppear)
             .environmentObject(playerManager)
             .environmentObject(playerManager.spotify)
             
     }
+    
+    static func onAppear() {
+        playerManager.retrieveSavedAlbums()
+    }
+
 }
