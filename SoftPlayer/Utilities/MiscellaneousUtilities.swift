@@ -143,6 +143,7 @@ extension URL {
 enum LibraryPage: String {
     case playlists
     case albums
+    case queue
 }
 
 extension Notification.Name {

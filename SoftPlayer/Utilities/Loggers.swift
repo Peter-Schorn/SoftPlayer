@@ -22,6 +22,11 @@ enum Loggers {
         level: .warning
     )
     
+    static let queue = Logger(
+        label: "queue",
+        level: .trace
+    )
+
     static let playerState = Logger(
         label: "PlayerState",
         level: .warning
@@ -64,7 +69,7 @@ enum Loggers {
     
     static let firstResponder = Logger(
         label: "FirstResponder",
-        level: .trace
+        level: .warning
     )
     
     static let playlistsScrollView = Logger(

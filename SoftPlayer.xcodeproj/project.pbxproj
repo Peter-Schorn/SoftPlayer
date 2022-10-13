@@ -20,6 +20,7 @@
 		472A742A25859431008998C5 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 472A742925859431008998C5 /* SettingsView.swift */; };
 		47343A642582C86600EF6750 /* PlaylistsScrollView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47343A632582C86600EF6750 /* PlaylistsScrollView.swift */; };
 		4735521827A351B7009C967A /* XShape.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4735521727A351B7009C967A /* XShape.swift */; };
+		473CD55B28F78E2A0022160C /* QueueItemView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 473CD55A28F78E2A0022160C /* QueueItemView.swift */; };
 		473F215227E954DA005B8042 /* SavedTracksImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 473F215127E954DA005B8042 /* SavedTracksImage.swift */; };
 		4748B8C027D756A600ACF95E /* MouseEventHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4748B8BF27D756A600ACF95E /* MouseEventHandler.swift */; };
 		474C7C922570F713004A3DB5 /* AvailableDevicesButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 474C7C912570F713004A3DB5 /* AvailableDevicesButton.swift */; };
@@ -49,6 +50,7 @@
 		47AA077027D9D9B800F6C140 /* HeartShape.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AA076F27D9D9B800F6C140 /* HeartShape.swift */; };
 		47AA077227D9D9FA00F6C140 /* BubblingHeartsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AA077127D9D9FA00F6C140 /* BubblingHeartsView.swift */; };
 		47AA077427D9DA0D00F6C140 /* HeartButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AA077327D9DA0D00F6C140 /* HeartButton.swift */; };
+		47B3CF3E28F74F4500D93B80 /* QueueView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47B3CF3D28F74F4500D93B80 /* QueueView.swift */; };
 		47C6472A2783FF4700EB1FD8 /* SaveTrackButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47C647292783FF4700EB1FD8 /* SaveTrackButton.swift */; };
 		47CDDC8A2582D97F00E87918 /* RegularExpressions in Frameworks */ = {isa = PBXBuildFile; productRef = 47CDDC892582D97F00E87918 /* RegularExpressions */; };
 		47D8CF7F256663080034FA1E /* NotificationNames.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47D8CF7E256663080034FA1E /* NotificationNames.swift */; };
@@ -88,6 +90,7 @@
 		472A742925859431008998C5 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		47343A632582C86600EF6750 /* PlaylistsScrollView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaylistsScrollView.swift; sourceTree = "<group>"; };
 		4735521727A351B7009C967A /* XShape.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XShape.swift; sourceTree = "<group>"; };
+		473CD55A28F78E2A0022160C /* QueueItemView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QueueItemView.swift; sourceTree = "<group>"; };
 		473F215127E954DA005B8042 /* SavedTracksImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavedTracksImage.swift; sourceTree = "<group>"; };
 		4748B8BF27D756A600ACF95E /* MouseEventHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MouseEventHandler.swift; sourceTree = "<group>"; };
 		474C7C912570F713004A3DB5 /* AvailableDevicesButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AvailableDevicesButton.swift; sourceTree = "<group>"; };
@@ -119,6 +122,7 @@
 		47AA076F27D9D9B800F6C140 /* HeartShape.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeartShape.swift; sourceTree = "<group>"; };
 		47AA077127D9D9FA00F6C140 /* BubblingHeartsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BubblingHeartsView.swift; sourceTree = "<group>"; };
 		47AA077327D9DA0D00F6C140 /* HeartButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeartButton.swift; sourceTree = "<group>"; };
+		47B3CF3D28F74F4500D93B80 /* QueueView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QueueView.swift; sourceTree = "<group>"; };
 		47B75D322687DFC6003F58A9 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/Main.strings; sourceTree = "<group>"; };
 		47C647292783FF4700EB1FD8 /* SaveTrackButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SaveTrackButton.swift; sourceTree = "<group>"; };
 		47D8CF7E256663080034FA1E /* NotificationNames.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationNames.swift; sourceTree = "<group>"; };
@@ -245,6 +249,15 @@
 			path = Shapes;
 			sourceTree = "<group>";
 		};
+		47B3CF3C28F74F3600D93B80 /* Queue Views */ = {
+			isa = PBXGroup;
+			children = (
+				47B3CF3D28F74F4500D93B80 /* QueueView.swift */,
+				473CD55A28F78E2A0022160C /* QueueItemView.swift */,
+			);
+			path = "Queue Views";
+			sourceTree = "<group>";
+		};
 		47CE919E267C7A40009BFF1C /* Main */ = {
 			isa = PBXGroup;
 			children = (
@@ -326,13 +339,14 @@
 		47FD3DF0256FA71C000E2346 /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				47A5BA3427D869260014BCB5 /* Shapes */,
 				47CE919E267C7A40009BFF1C /* Main */,
-				478A64602692F6CC00557DF3 /* Albums Views */,
-				47F6EC4F257C95BD007079D2 /* Buttons */,
 				47343A662582C90F00EF6750 /* Playlists Views */,
+				478A64602692F6CC00557DF3 /* Albums Views */,
+				47B3CF3C28F74F3600D93B80 /* Queue Views */,
+				47F6EC4F257C95BD007079D2 /* Buttons */,
 				47343A672582C92200EF6750 /* Touchbar Views */,
 				4789A5B125885EB700A5E1E3 /* Settings Views */,
+				47A5BA3427D869260014BCB5 /* Shapes */,
 				47CE919F267C7A47009BFF1C /* Other */,
 			);
 			path = Views;
@@ -442,6 +456,7 @@
 				47891C952583128900063460 /* KeyEventHandler.swift in Sources */,
 				47AA076E27D9D96200F6C140 /* ShapeExtensions.swift in Sources */,
 				4789987825747F0F00866EE1 /* PlaybackPositionView.swift in Sources */,
+				473CD55B28F78E2A0022160C /* QueueItemView.swift in Sources */,
 				47D8CF7F256663080034FA1E /* NotificationNames.swift in Sources */,
 				47FD3E03256FB031000E2346 /* PlayerView.swift in Sources */,
 				47FD3DF7256FA77F000E2346 /* Spotify.swift in Sources */,
@@ -459,6 +474,7 @@
 				47D8CF83256664C60034FA1E /* PlayerManager.swift in Sources */,
 				474C7C922570F713004A3DB5 /* AvailableDevicesButton.swift in Sources */,
 				470315232583EED900B2BDF2 /* FocusView.swift in Sources */,
+				47B3CF3E28F74F4500D93B80 /* QueueView.swift in Sources */,
 				47FD3DDA256F642F000E2346 /* PlayerStateNotification.swift in Sources */,
 				47F6EC5D257C9699007079D2 /* RepeatModeButton.swift in Sources */,
 				478A64682692FEF400557DF3 /* LibraryView.swift in Sources */,
@@ -732,7 +748,7 @@
 			repositoryURL = "https://github.com/Peter-Schorn/SpotifyAPI";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 2.1.1;
+				minimumVersion = 2.2.0;
 			};
 		};
 		47F35FAC2588844C007C754A /* XCRemoteSwiftPackageReference "KeyboardShortcuts" */ = {
