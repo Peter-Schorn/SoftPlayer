@@ -41,8 +41,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/Peter-Schorn/SpotifyAPI",
       "state" : {
-        "revision" : "237cbe2808ec5ef6870c918c113e7f0f569c970b",
-        "version" : "2.1.1"
+        "revision" : "7c04f15fa4eec06a85548a7071246608f26f813e",
+        "version" : "2.2.0"
       }
     },
     {
@@ -57,10 +57,10 @@
     {
       "identity" : "swift-log",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/apple/swift-log.git",
+      "location" : "https://github.com/apple/swift-log",
       "state" : {
-        "revision" : "5d66f7ba25daf4f94100e7022febf3c75e37a6c7",
-        "version" : "1.4.2"
+        "revision" : "6fe203dc33195667ce1759bf0182975e4653ba1c",
+        "version" : "1.4.4"
       }
     }
   ],

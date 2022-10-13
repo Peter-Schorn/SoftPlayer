@@ -333,4 +333,5 @@ struct PlaylistsScrollView_Previews: PreviewProvider {
             .environmentObject(playerManager)
             .environmentObject(playerManager.spotify)
     }
+    
 }
