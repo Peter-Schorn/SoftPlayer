@@ -69,6 +69,8 @@ class PlayerManager: ObservableObject {
     /// Retrieved from the Spotify desktop application using AppleScript.
     var currentTrack: SpotifyTrack? = nil
     
+    var queue: [PlaylistItem] = []
+
     /// The currently playing track or episode identifier.
     var currentItemIdentifier: SpotifyIdentifier? = nil
 
@@ -310,6 +312,7 @@ class PlayerManager: ObservableObject {
     var playerStateDidChangeCancellable: AnyCancellable? = nil
     private var retrieveSavedAlbumsCancellable: AnyCancellable? = nil
     private var playAlbumCancellable: AnyCancellable? = nil
+    private var retrieveQueueCancellable: AnyCancellable? = nil
     
     init(spotify: Spotify) {
         
@@ -352,13 +355,18 @@ class PlayerManager: ObservableObject {
                     return
                 }
 
+                // even though the like track button is not displayed when
+                // the library view is presented, users can still use a keyboard
+                // shortcut to like the track
+                self.checkIfCurrentTrackIsSaved()
+
                 if self.isShowingLibraryView {
                     self.retrieveCurrentlyPlayingContext(fromTimer: true)
+                    self.retrieveQueue()
                 }
                 else {
                     self.updateSoundVolumeAndPlayerPosition(fromTimer: true)
                     self.retrieveAvailableDevices()
-                    self.checkIfCurrentTrackIsSaved()
                 }
             }
             
@@ -571,6 +579,7 @@ class PlayerManager: ObservableObject {
         
         self.retrieveAvailableDevices()
         self.checkIfCurrentTrackIsSaved()
+        self.retrieveQueue()
 
         if self.isTransferringPlayback {
             Loggers.artwork.notice(
@@ -909,6 +918,30 @@ class PlayerManager: ObservableObject {
                 )
         }
         
+    }
+    
+    func retrieveQueue() {
+        
+        Loggers.queue.trace("retriving queue")
+
+        self.retrieveQueueCancellable = self.spotify.api.queue()
+            .receive(on: RunLoop.main)
+            .handleAuthenticationError(spotify: self.spotify)
+            .sink(
+                receiveCompletion: { completion in
+                    if case .failure(let error) = completion {
+                        Loggers.playerManager.error(
+                            "couldn't retrieve queue: \(error)"
+                        )
+                    }
+                },
+                receiveValue: { queue in
+                    self.queue = queue.queue
+                    self.objectWillChange.send()
+                    Loggers.queue.trace("updated queue")
+                }
+            )
+
     }
     
 //    func retrieveCurrentlyPlayingPlaylist() {
@@ -2327,6 +2360,7 @@ class PlayerManager: ObservableObject {
         self.retrievePlaylists()
         self.retrieveSavedAlbums()
         self.retrieveCurrentlyPlayingContext()
+        self.retrieveQueue()
         
         os_signpost(
             .event,
@@ -2345,6 +2379,9 @@ class PlayerManager: ObservableObject {
             case .albums:
                 self.playlistsScrollViewIsFirstResponder = false
                 self.savedAlbumsGridViewIsFirstResponder = true
+            case .queue:
+                self.playlistsScrollViewIsFirstResponder = false
+                self.savedAlbumsGridViewIsFirstResponder = false
         }
     }
 

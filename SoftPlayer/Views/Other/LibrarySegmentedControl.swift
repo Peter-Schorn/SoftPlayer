@@ -16,10 +16,14 @@ struct LibrarySegmentedControl: View {
                 .help(Text("Albums"))
                 .tag(LibraryPage.albums)
             
+            Image(systemName: "text.insert")
+                .help(Text("Queue"))
+                .tag(LibraryPage.queue)
+            
         }
         .pickerStyle(SegmentedPickerStyle())
         .padding(.horizontal, 5)
-        .frame(width: 100)
+        .frame(width: 150)
     }
 }
 

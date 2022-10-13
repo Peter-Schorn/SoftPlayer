@@ -30,6 +30,14 @@ struct LibraryView: View {
                                 removal: .move(edge: .leading)
                             )
                         )
+                case .queue:
+                    QueueView()
+                        .transition(
+                            .asymmetric(
+                                insertion: .move(edge: .trailing),
+                                removal: .move(edge: .leading)
+                            )
+                        )
             }
         }
         .animation(animation, value: playerManager.libraryPage)
@@ -44,6 +52,9 @@ struct LibraryView: View {
                 case .albums:
                     playerManager.playlistsScrollViewIsFirstResponder = false
                     playerManager.savedAlbumsGridViewIsFirstResponder = true
+                case .queue:
+                    playerManager.playlistsScrollViewIsFirstResponder = false
+                    playerManager.savedAlbumsGridViewIsFirstResponder = false
             }
         }
 //        .onChange(of: playerManager.isShowingLibraryView) { isShowing in

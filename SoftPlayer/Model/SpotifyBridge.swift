@@ -234,10 +234,10 @@ class CustomSpotifyApplication {
 // MARK: SpotifyTrack
 @objc public protocol SpotifyTrack: SBObjectProtocol {
     
-    /// The artist of the track.
+    /// The name of the artist of the track.
     @objc optional var artist: String { get }
     
-    /// The album of the track.
+    /// The name of the album of the track.
     @objc optional var album: String { get }
     
     /// The disc number of the track.
