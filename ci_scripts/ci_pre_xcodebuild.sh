@@ -1,7 +1,5 @@
-cd $SRCROOT
+cd $CI_WORKSPACE
 cd SoftPlayer/Model
-
-source ~/.local/soft_player_credentials.sh
 
 sed -r -i '' "s~(let __clientId__ = )\".*\"~\1\"$CLIENT_ID\"~" 'Spotify.swift'
 
