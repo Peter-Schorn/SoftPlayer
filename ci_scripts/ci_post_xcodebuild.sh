@@ -1,4 +1,4 @@
-cd $PROJECT_DIR
+cd $CI_WORKSPACE
 cd SoftPlayer/Model
 
 sed -r -i '' 's~(let __clientId__ = )".*"~\1""~' 'Spotify.swift'
