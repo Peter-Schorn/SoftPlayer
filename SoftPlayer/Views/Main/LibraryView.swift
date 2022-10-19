@@ -44,14 +44,18 @@ struct LibraryView: View {
             )
             switch page {
                 case .playlists:
-                    playerManager.savedAlbumsGridViewIsFirstResponder = false
-                    playerManager.playlistsScrollViewIsFirstResponder = true
+                    self.playerManager.queueViewIsFirstResponder = false
+                    self.playerManager.savedAlbumsGridViewIsFirstResponder = false
+                    self.playerManager.playlistsScrollViewIsFirstResponder = true
                 case .albums:
-                    playerManager.playlistsScrollViewIsFirstResponder = false
-                    playerManager.savedAlbumsGridViewIsFirstResponder = true
+                    self.playerManager.queueViewIsFirstResponder = false
+                    self.playerManager.playlistsScrollViewIsFirstResponder = false
+                    self.playerManager.savedAlbumsGridViewIsFirstResponder = true
                 case .queue:
-                    playerManager.playlistsScrollViewIsFirstResponder = false
-                    playerManager.savedAlbumsGridViewIsFirstResponder = false
+                    self.playerManager.playlistsScrollViewIsFirstResponder = false
+                    self.playerManager.savedAlbumsGridViewIsFirstResponder = false
+                    self.playerManager.queueViewIsFirstResponder = true
+                    
             }
         }
 //        .onChange(of: playerManager.isShowingLibraryView) { isShowing in

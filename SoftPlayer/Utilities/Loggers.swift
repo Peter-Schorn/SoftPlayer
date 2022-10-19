@@ -54,7 +54,7 @@ enum Loggers {
     
     static let images = Logger(
         label: "Images",
-        level: .trace
+        level: .warning
     )
     
     static let syncContext = Logger(
