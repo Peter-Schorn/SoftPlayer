@@ -46,6 +46,7 @@
 		478A64662692FBC600557DF3 /* AlbumGridItemView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 478A64652692FBC600557DF3 /* AlbumGridItemView.swift */; };
 		478A64682692FEF400557DF3 /* LibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 478A64672692FEF400557DF3 /* LibraryView.swift */; };
 		4795210D25744AA6000A5B82 /* MiscellaneousUtilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4795210C25744AA6000A5B82 /* MiscellaneousUtilities.swift */; };
+		47993D2828FE688400D3D73F /* QueueImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47993D2728FE688400D3D73F /* QueueImage.swift */; };
 		47AA076E27D9D96200F6C140 /* ShapeExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AA076D27D9D96200F6C140 /* ShapeExtensions.swift */; };
 		47AA077027D9D9B800F6C140 /* HeartShape.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AA076F27D9D9B800F6C140 /* HeartShape.swift */; };
 		47AA077227D9D9FA00F6C140 /* BubblingHeartsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AA077127D9D9FA00F6C140 /* BubblingHeartsView.swift */; };
@@ -118,6 +119,7 @@
 		478A64652692FBC600557DF3 /* AlbumGridItemView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlbumGridItemView.swift; sourceTree = "<group>"; };
 		478A64672692FEF400557DF3 /* LibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryView.swift; sourceTree = "<group>"; };
 		4795210C25744AA6000A5B82 /* MiscellaneousUtilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MiscellaneousUtilities.swift; sourceTree = "<group>"; };
+		47993D2728FE688400D3D73F /* QueueImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QueueImage.swift; sourceTree = "<group>"; };
 		47AA076D27D9D96200F6C140 /* ShapeExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShapeExtensions.swift; sourceTree = "<group>"; };
 		47AA076F27D9D9B800F6C140 /* HeartShape.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeartShape.swift; sourceTree = "<group>"; };
 		47AA077127D9D9FA00F6C140 /* BubblingHeartsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BubblingHeartsView.swift; sourceTree = "<group>"; };
@@ -313,6 +315,7 @@
 			children = (
 				47FD3DE2256F9599000E2346 /* SpotifyBridge.swift */,
 				47D8CF82256664C60034FA1E /* PlayerManager.swift */,
+				47993D2728FE688400D3D73F /* QueueImage.swift */,
 				4715D7B226FD229F00562192 /* AppAppearance.swift */,
 				47FD3DF6256FA77F000E2346 /* Spotify.swift */,
 				47FD3DD9256F642F000E2346 /* PlayerStateNotification.swift */,
@@ -478,6 +481,7 @@
 				47FD3DDA256F642F000E2346 /* PlayerStateNotification.swift in Sources */,
 				47F6EC5D257C9699007079D2 /* RepeatModeButton.swift in Sources */,
 				478A64682692FEF400557DF3 /* LibraryView.swift in Sources */,
+				47993D2828FE688400D3D73F /* QueueImage.swift in Sources */,
 				478A64642692F85700557DF3 /* SavedAlbumsGridView.swift in Sources */,
 				4712E604257FB1A100A881D5 /* NotificationView.swift in Sources */,
 				478A64662692FBC600557DF3 /* AlbumGridItemView.swift in Sources */,

@@ -16,7 +16,7 @@ struct QueueView: View {
                 Array(playerManager.queue.enumerated()),
                 id: \.offset
             ) { (offset, item) in
-                QueueItemView(item: item)
+                QueueItemView(item: item, index: offset)
             }
         }
     }
