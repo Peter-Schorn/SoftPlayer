@@ -8,24 +8,24 @@ import KeyboardShortcuts
 import os
 
 class PlayerManager: ObservableObject {
-
+    
     static let osLog = OSLog(
         subsystem: Bundle.main.bundleIdentifier!,
         category: .pointsOfInterest
     )
-
+    
     let spotify: Spotify
     
     let undoManager = UndoManager()
-
+    
     @AppStorage("libraryPage") var libraryPage = LibraryPage.playlists
-
+    
     @AppStorage("onlyShowMyPlaylists") var onlyShowMyPlaylists = false
-
+    
     @AppStorage("appearance") var appearance = AppAppearance.system
     
     var colorSchemeObservation: NSKeyValueObservation? = nil
-
+    
     var colorScheme: ColorScheme {
         if let colorScheme = self.appearance.colorScheme {
             return colorScheme
@@ -34,7 +34,7 @@ class PlayerManager: ObservableObject {
             nsAppearance: NSApplication.shared.effectiveAppearance
         ) ?? .light
     }
-
+    
     @Published var isShowingLibraryView = false
     
     @Published var isDraggingPlaybackPositionView = false
@@ -47,21 +47,23 @@ class PlayerManager: ObservableObject {
     /// Only scroll to the albums search bar once after presenting the
     /// library view.
     @Published var didScrollToAlbumsSearchBar = false
-
+    
     // MARK: Touch Bar
     
     @Published var touchbarPlaylistsOffset = 0
-
+    
     // MARK: First Responder
     
     @Published var playerViewIsFirstResponder: Bool? = true
     @Published var playlistsScrollViewIsFirstResponder = false
     @Published var savedAlbumsGridViewIsFirstResponder = false
-
+    
     // MARK: - Images -
     
     var images: [SpotifyIdentifier: Image] = [:]
-
+    
+    var queueItemImages: [SpotifyIdentifier: QueueImage] = [:]
+    
     // MARK: - Player State -
     
     /// The currently playing track or episode.
@@ -70,10 +72,10 @@ class PlayerManager: ObservableObject {
     var currentTrack: SpotifyTrack? = nil
     
     var queue: [PlaylistItem] = []
-
+    
     /// The currently playing track or episode identifier.
     var currentItemIdentifier: SpotifyIdentifier? = nil
-
+    
     var albumArtistTitle = ""
     
     /// The URL to the context of the current playback.
@@ -96,14 +98,14 @@ class PlayerManager: ObservableObject {
         return nil
         
     }
-
+    
     /// The URL to the show or artist of the current playback
     var showOrArtistURL: URL? {
         self.storedSyncedCurrentlyPlayingContext?.showOrArtistIdentifier?.url
     }
 
     /// Set only if the playback is occurring in the context of a playlist.
-//    @Published var currentlyPlayingPlaylistName: String? = nil
+    //    @Published var currentlyPlayingPlaylistName: String? = nil
     @Published var shuffleIsOn = false
     @Published var repeatMode = RepeatMode.off
     @Published var playerPosition: CGFloat = 0 {
@@ -121,7 +123,7 @@ class PlayerManager: ObservableObject {
     
     /// Whether or not the current track is in the current user's saved tracks.
     @Published var currentTrackIsSaved = false
-
+    
     // MARK: Player Position
     
     static let noPlaybackPositionPlaceholder = "- : -"
@@ -140,7 +142,7 @@ class PlayerManager: ObservableObject {
     
     /// Retrieved from the Spotify web API.
     @Published var currentlyPlayingContext: CurrentlyPlayingContext? = nil
-
+    
     var syncedCurrentlyPlayingContext: Future<CurrentlyPlayingContext?, Never> {
         return Future { promise in
             if self.isUpdatingCurrentlyPlayingContext {
@@ -148,17 +150,17 @@ class PlayerManager: ObservableObject {
                     "Future: Will wait for context update"
                 )
                 self.didUpdateCurrentlyPlayingContextCancellable =
-                    self.didUpdateCurrentlyPlayingContext.sink {
-                        let context = self.currentlyPlayingContext
-                        let name = context?.item?.name ?? "nil"
-                        Loggers.syncContext.trace(
+                self.didUpdateCurrentlyPlayingContext.sink {
+                    let context = self.currentlyPlayingContext
+                    let name = context?.item?.name ?? "nil"
+                    Loggers.syncContext.trace(
                             """
                             FUTURE: received didUpdateCurrentlyPlayingContext: \
                             \(name)
                             """
-                        )
-                        promise(.success(context))
-                    }
+                    )
+                    promise(.success(context))
+                }
             }
             else {
                 Loggers.syncContext.trace("Future: NOT updating context")
@@ -174,9 +176,9 @@ class PlayerManager: ObservableObject {
     @Published var artworkImage = Image(.spotifyAlbumPlaceholder)
     
     @Published var isPlaying = false
-
+    
     // MARK: - Devices -
-
+    
     /// Devices with `nil` for `id` and/or are restricted are filtered out.
     @Published var availableDevices: [Device] = []
     
@@ -189,14 +191,14 @@ class PlayerManager: ObservableObject {
             device.isActive
         }
     }
-
+    
     var allowedActions: Set<PlaybackActions> {
         return self.currentlyPlayingContext?.allowedActions
-            ?? PlaybackActions.allCases
+        ?? PlaybackActions.allCases
     }
     
     @Published var currentUser: SpotifyUser? = nil
-
+    
     var imagesFolder: URL? {
         guard let applicationSupportFolder = FileManager.default.urls(
             for: .applicationSupportDirectory,
@@ -266,10 +268,23 @@ class PlayerManager: ObservableObject {
             )
         }
     }
+
+    /// Whether or not the playlists have been retrieved at least once since
+    /// launch or logging in to a new account.
+    var didRetrievePlaylists = false
     
-    // MARK: - Saved Tracks -
+    /// Whether or not the saved albums have been retrieved at least once since
+    /// launch or logging in to a new account.
+    var didRetrieveAlbums = false
     
-//    var savedTracks: [Track] = []
+    /// The last time unused images have been deleted.
+    var lastTimeDeletedUnusedImages: Date? = nil
+
+    // MARK: Library Page Transition
+    @Published var libraryPageTransition = AnyTransition.asymmetric(
+        insertion: .move(edge: .leading),
+        removal: .move(edge: .trailing)
+    )
 
     // MARK: - Notification -
     
@@ -390,6 +405,7 @@ class PlayerManager: ObservableObject {
                 self.retrieveCurrentUser()
                 self.retrievePlaylists()
                 self.retrieveSavedAlbums()
+                self.retrieveQueue()
                 self.updatePlayerState()
             }
         }
@@ -406,7 +422,10 @@ class PlayerManager: ObservableObject {
                 self.committedAlbumsLastModifiedDates = [:]
                 self.committedPlaylistsLastModifiedDates = [:]
                 self.playlists = []
+                self.didRetrievePlaylists = false
                 self.savedAlbums = []
+                self.didRetrieveAlbums = false
+                self.queue = []
                 self.removeImagesCache()
             }
             .store(in: &self.cancellables)
@@ -418,7 +437,7 @@ class PlayerManager: ObservableObject {
             }
             .store(in: &self.cancellables)
 
-        self.debug()
+//        self.debug()
 
     }
     
@@ -920,30 +939,6 @@ class PlayerManager: ObservableObject {
         
     }
     
-    func retrieveQueue() {
-        
-        Loggers.queue.trace("retriving queue")
-
-        self.retrieveQueueCancellable = self.spotify.api.queue()
-            .receive(on: RunLoop.main)
-            .handleAuthenticationError(spotify: self.spotify)
-            .sink(
-                receiveCompletion: { completion in
-                    if case .failure(let error) = completion {
-                        Loggers.playerManager.error(
-                            "couldn't retrieve queue: \(error)"
-                        )
-                    }
-                },
-                receiveValue: { queue in
-                    self.queue = queue.queue
-                    self.objectWillChange.send()
-                    Loggers.queue.trace("updated queue")
-                }
-            )
-
-    }
-    
 //    func retrieveCurrentlyPlayingPlaylist() {
 //
 //        guard let context = self.currentlyPlayingContext?.context,
@@ -1247,6 +1242,10 @@ class PlayerManager: ObservableObject {
             .sink(
                 receiveCompletion: { completion in
                     self.isLoadingSavedAlbums = false
+                    self.didRetrieveAlbums = true
+                    if self.didRetrievePlaylists {
+                        self.deleteUnusedImagesIfNeeded()
+                    }
                     switch completion {
                         case .finished:
                             break
@@ -1280,9 +1279,9 @@ class PlayerManager: ObservableObject {
                          */
                         .filter { $0.id != nil }
                     
-                    self.retrieveAlbumImages()
                     self.sortAlbumsByLastModifiedDate(&savedAlbums)
                     self.savedAlbums = savedAlbums
+                    self.retrieveAlbumImages()
 
                 }
             )
@@ -1471,6 +1470,10 @@ class PlayerManager: ObservableObject {
             .sink(
                 receiveCompletion: { completion in
                     self.isLoadingPlaylists = false
+                    self.didRetrievePlaylists = true
+                    if self.didRetrieveAlbums {
+                        self.deleteUnusedImagesIfNeeded()
+                    }
                     Loggers.playerManager.trace(
                         "retrievePlaylists completion: \(completion)"
                     )
@@ -1516,9 +1519,9 @@ class PlayerManager: ObservableObject {
 
                     }
 
-                    self.retrievePlaylistImages()
                     self.sortPlaylistsByLastModifiedDate(&playlists)
                     self.playlists = playlists
+                    self.retrievePlaylistImages()
                 }
             )
 
@@ -1897,6 +1900,42 @@ class PlayerManager: ObservableObject {
             
     }
     
+    // MARK: - Queue -
+    
+    func retrieveQueue(retries: Int = 2) {
+        
+        Loggers.queue.trace("retriving queue")
+
+        self.retrieveQueueCancellable = self.spotify.api.queue()
+            .receive(on: RunLoop.main)
+            .handleAuthenticationError(spotify: self.spotify)
+            .sink(
+                receiveCompletion: { completion in
+                    if case .failure(let error) = completion {
+                        Loggers.playerManager.error(
+                            "couldn't retrieve queue: \(error)"
+                        )
+                    }
+                },
+                receiveValue: { queue in
+                    if queue.queue.isEmpty && retries > 0 {
+                        let delay = retries == 2 ? 0.5 : 1
+                        DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+                            self.retrieveQueue(retries: retries - 1)
+                        }
+                    }
+                    else {
+                        self.queue = queue.queue
+                        self.objectWillChange.send()
+                        Loggers.queue.trace("updated queue")
+                        self.retrieveQueueItemImages()
+                    }
+
+                }
+            )
+
+    }
+    
     // MARK: - User -
     
     func retrieveCurrentUser() {
@@ -1933,9 +1972,110 @@ class PlayerManager: ObservableObject {
     }
 
     // MARK: - Images -
+
+    func retrieveAlbumImages() {
+        
+        var onDiskAlbumIds: Set<String> = []
+        
+        if let albumImagesFolder = self.imageFolderURL(for: .album) {
+            do {
+                for file in try FileManager.default.contentsOfDirectory(
+                    at: albumImagesFolder,
+                    includingPropertiesForKeys: [],
+                    options: .skipsHiddenFiles
+                ) {
+                    let fileName = file.lastPathComponent
+                    if let id = try! fileName.regexMatch(#"(.+)\.\w+"#)?
+                            .groups.first??.match {
+                        onDiskAlbumIds.insert(id)
+                    }
+                }
+                
+            } catch {
+                Loggers.images.error(
+                    "couldn't list directory \(albumImagesFolder.path)"
+                )
+            }
+        }
+
+        for album in self.savedAlbums {
+            
+            guard
+                let albumURI = album.uri,
+                let albumIdentifier = try? SpotifyIdentifier(uri: albumURI)
+            else {
+                Loggers.images.error(
+                    """
+                    couldn't get uri or identifier for album '\(album.name)'
+                    """
+                )
+                continue
+            }
+
+            guard self.images[albumIdentifier] == nil else {
+                // the image already exists in the cache, so we don't need
+                // to retrieve it again
+                continue
+            }
+            
+            guard !onDiskAlbumIds.contains(albumIdentifier.id) else {
+                // the image already exists on the file system, so we don't need
+                // to retrieve it again
+                continue
+            }
+            
+            guard let spotifyImage = album.images?.smallest else {
+                Loggers.images.warning(
+                    "no images exist for album '\(album.name)'"
+                )
+                continue
+            }
+
+            Loggers.images.notice(
+                "will retrieve image for album '\(album.name)'"
+            )
+            
+            guard let albumsFolder = self.imageFolderURL(
+                for: .album
+            ) else {
+                return
+            }
+            
+            self.downloadImage(
+                url: spotifyImage.url,
+                identifier: albumIdentifier,
+                folder: albumsFolder
+            )
+
+        }
+        
+    }
     
     func retrievePlaylistImages() {
         
+        var onDiskPlaylistIds: Set<String> = []
+        
+        if let playlistImagesFolder = self.imageFolderURL(for: .playlist) {
+            do {
+                for file in try FileManager.default.contentsOfDirectory(
+                    at: playlistImagesFolder,
+                    includingPropertiesForKeys: [],
+                    options: .skipsHiddenFiles
+                ) {
+                    let fileName = file.lastPathComponent
+                    if let id = try! fileName.regexMatch(#"(.+)\.\w+"#)?
+                            .groups.first??.match {
+                        onDiskPlaylistIds.insert(id)
+                    }
+                }
+                
+            } catch {
+                Loggers.images.error(
+                    "couldn't list directory \(playlistImagesFolder.path)"
+                )
+            }
+        }
+
         for playlist in self.playlists {
             
             let playlistIdentifier: SpotifyIdentifier
@@ -1958,6 +2098,12 @@ class PlayerManager: ObservableObject {
                 continue
             }
 
+            guard !onDiskPlaylistIds.contains(playlistIdentifier.id) else {
+                // the image already exists on the file system, so we don't need
+                // to retrieve it again
+                continue
+            }
+
             guard let spotifyImage = playlist.images.smallest else {
                 Loggers.images.warning(
                     "no images exist for playlist '\(playlist.name)'"
@@ -1969,85 +2115,192 @@ class PlayerManager: ObservableObject {
                 "will retrieve image for playlist '\(playlist.name)'"
             )
             
-            // we need to download the playlist image again
-            URLSession.shared.dataTaskPublisher(for: spotifyImage.url)
-                .sink(
-                    receiveCompletion: { completion in
-                        if case .failure(let error) = completion {
-                            Loggers.images.error(
-                                "couldn't retrieve playlist image: \(error)"
-                            )
-                        }
-                    },
-                    receiveValue: { imageData, urlResponse in
-                        self.saveImageToFile(
-                            imageData: imageData,
-                            identifier: playlistIdentifier
-                        )
-                    }
-                )
-                .store(in: &self.cancellables)
+            guard let playlistsFolder = self.imageFolderURL(
+                for: .playlist
+            ) else {
+                return
+            }
             
+            self.downloadImage(
+                url: spotifyImage.url,
+                identifier: playlistIdentifier,
+                folder: playlistsFolder
+            )
+
         }  // for playlist in self.playlists
             
     }
 
-    func retrieveAlbumImages() {
+    func retrieveQueueItemImages() {
+
+        self.deleteOldQueueItemImages()
         
-        for album in self.savedAlbums {
+        let savedAlbumURIs = Set(self.savedAlbums.compactMap(\.uri))
+
+        for queueItem in self.queue {
             
-            guard
-                let albumURI = album.uri,
-                let albumIdentifier = try? SpotifyIdentifier(uri: albumURI)
-            else {
-                Loggers.images.error(
-                    """
-                    couldn't get uri or identifier for album '\(album.name)'
-                    """
-                )
+            if case .track(let track) = queueItem,
+                    let albumURI = track.album?.uri,
+                    savedAlbumURIs.contains(albumURI) {
+                // the image is already downloaded as part of the saved
+                // album images
                 continue
             }
 
-            guard self.images[albumIdentifier] == nil else {
-                // the image already exists in the cache, so we don't need
-                // to retrieve it again
+            guard let imageIdentifier = self.queueItemImageIdentifier(
+                queueItem
+            ) else {
                 continue
             }
             
-            guard let spotifyImage = album.images?.smallest else {
-                Loggers.images.warning(
-                    "no images exist for album '\(album.name)'"
-                )
+            guard self.queueItemImages[imageIdentifier] == nil else {
+                self.queueItemImages[imageIdentifier]?.lastAccessed = Date()
                 continue
             }
 
-            Loggers.images.notice(
-                "will retrieve image for album '\(album.name)'"
-            )
+            let imageURL: URL?
+
+            switch queueItem {
+                case .track(let track):
+                    if track.album?.uri != nil,
+                            !(track.album?.images?.isEmpty ?? true) {
+                        imageURL = track.album?.images?.smallest?.url
+                    }
+                    // fall back on using the artist image if no album image
+                    // exists
+                    else if let artist = track.artists?.first(where: {
+                        !($0.images?.isEmpty ?? true) && $0.uri != nil
+                    }) {
+                        imageURL = artist.images?.smallest?.url
+                    }
+                    else {
+                        imageURL = nil
+                    }
+                        
+                case .episode(let episode):
+                    if let episodeImageURL = episode.images?.smallest?.url {
+                        imageURL = episodeImageURL
+                    }
+                    // fall back on using the show image if no episode image
+                    // exists
+                    else if let showImageURL = episode.show?.images?.smallest?
+                            .url {
+                        imageURL = showImageURL
+                    }
+                    else {
+                        imageURL = nil
+                    }
+            }
+
+            guard let imageURL = imageURL else {
+                continue
+            }
             
-            // we need to download the album image again
-            URLSession.shared.dataTaskPublisher(for: spotifyImage.url)
+            URLSession.shared.dataTaskPublisher(for: imageURL)
                 .sink(
                     receiveCompletion: { completion in
                         if case .failure(let error) = completion {
                             Loggers.images.error(
-                                "couldn't retrieve album image: \(error)"
+                                "couldn't retrieve image: \(error)"
                             )
                         }
                     },
                     receiveValue: { imageData, urlResponse in
-                        self.saveImageToFile(
-                            imageData: imageData,
-                            identifier: albumIdentifier
-                        )
+                        guard let nsImage = NSImage(data: imageData) else {
+                            Loggers.images.error(
+                                """
+                                couldn't initialize NSImage from data: \
+                                \(imageIdentifier.uri)
+                                """
+                            )
+                            return
+                        }
+                        let imageSize: CGFloat = 40
+                        guard let resizedImage = nsImage.croppedToSquare()?
+                                .resized(
+                                    width: imageSize, height: imageSize
+                                ) else {
+                            Loggers.images.error(
+                                "couldn't crop image: \(imageIdentifier.uri)"
+                            )
+                            return
+                                    
+                        }
+                        let image = Image(nsImage: resizedImage)
+                        DispatchQueue.main.async {
+                            let queueImage = QueueImage(image)
+                            self.queueItemImages[imageIdentifier] = queueImage
+                            self.objectWillChange.send()
+                        }
                     }
                 )
                 .store(in: &self.cancellables)
-
+            
+            
         }
-        
+
+    }
+    
+    func queueItemImageIdentifier(_ item: PlaylistItem) -> SpotifyIdentifier? {
+        switch item {
+            case .track(let track):
+                if let albumURI = track.album?.uri,
+                   !(track.album?.images?.isEmpty ?? true),
+                        let albumIdentifier = try? SpotifyIdentifier(
+                            uri: albumURI
+                        ) {
+                    return albumIdentifier
+                }
+                // fall back on using the artist image if no album image
+                // exists
+                else if let artist = track.artists?.first(where: {
+                    !($0.images?.isEmpty ?? true) && $0.uri != nil
+                }), let artistURI = artist.uri,
+                       let artistIdentifier = try? SpotifyIdentifier(
+                        uri: artistURI
+                       ) {
+                    return artistIdentifier
+                }
+                else {
+                    return nil
+                }
+                    
+            case .episode(let episode):
+                if episode.images?.smallest?.url != nil,
+                        let episodeIdentifier = try? SpotifyIdentifier(uri: episode) {
+                    return episodeIdentifier
+                }
+                // fall back on using the show image if no episode image
+                // exists
+                else if let show = episode.show,
+                        let showIdentifier = try? SpotifyIdentifier(uri: show) {
+                    return showIdentifier
+                }
+                else {
+                    return nil
+                }
+        }
     }
 
+    func queueItemImage(for item: PlaylistItem) -> Image? {
+
+        guard let imageIdentifier = self.queueItemImageIdentifier(item) else {
+            return nil
+        }
+
+        if let queueImage = self.queueItemImages[imageIdentifier] {
+            return queueImage.image
+        }
+        
+        if let image = self.image(for: imageIdentifier) {
+            return image
+        }
+
+        return nil
+
+    }
+
+    /// Only for playlist and album images, not queue item images
     func image(for identifier: SpotifyIdentifier) -> Image? {
         
         if let image = self.images[identifier] {
@@ -2058,7 +2311,9 @@ class PlayerManager: ObservableObject {
             "could not find image in cache for \(identifier.uri)"
         )
         
-        guard let categoryFolder = self.imageFolderURL(for: identifier) else {
+        guard let categoryFolder = self.imageFolderURL(
+            for: identifier.idCategory
+        ) else {
             return nil
         }
         let imageURL = categoryFolder.appendingPathComponent(
@@ -2070,7 +2325,9 @@ class PlayerManager: ObservableObject {
         do {
             let imageData = try Data(contentsOf: imageURL)
             if let nsImage = NSImage(data: imageData) {
-                return Image(nsImage: nsImage)
+                let image = Image(nsImage: nsImage)
+                self.images[identifier] = image
+                return image
             }
             Loggers.images.error(
                 "couldn't convert data to image for \(identifier.uri)"
@@ -2087,31 +2344,59 @@ class PlayerManager: ObservableObject {
     }
     
     /// Returns the folder in which the image is stored, not the full path.
-    func imageFolderURL(for identifier: SpotifyIdentifier) -> URL? {
+    func imageFolderURL(for idCategory: IDCategory) -> URL? {
         return self.imagesFolder?.appendingPathComponent(
-            identifier.idCategory.rawValue, isDirectory: true
+            idCategory.rawValue, isDirectory: true
         )
     }
     
-    func saveImageToFile(imageData: Data, identifier: SpotifyIdentifier) {
+    func downloadImage(
+        url: URL,
+        identifier: SpotifyIdentifier,
+        folder: URL
+    ) {
+        URLSession.shared.dataTaskPublisher(for: url)
+            .sink(
+                receiveCompletion: { completion in
+                    if case .failure(let error) = completion {
+                        Loggers.images.error(
+                            "couldn't retrieve image: \(error)"
+                        )
+                    }
+                },
+                receiveValue: { imageData, urlResponse in
+                    self.saveImageToFile(
+                        imageData: imageData,
+                        identifier: identifier,
+                        folder: folder
+                    )
+                }
+            )
+            .store(in: &self.cancellables)
+    }
+
+    func saveImageToFile(
+        imageData: Data,
+        identifier: SpotifyIdentifier,
+        folder: URL
+    ) {
         
         DispatchQueue.global().async {
             
-            guard let categoryFolder = self.imageFolderURL(for: identifier) else {
-                return
-            }
-            
-            let imageURL = categoryFolder.appendingPathComponent(
-                "\(identifier.id).tiff", isDirectory: false
-            )
-            // imagePath = Library/Application Support/images/category/id.tiff
-            
             do {
                 try FileManager.default.createDirectory(
-                    at: categoryFolder,
+                    at: folder,
                     withIntermediateDirectories: true
                 )
+                let imageURL = folder.appendingPathComponent(
+                    "\(identifier.id).tiff", isDirectory: false
+                )
                 guard let nsImage = NSImage(data: imageData) else {
+                    Loggers.images.error(
+                        """
+                        couldn't initialize NSImage from data: \(identifier.uri)
+                        """
+                    )
                     return
                 }
                 let imageSize: CGFloat =
@@ -2130,7 +2415,9 @@ class PlayerManager: ObservableObject {
                     return
                 }
                 try newImageData.write(to: imageURL)
-                Loggers.images.trace("did save \(identifier.uri) to file")
+                Loggers.images.trace(
+                    "did save \(identifier.uri) to \(imageURL.path)"
+                )
                 
                 DispatchQueue.main.async {
                     // MARK: Save image to cache
@@ -2140,7 +2427,7 @@ class PlayerManager: ObservableObject {
                 
             } catch {
                 Loggers.images.error(
-                    "couldn't save image to file: \(error)"
+                    "couldn't save image \(identifier.uri) to file: \(error)"
                 )
             }
             
@@ -2148,10 +2435,114 @@ class PlayerManager: ObservableObject {
 
     }
     
+    /// Delete images which have been downloaded, but are no longer part of the
+    /// user's playlists or saved albums.
+    func deleteUnusedImagesIfNeeded() {
+
+        if let date = self.lastTimeDeletedUnusedImages {
+            // only delete images every hour
+            if date.addingTimeInterval(3_600) > Date() {
+                Loggers.images.trace("will NOT delete unused images")
+                return
+            }
+        }
+
+        self.lastTimeDeletedUnusedImages = Date()
+
+        Loggers.images.notice("will delete unused images")
+
+        let items = [
+            (
+                self.imageFolderURL(for: .playlist),
+                Set(self.playlists.map(\.id))
+            ),
+            (
+                self.imageFolderURL(for: .album),
+                Set(self.savedAlbums.compactMap(\.id))
+            )
+        ]
+        
+        for (folder, ids) in items {
+            
+            guard let folder = folder else {
+                continue
+            }
+            
+            if ids.isEmpty {
+                continue
+            }
+            
+            do {
+                for file in try FileManager.default.contentsOfDirectory(
+                    at: folder,
+                    includingPropertiesForKeys: [],
+                    options: .skipsHiddenFiles
+                ) {
+                    let fileName = file.lastPathComponent
+                    if let id = try! fileName.regexMatch(#"(.+)\.\w+"#)?
+                            .groups.first??.match {
+                        
+                        if !ids.contains(id) {
+                            let imageURL = folder.appendingPathComponent(
+                                fileName
+                            )
+                            Loggers.images.notice(
+                                "will remove image at \(imageURL)"
+                            )
+                            try FileManager.default.removeItem(at: imageURL)
+                        }
+                        
+                    }
+                    else {
+                        Loggers.images.error("couldn't get id for file \(file)")
+                    }
+                }
+                
+            } catch {
+                Loggers.images.error("couldn't delete unused images: \(error)")
+            }
+            
+        }
+
+    }
+
+    func deleteOldQueueItemImages() {
+        
+        let max = 100
+
+        if self.queueItemImages.count <= max {
+            return
+        }
+
+        let deleteCount = self.queueItemImages.count - max
+
+
+        // delete images with lower dates
+        
+        let toDelete = self.queueItemImages.sorted { lhs, rhs in
+            lhs.value.lastAccessed < rhs.value.lastAccessed
+        }
+        .map(\.key)
+        .prefix(deleteCount)
+        
+        Loggers.images.notice(
+            """
+            will delete \(deleteCount) queue item images: \
+            \(toDelete.map(\.uri))
+            """
+        )
+
+        for identifier in toDelete {
+            self.queueItemImages[identifier] = nil
+        }
+ 
+    }
+
     /// Removes the folder containing the images and removes all items from the
-    /// `images` dictionary.
+    /// `images` and `queueItemImages` libraryPageTransitiondictionary.
     func removeImagesCache() {
         self.images = [:]
+        self.queueItemImages = [:]
         do {
             if let folder = self.imagesFolder {
                 Loggers.images.notice("will delete folder: \(folder)")
