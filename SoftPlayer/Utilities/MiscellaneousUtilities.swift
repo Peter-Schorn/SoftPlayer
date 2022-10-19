@@ -141,9 +141,22 @@ extension URL {
 }
 
 enum LibraryPage: String {
+    
     case playlists
     case albums
     case queue
+    
+    var index: Int {
+        switch self {
+            case .playlists:
+                return 0
+            case .albums:
+                return 1
+            case .queue:
+                return 2
+        }
+    }
+
 }
 
 extension Notification.Name {

@@ -25,10 +25,7 @@ struct LibraryView: View {
                 case .albums:
                     SavedAlbumsGridView()
                         .transition(
-                            .asymmetric(
-                                insertion: .move(edge: .trailing),
-                                removal: .move(edge: .leading)
-                            )
+                            playerManager.libraryPageTransition
                         )
                 case .queue:
                     QueueView()

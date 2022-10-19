@@ -24,7 +24,7 @@ enum Loggers {
     
     static let queue = Logger(
         label: "queue",
-        level: .trace
+        level: .warning
     )
 
     static let playerState = Logger(
@@ -54,7 +54,7 @@ enum Loggers {
     
     static let images = Logger(
         label: "Images",
-        level: .error
+        level: .trace
     )
     
     static let syncContext = Logger(

@@ -11,7 +11,6 @@ enum ImageName: String {
     case musicNote = "music.note"
     case musicNoteCircle = "music.note.circle"
     case musicNoteCircleWhite = "music.note.circle.white"
-    case vinylRecord = "vinyl record"
     case spiritualArtwork = "spiritual artwork"
     case listenHeadphones = "listen headphones"
     case annabelleRectangle = "annabelle rectangle"

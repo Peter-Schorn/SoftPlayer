@@ -81,7 +81,7 @@ struct AlbumGridItemView: View {
                     NSWorkspace.shared.open(url)
                 }
             }
-            Button("Remove From Library") {
+            Button("Remove from Library") {
                 self.playerManager.removeAlbumFromLibrary(self.album)
             }
             
