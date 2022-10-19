@@ -19,6 +19,17 @@ struct QueueView: View {
                 QueueItemView(item: item, index: offset)
             }
         }
+        .background(
+            KeyEventHandler(
+                name: "QueueView",
+                isFirstResponder: $playerManager.queueViewIsFirstResponder
+            ) { event in
+                self.playerManager.receiveKeyEvent(
+                    event, requireModifierKey: true
+                )
+            }
+            .touchBar(content: PlayPlaylistsTouchBarView.init)
+        )
     }
     
 }

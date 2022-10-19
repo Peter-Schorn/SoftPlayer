@@ -54,9 +54,10 @@ class PlayerManager: ObservableObject {
     
     // MARK: First Responder
     
-    @Published var playerViewIsFirstResponder: Bool? = true
+    @Published var playerViewIsFirstResponder: Bool? = nil
     @Published var playlistsScrollViewIsFirstResponder = false
     @Published var savedAlbumsGridViewIsFirstResponder = false
+    @Published var queueViewIsFirstResponder: Bool? = false
     
     // MARK: - Images -
     
@@ -2765,14 +2766,17 @@ class PlayerManager: ObservableObject {
         
         switch self.libraryPage {
             case .playlists:
+                self.queueViewIsFirstResponder = false
                 self.savedAlbumsGridViewIsFirstResponder = false
                 self.playlistsScrollViewIsFirstResponder = true
             case .albums:
+                self.queueViewIsFirstResponder = false
                 self.playlistsScrollViewIsFirstResponder = false
                 self.savedAlbumsGridViewIsFirstResponder = true
             case .queue:
                 self.playlistsScrollViewIsFirstResponder = false
                 self.savedAlbumsGridViewIsFirstResponder = false
+                self.queueViewIsFirstResponder = true
         }
     }
 
@@ -2810,6 +2814,7 @@ class PlayerManager: ObservableObject {
         
         self.savedAlbumsGridViewIsFirstResponder = false
         self.playlistsScrollViewIsFirstResponder = false
+        self.queueViewIsFirstResponder = false
         self.playerViewIsFirstResponder = true
     }
     
