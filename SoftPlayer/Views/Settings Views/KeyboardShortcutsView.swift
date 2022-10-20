@@ -91,6 +91,7 @@ struct KeyboardShortcutsView: View {
     ) -> some View {
         HStack {
             label
+                .multilineTextAlignment(.trailing)
                 .frame(maxWidth: .infinity, alignment: .trailing)
             KeyboardShortcuts.Recorder(for: name)
                 .frame(maxWidth: .infinity, alignment: .leading)
