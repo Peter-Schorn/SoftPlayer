@@ -1,17 +1,32 @@
 /* No comment provided by engineer. */
 "Add the currently playing track or episode to this playlist" = "Añade la canción o episodio que está tocando a esta lista de reproducción";
 
+/* No comment provided by engineer. */
+"Add to Liked Songs%@" = "Añade a las Canciones que te gustan%@";
+
 /* Added [song name] to [playlist name] */
 "Added \"%@\" to \"%@\"" = "\"%1$@\" ha añadido \"%2$@\"";
+
+/* No comment provided by engineer. */
+"Albums" = "Álbumes";
 
 /* No comment provided by engineer. */
 "All user data will be removed" = "Toda su información estará quitado";
 
 /* No comment provided by engineer. */
+"Appearance:" = "El aspecto:";
+
+/* No comment provided by engineer. */
 "Authenticating" = "Autenticando";
+
+/* Cannot add [song name] to Liked Songs */
+"Cannot add \"%@\" to \"Liked Songs\"" = "No puedes agregar \"%@\" a las \"Canciones que te gustan\"";
 
 /* No comment provided by engineer. */
 "Change the repeat mode%@" = "Cambia la modo de repetición%@";
+
+/* Copy URL link */
+"Copy Link" = "Copiar el enlace";
 
 /* No comment provided by engineer. */
 "Could not Authorize with your Spotify Account" = "No se puede autorizar con su cuenta de Spotify";
@@ -22,8 +37,22 @@
 /* Couldn't Add [song name] to [playlist name] */
 "Couldn't Add \"%@\" to \"%@\"" = "No se puede añadir \"%1$@\" a \"%2$@\"";
 
-/* Couldn't Play [playlist name] */
+/* Couldn't Follow [playlist name] */
+"Couldn't Follow \"%@\"" = "No se puede seguir \"%@\"";
+
+/* Couldn't Play [album name]
+   Couldn't Play [playlist name]
+   Couldn't Play [queue item name] */
 "Couldn't Play \"%@\"" = "No se puede tocar \"%@\"";
+
+/* Couldn't Remove [song name] from [playlist name] */
+"Couldn't Remove \"%@\" from \"%@\"" = "No se puede quitar \"%1$@\" de \"%2$@\"";
+
+/* Couldn't Remove Album [album name] */
+"Couldn't Remove Album \"%@\"" = "No se pueden quitar el Álbum \"%@\"";
+
+/* No comment provided by engineer. */
+"Couldn't Retrieve Albums" = "No se pueden Recuperar los Álbumes";
 
 /* No comment provided by engineer. */
 "Couldn't Retrieve Playback State" = "No se puede recuperar la canción";
@@ -32,16 +61,19 @@
 "Couldn't Retrieve Playlists" = "No se puede recuperar las listas de reproducción";
 
 /* No comment provided by engineer. */
-"Couldn't Retrieve the Currently Playing Track or Episode" = "No se puede recuperar la canción o episodio";
-
-/* No comment provided by engineer. */
 "Couldn't Retrieve User Profile" = "No se puede recuperar un perfil de un usuario";
+
+/* Couldn't Save Album [album name] */
+"Couldn't Save Album \"%@\"" = "No se peuden salvar el Álbum \"%@\"";
 
 /* No comment provided by engineer. */
 "Couldn't Set the Repeat Mode to %@" = "No se puede cambiar modo de repetición a %@";
 
 /* No comment provided by engineer. */
 "Couldn't Transfer Playback to \"%@\"" = "No se puede transferir la reproducción a \"%@\"";
+
+/* Couldn't Unfollow [playlist name] */
+"Couldn't Unfollow \"%@\"" = "No se puede dejar de seguir \"%@\"";
 
 /* No comment provided by engineer. */
 "Filters" = "Las filtras";
@@ -53,13 +85,25 @@
 "If you would like to use another account, please log out first." = "Si quiere usar otro cuenta, por favor cierra sesión.";
 
 /* No comment provided by engineer. */
+"Like Track" = "Guardar en tu bibliotecha";
+
+/* No comment provided by engineer. */
+"Local tracks cannot be added to a playlist" = "Las Canciones locales no se pueden anadir a una lista";
+
+/* No comment provided by engineer. */
 "Log in with Spotify" = "Inicia sesión con Spotify";
 
 /* No comment provided by engineer. */
 "Logout from Spotify" = "Cierra sesión de Spotify";
 
 /* No comment provided by engineer. */
+"Missing data." = "Falta información.";
+
+/* No comment provided by engineer. */
 "Next track" = "La próxima pista";
+
+/* No comment provided by engineer. */
+"No Albums Found" = "No se Encontraron Álbumes";
 
 /* No comment provided by engineer. */
 "No Devices Found" = "No hay ningunos aparatos";
@@ -68,7 +112,13 @@
 "No Playlists Found" = "No hay ningunas listas de reproducción ";
 
 /* No comment provided by engineer. */
-"Only Show My Playlists%@" = "Solamente muestra mis listas de reproducción%@";
+"Only Show My Playlists" = "Solamente muestra mis listas";
+
+/* No comment provided by engineer. */
+"Open App (global)" = "Abre la app (global)";
+
+/* No comment provided by engineer. */
+"Options" = "Las opciones";
 
 /* No comment provided by engineer. */
 "Play and pause" = "Toca y pausa";
@@ -77,7 +127,13 @@
 "Play or pause playback%@" = "Toca o pausa la reproducción%@";
 
 /* No comment provided by engineer. */
+"Playlists" = "Listas";
+
+/* No comment provided by engineer. */
 "Previous track" = "Pista anterior";
+
+/* No comment provided by engineer. */
+"Queue" = "Cola";
 
 /* No comment provided by engineer. */
 "Quit" = "Abandonar";
@@ -87,6 +143,12 @@
 
 /* No comment provided by engineer. */
 "Remove Filters" = "Quita las filtras";
+
+/* No comment provided by engineer. */
+"Remove from Liked Songs%@" = "Quitar de las Canciones que te gustan%@";
+
+/* Removed [song name] from [playlist name] */
+"Removed \"%@\" from \"%@\"" = "Se quitó \"%1$@\" de \"%2$@\"";
 
 /* No comment provided by engineer. */
 "Repeat mode" = "Modo de repetición";
@@ -110,7 +172,10 @@
 "Show Images Folder" = "Muestra una carpeta de imagenes";
 
 /* No comment provided by engineer. */
-"Show playlists%@" = "Muestra las listas de reproducción%@";
+"Show Library" = "Mostrar Biblioteca";
+
+/* No comment provided by engineer. */
+"Show library%@" = "Mostrar Biblioteca%@";
 
 /* No comment provided by engineer. */
 "Show settings ⌘," = "Muestra las preferencias";
@@ -132,6 +197,9 @@
 
 /* No comment provided by engineer. */
 "There are no devices available to play content on" = "No hay dispositivos disponibles para tocar contenido";
+
+/* No comment provided by engineer. */
+"This item cannot be added to a playlist" = "Esa cosa no se puede añadir";
 
 /* No comment provided by engineer. */
 "This URL could not be handled." = "No se ha podido procesar esta URL.";
@@ -166,29 +234,3 @@
 /* No comment provided by engineer. */
 "Your Spotify Account is Already Connected" = "Su cuenta todavía esta conectado";
 
-/* No comment provided by engineer. */
-"The authorization request has expired or is otherwise invalid." = "La petición autorizado ha expirado o por lo demás está inválido.";
-
-/* RepeatMode.rawValue */
-"off" = "apagado";
-
-/* RepeatMode.rawValue */
-"track" = "la pista";
-
-/* RepeatMode.rawValue */
-"context" = "el contexto";
-
-"Player command failed: No active device found (status code: 404)" = "Error en el comando del reproductor: No se encontró ningún dispositivo activo (código de estado: 404)";
-
-/* AppAppearance.rawValue */
-"System" = "El sistema";
-
-/* AppAppearance.rawValue */
-"Light" = "Claro";
-
-/* AppAppearance.rawValue */
-"Dark" = "Oscuro";
-
-"Appearance:" = "El aspecto:";
-
-"Options" = "Las opciones";
