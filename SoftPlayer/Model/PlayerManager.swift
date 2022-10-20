@@ -281,6 +281,10 @@ class PlayerManager: ObservableObject {
     /// The last time unused images have been deleted.
     var lastTimeDeletedUnusedImages: Date? = nil
 
+    /// The last time some queue item images have been deleted because there
+    /// were more than 100.
+    var lastTimeDeletedExtraQueueImages: Date? = nil
+
     // MARK: Library Page Transition
     @Published var libraryPageTransition = AnyTransition.asymmetric(
         insertion: .move(edge: .leading),
@@ -2134,7 +2138,7 @@ class PlayerManager: ObservableObject {
 
     func retrieveQueueItemImages() {
 
-        self.deleteOldQueueItemImages()
+        self.deleteExtraQueueItemImagesIfNeeded()
         
         let savedAlbumURIs = Set(self.savedAlbums.compactMap(\.uri))
 
@@ -2450,7 +2454,7 @@ class PlayerManager: ObservableObject {
 
         self.lastTimeDeletedUnusedImages = Date()
 
-        Loggers.images.notice("will delete unused images")
+        Loggers.images.notice("WILL delete unused images")
 
         let items = [
             (
@@ -2507,9 +2511,21 @@ class PlayerManager: ObservableObject {
 
     }
 
-    func deleteOldQueueItemImages() {
+    func deleteExtraQueueItemImagesIfNeeded() {
         
-        let max = 100
+        if let date = self.lastTimeDeletedExtraQueueImages {
+            // only delete images every 15 minutes
+            if date.addingTimeInterval(900) > Date() {
+                Loggers.images.trace("will NOT delete extra queue item images")
+                return
+            }
+        }
+
+        self.lastTimeDeletedExtraQueueImages = Date()
+        
+        Loggers.images.notice("WILL delete extra queue item images")
+
+        let max = 50
 
         if self.queueItemImages.count <= max {
             return
