@@ -17,7 +17,7 @@ struct SharingServicesMenu: View {
 
     func makeCopyLinkService() -> NSSharingService {
         return NSSharingService(
-            title: "Copy Link",
+            title: NSLocalizedString("Copy Link", comment: "Copy URL link"),
             image: NSImage(
                 systemSymbolName: "doc.on.doc.fill",
                 accessibilityDescription: nil
