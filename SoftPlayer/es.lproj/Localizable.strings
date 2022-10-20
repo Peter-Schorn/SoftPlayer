@@ -234,3 +234,6 @@
 /* No comment provided by engineer. */
 "Your Spotify Account is Already Connected" = "Su cuenta todavía esta conectado";
 
+"System" = "Automático";
+"Light" = "Claro";
+"Dark" = "Obscuro";
