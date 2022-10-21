@@ -142,9 +142,9 @@ extension URL {
 
 enum LibraryPage: String {
     
-    case playlists
-    case albums
-    case queue
+    case playlists = "Playlists"
+    case albums = "Albums"
+    case queue = "Queue"
     
     var index: Int {
         switch self {
