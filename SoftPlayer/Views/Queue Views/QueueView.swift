@@ -10,13 +10,23 @@ struct QueueView: View {
     @EnvironmentObject var spotify: Spotify
 
     var body: some View {
-        List {
-            ForEach(
-//                Array(Self.sampleQueue.enumerated()),
-                Array(playerManager.queue.enumerated()),
-                id: \.offset
-            ) { (offset, item) in
-                QueueItemView(item: item, index: offset)
+        Group {
+            if playerManager.queue.isEmpty {
+                Text("The Queue is Empty")
+                    .foregroundColor(.secondary)
+                    .font(.headline)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
+            else {
+                List {
+                    ForEach(
+//                        Array(Self.sampleQueue.enumerated()),
+                        Array(playerManager.queue.enumerated()),
+                        id: \.offset
+                    ) { (offset, item) in
+                        QueueItemView(item: item, index: offset)
+                    }
+                }
             }
         }
         .background(
