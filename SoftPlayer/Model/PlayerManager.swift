@@ -241,6 +241,10 @@ class PlayerManager: ObservableObject {
             )
         }
     }
+    
+    /// Whether or not the saved albums have been retrieved at least once since
+    /// launch or logging in to a new account.
+    var didRetrieveAlbums = false
 
     // MARK: - Playlists -
 
@@ -273,18 +277,16 @@ class PlayerManager: ObservableObject {
     /// Whether or not the playlists have been retrieved at least once since
     /// launch or logging in to a new account.
     var didRetrievePlaylists = false
-    
-    /// Whether or not the saved albums have been retrieved at least once since
-    /// launch or logging in to a new account.
-    var didRetrieveAlbums = false
-    
-    /// The last time unused images have been deleted.
-    var lastTimeDeletedUnusedImages: Date? = nil
+
+    // MARK: - Queue -
 
     /// The last time some queue item images have been deleted because there
     /// were more than 100.
     var lastTimeDeletedExtraQueueImages: Date? = nil
 
+    /// The last time unused images have been deleted.
+    var lastTimeDeletedUnusedImages: Date? = nil
+    
     // MARK: Library Page Transition
     @Published var libraryPageTransition = AnyTransition.asymmetric(
         insertion: .move(edge: .leading),
