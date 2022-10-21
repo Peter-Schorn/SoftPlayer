@@ -10,7 +10,7 @@ struct HeartShape: InsettableShape {
         return self.pathInRectCore(squareRect)
     }
     
-    func inset(by amount: CGFloat) -> HeartShape {
+    func inset(by amount: CGFloat) -> Self {
         var copy = self
         copy.inset += amount
         return copy

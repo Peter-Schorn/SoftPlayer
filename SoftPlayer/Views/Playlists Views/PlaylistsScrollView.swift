@@ -2,6 +2,7 @@ import Foundation
 import Combine
 import SwiftUI
 import SpotifyWebAPI
+import SpotifyExampleContent
 import RegularExpressions
 import Logging
 import KeyboardShortcuts
@@ -107,6 +108,21 @@ struct PlaylistsScrollView: View {
         
     }
     
+    let playlists: [(offset: Int, element: Playlist<PlaylistItemsReference>)] = Array(
+        [
+            Playlist<PlaylistItemsReference>.lucyInTheSkyWithDiamonds,
+            Playlist<PlaylistItemsReference>.thisIsMildHighClub,
+            .menITrust,
+            .modernPsychedelia,
+            .rockClassics,
+            .thisIsMFDoom,
+            .thisIsRadiohead,
+            .thisIsSkinshape,
+            .thisIsSonicYouth
+        ]
+        .enumerated()
+    )
+
     var body: some View {
         ScrollViewReader { scrollView in
             ScrollView {
@@ -158,8 +174,11 @@ struct PlaylistsScrollView: View {
                     }
                     else {
                         ForEach(
-                            self.filteredPlaylists,
+//                            self.filteredPlaylists,
+//                            id: \.element.uri
+                            self.playlists,
                             id: \.element.uri
+                            
 //                            Array(Playlist.spanishPlaylists.enumerated()),
 //                            id: \.offset
                         ) { playlist in
