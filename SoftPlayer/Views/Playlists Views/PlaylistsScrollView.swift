@@ -174,11 +174,10 @@ struct PlaylistsScrollView: View {
                     }
                     else {
                         ForEach(
-//                            self.filteredPlaylists,
-//                            id: \.element.uri
-                            self.playlists,
+                            self.filteredPlaylists,
                             id: \.element.uri
-                            
+//                            self.playlists,
+//                            id: \.element.uri
 //                            Array(Playlist.spanishPlaylists.enumerated()),
 //                            id: \.offset
                         ) { playlist in
