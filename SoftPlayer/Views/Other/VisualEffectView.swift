@@ -14,7 +14,10 @@ struct VisualEffectView: NSViewRepresentable {
         return visualEffectView
     }
 
-    func updateNSView(_ visualEffectView: NSVisualEffectView, context: Context) {
+    func updateNSView(
+        _ visualEffectView: NSVisualEffectView,
+        context: Context
+    ) {
         visualEffectView.material = material
         visualEffectView.blendingMode = blendingMode
     }

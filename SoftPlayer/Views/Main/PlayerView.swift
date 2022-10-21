@@ -528,7 +528,7 @@ struct PlayerView_Previews: PreviewProvider {
     static let playerManager2 = PlayerManager(spotify: spotify)
 
     static var previews: some View {
-        Self.withAllColorSchemes {
+        Self.withAllColorSchemes(previewDisplayName: "Player View") {
             PlayerView()
                 .environmentObject(playerManager.spotify)
                 .environmentObject(playerManager)
@@ -540,6 +540,8 @@ struct PlayerView_Previews: PreviewProvider {
                 .background()
                 .onAppear(perform: onAppear)
             
+        }
+        Self.withAllColorSchemes(previewDisplayName: "Library View") {
             PlayerView()
                 .environmentObject(playerManager2.spotify)
                 .environmentObject(playerManager2)
@@ -548,7 +550,6 @@ struct PlayerView_Previews: PreviewProvider {
                     height: AppDelegate.popoverHeight
                 )
                 .onAppear(perform: onAppear)
- 
         }
     }
     
