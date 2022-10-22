@@ -20,7 +20,7 @@ struct QueueView: View {
             else {
                 List {
                     ForEach(
-//                        Array(Self.sampleQueue.enumerated()),
+//                        Array(Self.sampleQueue2.enumerated()),
                         Array(playerManager.queue.enumerated()),
                         id: \.offset
                     ) { (offset, item) in
@@ -63,6 +63,10 @@ extension QueueView {
         .track(.odeToViceroy)
     ]
     
+    static let sampleQueue2: [PlaylistItem] = Album.darkSideOfTheMoon.tracks!
+        .items[1...].map { track in
+            PlaylistItem.track(track)
+        }
 }
 
 struct QueueView_Previews: PreviewProvider {

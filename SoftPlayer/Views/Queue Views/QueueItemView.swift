@@ -26,6 +26,7 @@ struct QueueItemView: View {
     var image: Image {
         self.playerManager.queueItemImage(for: self.item)
                 ?? Image(.spotifyAlbumPlaceholder)
+//        Image(.spiritualArtwork)
     }
 
     var body: some View {
