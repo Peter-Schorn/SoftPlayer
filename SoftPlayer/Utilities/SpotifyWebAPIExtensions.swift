@@ -265,7 +265,7 @@ extension Device {
     ]
 
     static let pedroComputer = Self(
-        id: nil,
+        id: "",
         isActive: true,
         isPrivateSession: false,
         isRestricted: false,
@@ -275,7 +275,7 @@ extension Device {
     )
 
     static let pedroIphone = Self(
-        id: nil,
+        id: "",
         isActive: false,
         isPrivateSession: false,
         isRestricted: false,

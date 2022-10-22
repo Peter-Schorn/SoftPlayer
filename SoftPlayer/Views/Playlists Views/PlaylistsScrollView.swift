@@ -108,21 +108,6 @@ struct PlaylistsScrollView: View {
         
     }
     
-    let playlists: [(offset: Int, element: Playlist<PlaylistItemsReference>)] = Array(
-        [
-            Playlist<PlaylistItemsReference>.lucyInTheSkyWithDiamonds,
-            Playlist<PlaylistItemsReference>.thisIsMildHighClub,
-            .menITrust,
-            .modernPsychedelia,
-            .rockClassics,
-            .thisIsMFDoom,
-            .thisIsRadiohead,
-            .thisIsSkinshape,
-            .thisIsSonicYouth
-        ]
-        .enumerated()
-    )
-
     var body: some View {
         ScrollViewReader { scrollView in
             ScrollView {
@@ -176,8 +161,6 @@ struct PlaylistsScrollView: View {
                         ForEach(
                             self.filteredPlaylists,
                             id: \.element.uri
-//                            self.playlists,
-//                            id: \.element.uri
 //                            Array(Playlist.spanishPlaylists.enumerated()),
 //                            id: \.offset
                         ) { playlist in
