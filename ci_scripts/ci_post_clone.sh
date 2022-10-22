@@ -1,2 +1,1 @@
-cd $CI_WORKSPACE
-xcodebuild -resolvePackageDependencies
+defaults write com.apple.dt.Xcode IDEPackageOnlyUseVersionsFromResolvedFile -bool false
