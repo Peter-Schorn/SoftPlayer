@@ -315,7 +315,7 @@ struct PlayerView: View {
                             perform: playerManager.openCurrentPlaybackInSpotify
                         )
                     Text(playerManager.albumArtistTitle)
-                    //                    Text(albumArtistTitle)
+//                    Text(albumArtistTitle)
                         .font(.footnote)
                     // MARK: Matched Geometry Effect
                         .matchedGeometryEffect(
