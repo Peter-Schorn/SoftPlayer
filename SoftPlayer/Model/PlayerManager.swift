@@ -377,6 +377,8 @@ class PlayerManager: ObservableObject {
                     return
                 }
 
+                self.shuffleIsOn = self.spotifyApplication?.shuffling ?? false
+
                 // even though the like track button is not displayed when
                 // the library view is presented, users can still use a keyboard
                 // shortcut to like the track
@@ -806,15 +808,25 @@ class PlayerManager: ObservableObject {
     }
     
     func retrieveAvailableDevices() {
-//        Loggers.playerManager.trace("")
+        
+        guard self.retrieveAvailableDevicesCancellable == nil else {
+            Loggers.availableDevices.trace(
+                "retrieveAvailableDevicesCancellable != nil"
+            )
+            return
+        }
+
+        Loggers.availableDevices.trace("retrieving available devices")
+
         self.retrieveAvailableDevicesCancellable = self.spotify.api
             .availableDevices()
             .receive(on: RunLoop.main)
             .handleAuthenticationError(spotify: self.spotify)
             .sink(
                 receiveCompletion: { completion in
+                    self.retrieveAvailableDevicesCancellable = nil
                     if case .failure(let error) = completion {
-                        Loggers.playerManager.error(
+                        Loggers.availableDevices.error(
                             "couldn't retrieve available devices: \(error)"
                         )
                     }
@@ -2848,8 +2860,7 @@ class PlayerManager: ObservableObject {
             withAnimation(PlayerView.animation) {
                 self.isShowingLibraryView = false
             }
-            self.updateSoundVolumeAndPlayerPosition()
-            self.retrieveAvailableDevices()
+            self.updatePlayerState()
             
             // If `animated == false`, then the popover has been closed and this
             // work will be done in the `popoverDidClose` sink in `.init`.
