@@ -2518,23 +2518,37 @@ class PlayerManager: ObservableObject {
         if let date = self.lastTimeDeletedExtraQueueImages {
             // only delete images every 15 minutes
             if date.addingTimeInterval(900) > Date() {
-                Loggers.images.trace("will NOT delete extra queue item images")
+                Loggers.images.trace(
+                    """
+                    will NOT delete extra queue item images (time); \
+                    \(self.queueItemImages.count) images in queueItemImages
+                    """
+                )
                 return
             }
         }
 
         self.lastTimeDeletedExtraQueueImages = Date()
         
-        Loggers.images.notice("WILL delete extra queue item images")
+        Loggers.images.notice("MIGHT delete extra queue item images")
 
         let max = 50
 
         if self.queueItemImages.count <= max {
+            Loggers.images.notice(
+                """
+                \(self.queueItemImages.count) images in queueItemImages; \
+                NOT deleting images
+                """
+            )
             return
         }
 
         let deleteCount = self.queueItemImages.count - max
 
+        Loggers.images.notice(
+            "WILL delete \(deleteCount) images from queueItemImages"
+        )
 
         // delete images with lower dates
         
