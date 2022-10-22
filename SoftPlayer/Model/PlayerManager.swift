@@ -863,22 +863,29 @@ class PlayerManager: ObservableObject {
         // after playback has changed. Without this delay, the web API
         // may return information for the previous playback.
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+
+            guard self.retrieveCurrentlyPlayingContextCancellable == nil else {
+                Loggers.syncContext.trace(
+                    "retrieveCurrentlyPlayingContextCancellable != nil"
+                )
+                return
+            }
+
             self.retrieveCurrentlyPlayingContextCancellable =
                 self.spotify.api.currentPlayback()
                 .receive(on: RunLoop.main)
                 .handleAuthenticationError(spotify: self.spotify)
                 .sink(
                     receiveCompletion: { completion in
-                        
-                        // Don't repeatedly show an error every two seconds
-                        if fromTimer {
-                            return
-                        }
-
+                        self.retrieveCurrentlyPlayingContextCancellable = nil
                         if case .failure(let error) = completion {
                             Loggers.playerManager.error(
                                 "couldn't get currently playing context: \(error)"
                             )
+                            // Don't repeatedly show an error every two seconds
+                            if fromTimer {
+                                return
+                            }
                             let alertTitle = NSLocalizedString(
                                 "Couldn't Retrieve Playback State",
                                 comment: ""
@@ -1177,6 +1184,13 @@ class PlayerManager: ObservableObject {
     /// Check if the currently playing track is in the user's saved tracks.
     func checkIfCurrentTrackIsSaved() {
         
+        guard self.currentUserSavedTracksContainsCancellable == nil else {
+            Loggers.playerManager.trace(
+                "currentUserSavedTracksContainsCancellable != nil"
+            )
+            return
+        }
+
         guard let trackURI = self.currentTrack?.identifier,
                 trackURI.idCategory == .track else {
             self.currentTrackIsSaved = false
@@ -1189,6 +1203,7 @@ class PlayerManager: ObservableObject {
             .handleAuthenticationError(spotify: self.spotify)
             .sink(
                 receiveCompletion: { completion in
+                    self.currentUserSavedTracksContainsCancellable = nil
                     if case .failure(let error) = completion {
                         Loggers.playerManager.trace(
                             """
@@ -1913,15 +1928,24 @@ class PlayerManager: ObservableObject {
         
         Loggers.queue.trace("retriving queue")
 
+        guard self.retrieveQueueCancellable == nil else {
+            Loggers.queue.trace("retrieveQueueCancellable != nil")
+            return
+        }
+
         self.retrieveQueueCancellable = self.spotify.api.queue()
             .receive(on: RunLoop.main)
             .handleAuthenticationError(spotify: self.spotify)
             .sink(
                 receiveCompletion: { completion in
-                    if case .failure(let error) = completion {
-                        Loggers.playerManager.error(
-                            "couldn't retrieve queue: \(error)"
-                        )
+                    self.retrieveQueueCancellable = nil
+                    switch completion {
+                        case .finished:
+                            Loggers.queue.trace("finished retrieving queue")
+                        case .failure(let error):
+                            Loggers.queue.error(
+                                "couldn't retrieve queue: \(error)"
+                            )
                     }
                 },
                 receiveValue: { queue in
@@ -2572,7 +2596,7 @@ class PlayerManager: ObservableObject {
     }
 
     /// Removes the folder containing the images and removes all items from the
-    /// `images` and `queueItemImages` libraryPageTransitiondictionary.
+    /// `images` and `queueItemImages` dictionary.
     func removeImagesCache() {
         self.images = [:]
         self.queueItemImages = [:]
