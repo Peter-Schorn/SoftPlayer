@@ -72,7 +72,7 @@ struct AlbumGridItemView: View {
     
     func contextMenu() -> some View {
         HStack {
-            Button("Open in Spotify") {
+            Button {
                 guard let url = self.album.uri.flatMap(URL.init(string:)) else {
                     NSSound.beep()
                     return
@@ -80,9 +80,13 @@ struct AlbumGridItemView: View {
                 self.playerManager.openSpotifyDesktopApplication { _, _ in
                     NSWorkspace.shared.open(url)
                 }
+            } label: {
+                Text("Open in Spotify")
             }
-            Button("Remove from Library") {
+            Button {
                 self.playerManager.removeAlbumFromLibrary(self.album)
+            } label: {
+                Text("Remove from Library")
             }
             
         }
