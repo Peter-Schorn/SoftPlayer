@@ -1,0 +1,2 @@
+cd $CI_WORKSPACE
+xcodebuild -resolvePackageDependencies
