@@ -1316,6 +1316,12 @@ class PlayerManager: ObservableObject {
                     self.sortAlbumsByLastModifiedDate(&savedAlbums)
                     self.savedAlbums = savedAlbums
                     self.retrieveAlbumImages()
+                    
+//                    for album in self.savedAlbums {
+//                        Loggers.playerManager.trace(
+//                            "\(album.name): \(album.uri ?? "nil")"
+//                        )
+//                    }
 
                 }
             )
@@ -1556,6 +1562,12 @@ class PlayerManager: ObservableObject {
                     self.sortPlaylistsByLastModifiedDate(&playlists)
                     self.playlists = playlists
                     self.retrievePlaylistImages()
+                    
+//                    for playlist in self.playlists {
+//                        Loggers.playerManager.trace(
+//                            "\(playlist.name): \(playlist.uri)"
+//                        )
+//                    }
                 }
             )
 

@@ -14,6 +14,7 @@ enum ImageName: String {
     case spiritualArtwork = "spiritual artwork"
     case listenHeadphones = "listen headphones"
     case annabelleRectangle = "annabelle rectangle"
+    case tree = "tree"
 
 }
 
