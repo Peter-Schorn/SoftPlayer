@@ -80,17 +80,6 @@ struct PlayerView: View {
                 playerView
             }
         }
-//        .background(
-//            KeyEventHandler(
-//                isFirstResponder: $playerManager.playerViewIsFirstResponder
-//            ) { event in
-//                return self.playerManager.receiveKeyEvent(
-//                    event,
-//                    requireModifierKey: false
-//                )
-//            }
-//            .touchBar(content: PlayPlaylistsTouchBarView.init)
-//        )
         .overlay(NotificationView())
         .frame(
             width: AppDelegate.popoverWidth,
