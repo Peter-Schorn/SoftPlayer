@@ -68,7 +68,7 @@ struct QueueItemView: View {
     }
     
     func contextMenu() -> some View {
-        Button("Open in Spotify") {
+        Button {
             guard let url = self.item.uri.flatMap(URL.init(string:)) else {
                 NSSound.beep()
                 return
@@ -76,6 +76,8 @@ struct QueueItemView: View {
             self.playerManager.openSpotifyDesktopApplication { _, _ in
                 NSWorkspace.shared.open(url)
             }
+        } label: {
+            Text("Open in Spotify")
         }
     }
     

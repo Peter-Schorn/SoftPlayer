@@ -118,6 +118,9 @@
 "Open App (global)" = "Abre la app (global)";
 
 /* No comment provided by engineer. */
+"Open in Spotify" = "Abre en Spotify";
+
+/* No comment provided by engineer. */
 "Options" = "Las opciones";
 
 /* No comment provided by engineer. */
@@ -145,7 +148,10 @@
 "Remove Filters" = "Quita las filtras";
 
 /* No comment provided by engineer. */
-"Remove from Liked Songs%@" = "Quitar de las Canciones que te gustan%@";
+"Remove from Library" = "Quita de la biblioteca";
+
+/* No comment provided by engineer. */
+"Remove from Liked Songs%@" = "Quita de las Canciones que te gustan%@";
 
 /* Removed [song name] from [playlist name] */
 "Removed \"%@\" from \"%@\"" = "Se quitó \"%1$@\" de \"%2$@\"";
@@ -193,6 +199,9 @@
 "Successfully Connected to Your Spotify Account" = "Esta conectado con éxito a la cuenta de Spotify";
 
 /* No comment provided by engineer. */
+"The Queue is Empty" = "La Cola está Vacía";
+
+/* No comment provided by engineer. */
 "The Spotify Desktop Application is not installed or could not be found. Therefore, most of the functions of this app will not work. If the Spotify Application is installed, try moving it to the applications folder; then, restart this app." = "El escritorio aplicación de Spotify no esta instalado o no se puede encontrar. Además, la mayoría de las funciones de esta aplicación no se puede funcionar. Si la aplicación de Spotify está instalado, trata de moverlo a la carpeta de aplicaciones; entonces, reinicia esta aplicación.";
 
 /* No comment provided by engineer. */
@@ -217,6 +226,9 @@
 "Unexpected URL" = "URL inesperada";
 
 /* No comment provided by engineer. */
+"Unfollow Playlist" = "Deja de seguir la lista";
+
+/* No comment provided by engineer. */
 "Volume down" = "Baje volumno";
 
 /* No comment provided by engineer. */
@@ -234,6 +246,3 @@
 /* No comment provided by engineer. */
 "Your Spotify Account is Already Connected" = "Su cuenta todavía esta conectado";
 
-"System" = "Automático";
-"Light" = "Claro";
-"Dark" = "Obscuro";
