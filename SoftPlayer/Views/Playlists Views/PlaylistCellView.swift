@@ -127,7 +127,7 @@ struct PlaylistCellView: View {
     
     func contextMenu() -> some View {
         HStack {
-            Button("Open in Spotify") {
+            Button {
                 guard let url = URL(string: self.playlist.uri) else {
                     NSSound.beep()
                     return
@@ -135,10 +135,14 @@ struct PlaylistCellView: View {
                 self.playerManager.openSpotifyDesktopApplication { _, _ in
                     NSWorkspace.shared.open(url)
                 }
+            } label: {
+                Text("Open in Spotify")
             }
             if !self.playlist.uri.isSavedTracksURI {
-                Button("Unfollow Playlist") {
+                Button {
                     self.playerManager.unfollowPlaylist(self.playlist)
+                } label: {
+                    Text("Unfollow Playlist")
                 }
             }
         }
