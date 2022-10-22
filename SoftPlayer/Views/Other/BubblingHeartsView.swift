@@ -15,7 +15,7 @@ struct BubblingHeartsView: View, Animatable {
         GeometryReader { geometry in
             ZStack {
                 HeartShape()
-                    .fill(.gray)
+                    .fill(Color.gray)
 //                    .overlay {
 //                        Text("1")
 //                    }
@@ -26,7 +26,7 @@ struct BubblingHeartsView: View, Animatable {
                     .position(heartPosition1(geometry))
                     .opacity(heartOpacity1())
                 HeartShape()
-                    .fill(.gray)
+                    .fill(Color.gray)
 //                    .overlay {
 //                        Text("2")
 //                    }
@@ -37,7 +37,7 @@ struct BubblingHeartsView: View, Animatable {
                     .position(heartPosition2(geometry))
                     .opacity(heartOpacity2())
                 HeartShape()
-                    .fill(.green)
+                    .fill(Color.green)
 //                    .overlay {
 //                        Text("3")
 //                    }
@@ -48,7 +48,7 @@ struct BubblingHeartsView: View, Animatable {
                     .position(heartPosition3(geometry))
                     .opacity(heartOpacity3())
                 HeartShape()
-                    .fill(.green)
+                    .fill(Color.green)
 //                    .overlay {
 //                        Text("4")
 //                    }
@@ -186,7 +186,10 @@ struct BubblingHeartsView_Previews: PreviewProvider {
             }
             .padding()
             .frame(width: 400, height: 600)
-            .background()
+            .background(
+                Rectangle()
+                    .fill(BackgroundStyle())
+            )
             .preferredColorScheme(.light)
             .previewLayout(.sizeThatFits)
 //            .onAppear {

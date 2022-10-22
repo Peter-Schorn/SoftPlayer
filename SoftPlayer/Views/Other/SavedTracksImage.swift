@@ -20,7 +20,7 @@ struct SavedTracksImage: View {
                 .fill(gradient)
             HeartShape()
                 .scale(0.5)
-                .fill(.white)
+                .fill(Color.white)
                 .shadow(radius: 2)
         }
     }
