@@ -100,6 +100,8 @@ struct PlayerView: View {
         VStack(spacing: 5) {
             // MARK: Large Album Image
             playerManager.artworkImage
+//            Image(.spiritualArtwork)
+//            Image(.listenHeadphones)
                 .resizable()
                 // MARK: Matched Geometry Effect
                 .matchedGeometryEffect(
@@ -276,6 +278,7 @@ struct PlayerView: View {
         HStack(spacing: 0) {
             // MARK: Small Album Image
             playerManager.artworkImage
+//            Image(.spiritualArtwork)
                 .resizable()
                 .cornerRadius(5)
             // MARK: Matched Geometry Effect
