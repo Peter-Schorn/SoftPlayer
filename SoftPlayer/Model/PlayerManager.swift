@@ -330,7 +330,7 @@ class PlayerManager: ObservableObject {
     private var openAlbumCancellable: AnyCancellable? = nil
     private var cycleRepeatModeCancellable: AnyCancellable? = nil
     private var updatePlayerStateCancellable: AnyCancellable? = nil
-    private var retrieveCu irrentlyPlayingPlaylistCancellable: AnyCancellable? = nil
+    private var retrieveCurrentlyPlayingPlaylistCancellable: AnyCancellable? = nil
     private var currentUserSavedTracksContainsCancellable: AnyCancellable? = nil
     var playerStateDidChangeCancellable: AnyCancellable? = nil
     private var retrieveSavedAlbumsCancellable: AnyCancellable? = nil

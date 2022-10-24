@@ -194,6 +194,9 @@ final class Spotify: ObservableObject {
                 Loggers.spotify.trace(
                     "found authorization information in keychain"
                 )
+                
+                // update client id, tokens URL, and token refresh URL
+                authorizationManager.backend = self.api.authorizationManager.backend
 
                 /*
                  This assignment causes `authorizationManagerDidChange`
