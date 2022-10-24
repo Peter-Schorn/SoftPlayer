@@ -5,6 +5,7 @@ import Combine
 import SpotifyWebAPI
 import KeyboardShortcuts
 import Logging
+import CoreSpotlight
 
 @NSApplicationMain
 class AppDelegate: NSObject, NSApplicationDelegate {
@@ -81,6 +82,26 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     }
     
+    func application(
+        _ application: NSApplication,
+        willContinueUserActivityWithType userActivityType: String
+    ) -> Bool {
+        return userActivityType == CSSearchableItemActionType
+    }
+    
+    func application(
+        _ application: NSApplication,
+        continue userActivity: NSUserActivity,
+        restorationHandler: @escaping ([NSUserActivityRestoring]) -> Void
+    ) -> Bool {
+        
+        guard userActivity.activityType == CSSearchableItemActionType else {
+            return false
+        }
+
+        return self.playerManager.continueUserActivity(userActivity)
+    }
+
     func registerGlobalKeyboardShortcutHandler() {
         KeyboardShortcuts.onKeyDown(for: .openApp) {
             self.togglePopover(nil)

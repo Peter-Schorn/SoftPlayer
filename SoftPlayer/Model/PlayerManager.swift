@@ -6,6 +6,7 @@ import Logging
 import SpotifyWebAPI
 import KeyboardShortcuts
 import os
+import CoreSpotlight
 
 class PlayerManager: ObservableObject {
     
@@ -329,7 +330,7 @@ class PlayerManager: ObservableObject {
     private var openAlbumCancellable: AnyCancellable? = nil
     private var cycleRepeatModeCancellable: AnyCancellable? = nil
     private var updatePlayerStateCancellable: AnyCancellable? = nil
-    private var retrieveCurrentlyPlayingPlaylistCancellable: AnyCancellable? = nil
+    private var retrieveCu irrentlyPlayingPlaylistCancellable: AnyCancellable? = nil
     private var currentUserSavedTracksContainsCancellable: AnyCancellable? = nil
     var playerStateDidChangeCancellable: AnyCancellable? = nil
     private var retrieveSavedAlbumsCancellable: AnyCancellable? = nil
@@ -1316,7 +1317,7 @@ class PlayerManager: ObservableObject {
                     self.sortAlbumsByLastModifiedDate(&savedAlbums)
                     self.savedAlbums = savedAlbums
                     self.retrieveAlbumImages()
-                    
+                    self.updateSpotlightAlbums()
 //                    for album in self.savedAlbums {
 //                        Loggers.playerManager.trace(
 //                            "\(album.name): \(album.uri ?? "nil")"
@@ -1414,8 +1415,9 @@ class PlayerManager: ObservableObject {
         
     }
 
+
     func playAlbum(_ album: Album) {
-        
+            
         guard let albumURI = album.uri else {
             let title = String.localizedStringWithFormat(
                 NSLocalizedString(
@@ -1433,11 +1435,17 @@ class PlayerManager: ObservableObject {
             self.notificationSubject.send(alert)
             return
         }
+        
+        self.playAlbum(albumURI, name: album.name)
 
-        self.albumsLastModifiedDates[albumURI] = Date()
+    }
+
+    func playAlbum(_ uri: String, name: String) {
+        
+        self.albumsLastModifiedDates[uri] = Date()
 
         let playbackRequest = PlaybackRequest(
-            context: .contextURI(albumURI),
+            context: .contextURI(uri),
             offset: nil
         )
         
@@ -1452,7 +1460,7 @@ class PlayerManager: ObservableObject {
                             "Couldn't Play \"%@\"",
                             comment: "Couldn't Play [album name]"
                         ),
-                        album.name
+                        name
                     )
                     Loggers.playerManager.error("\(title): \(error)")
                     let message = error.customizedLocalizedDescription
@@ -1468,13 +1476,20 @@ class PlayerManager: ObservableObject {
     func playPlaylist(
         _ playlist: Playlist<PlaylistItemsReference>
     ) -> AnyPublisher<Void, AlertItem> {
+        self.playPlaylist(uri: playlist.uri, name: playlist.name)
+    }
+
+    func playPlaylist(
+        uri: String,
+        name: String
+    ) -> AnyPublisher<Void, AlertItem> {
         
         let playbackRequest = PlaybackRequest(
-            context: .contextURI(playlist),
+            context: .contextURI(uri),
             offset: nil
         )
         
-        self.playlistsLastModifiedDates[playlist.uri] = Date()
+        self.playlistsLastModifiedDates[uri] = Date()
         
         return self.spotify.api
             .getAvailableDeviceThenPlay(playbackRequest)
@@ -1486,7 +1501,7 @@ class PlayerManager: ObservableObject {
                         "Couldn't Play \"%@\"",
                         comment: "Couldn't Play [playlist name]"
                     ),
-                    playlist.name
+                    name
                 )
                 Loggers.playerManager.error("\(title): \(error)")
                 let message = error.customizedLocalizedDescription
@@ -1562,7 +1577,7 @@ class PlayerManager: ObservableObject {
                     self.sortPlaylistsByLastModifiedDate(&playlists)
                     self.playlists = playlists
                     self.retrievePlaylistImages()
-                    
+                    self.updateSpotlightPlaylists()
 //                    for playlist in self.playlists {
 //                        Loggers.playerManager.trace(
 //                            "\(playlist.name): \(playlist.uri)"
@@ -2900,6 +2915,144 @@ class PlayerManager: ObservableObject {
     func commitModifiedDates() {
         self.committedPlaylistsLastModifiedDates = self.playlistsLastModifiedDates
         self.committedAlbumsLastModifiedDates = self.albumsLastModifiedDates
+    }
+
+    // MARK: - Spotlight -
+    
+    func continueUserActivity(_ userActivity: NSUserActivity) -> Bool {
+        
+        guard self.spotify.isAuthorized else {
+            // MARK: TODO: display error telling the user they are not authorized
+            return false
+        }
+
+        guard let uri = userActivity.userInfo?[CSSearchableItemActivityIdentifier]
+                as? String else {
+            // MARK: TODO: display error to user
+            return false
+        }
+
+        guard let spotifyIdentifier = try? SpotifyIdentifier(uri: uri) else {
+            return false
+        }
+
+        // MARK: TODO: Get name
+
+        switch spotifyIdentifier.idCategory {
+            case .playlist:
+                let name = self.playlists.first(where: { $0.uri == uri })?
+                    .name ?? uri
+                self.playPlaylist(uri: uri, name: name)
+                    .sink(
+                        receiveCompletion: { completion in
+                            print("completion: \(completion)")
+                        },
+                        receiveValue: {
+                            
+                        }
+                    )
+                    .store(in: &self.cancellables)
+            case .album:
+                let name = self.savedAlbums.first(where: { $0.uri == uri })?
+                    .name ?? uri
+                self.playAlbum(uri, name: name)
+            default:
+                return false
+                
+        }
+
+        return true
+        
+    }
+
+    func updateSpotlightPlaylists() {
+        
+        CSSearchableIndex.default().deleteSearchableItems(
+            withDomainIdentifiers: ["playlist"]
+        )
+
+        var items: [CSSearchableItem] = []
+
+        for playlist in self.playlists {
+            
+            let attributeSet = CSSearchableItemAttributeSet(
+                contentType: .text
+            )
+            attributeSet.title = playlist.name
+            attributeSet.contentDescription = playlist.description
+
+            if let playlistsFolder = self.imageFolderURL(for: .playlist) {
+                let imageURL = playlistsFolder.appendingPathComponent(
+                    "\(playlist.id).tiff",
+                    isDirectory: false
+                )
+                attributeSet.thumbnailURL = imageURL
+            }
+
+            let item = CSSearchableItem(
+                uniqueIdentifier: playlist.uri,
+                domainIdentifier: "playlist",
+                attributeSet: attributeSet
+            )
+            
+            items.append(item)
+
+        }
+        
+        CSSearchableIndex.default().indexSearchableItems(items) { error in
+            if let error = error {
+                Loggers.spotlight.error("error indexing playlists: \(error)")
+            }
+        }
+        
+    }
+    
+    func updateSpotlightAlbums() {
+        
+        CSSearchableIndex.default().deleteSearchableItems(
+            withDomainIdentifiers: ["album"]
+        )
+
+        var items: [CSSearchableItem] = []
+
+        for album in self.savedAlbums {
+            
+            guard let uri = album.uri,
+                    let albumIdentifier = try? SpotifyIdentifier(uri: uri) else {
+                continue
+            }
+
+            let attributeSet = CSSearchableItemAttributeSet(
+                contentType: .text
+            )
+            attributeSet.title = album.name
+            attributeSet.artist = album.artists?.first?.name
+//            attributeSet.contentDescription = album.description
+
+            if let albumsFolder = self.imageFolderURL(for: .album) {
+                let imageURL = albumsFolder.appendingPathComponent(
+                    "\(albumIdentifier.id).tiff",
+                    isDirectory: false
+                )
+                attributeSet.thumbnailURL = imageURL
+            }
+
+            let item = CSSearchableItem(
+                uniqueIdentifier: albumIdentifier.uri,
+                domainIdentifier: "album",
+                attributeSet: attributeSet
+            )
+            
+            items.append(item)
+
+        }
+        
+        CSSearchableIndex.default().indexSearchableItems(items) { error in
+            if let error = error {
+                Loggers.spotlight.error("error indexing albums: \(error)")
+            }
+        }
+
     }
 
 }

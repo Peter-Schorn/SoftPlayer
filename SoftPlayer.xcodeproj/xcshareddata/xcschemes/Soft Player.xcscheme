@@ -59,12 +59,12 @@
          </EnvironmentVariable>
          <EnvironmentVariable
             key = "TOKENS_URL"
-            value = "https://soft-player-backend.herokuapp.com/authorization-code-flow-pkce/retrieve-tokens"
+            value = "***REMOVED***"
             isEnabled = "YES">
          </EnvironmentVariable>
          <EnvironmentVariable
             key = "TOKENS_REFRESH_URL"
-            value = "https://soft-player-backend.herokuapp.com/authorization-code-flow-pkce/refresh-tokens"
+            value = "***REMOVED***"
             isEnabled = "YES">
          </EnvironmentVariable>
          <EnvironmentVariable
