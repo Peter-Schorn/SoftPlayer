@@ -102,13 +102,15 @@ struct PlayPlaylistsTouchBarView: View {
 
 struct PlayPlaylistsTouchBarView_Previews: PreviewProvider {
     
-    static let spotify = Spotify()
-    static let playerManager = PlayerManager(spotify: spotify)
+    static let playerManager = PlayerManager(
+        spotify: Spotify(),
+        viewContext: AppDelegate.shared.persistentContainer.viewContext
+    )
 
     static var previews: some View {
         PlayPlaylistsTouchBarView()
-            .environmentObject(spotify)
             .environmentObject(playerManager)
+            .environmentObject(playerManager.spotify)
             .frame(width: 685, height: 30, alignment: .leading)
 //            .padding(.horizontal, 5)
             // https://apple.co/3n1bdjk

@@ -516,8 +516,16 @@ struct PlayerView: View {
 struct PlayerView_Previews: PreviewProvider {
     
     static let spotify = Spotify()
-    static let playerManager = PlayerManager(spotify: spotify)
-    static let playerManager2 = PlayerManager(spotify: spotify)
+    
+    static let playerManager = PlayerManager(
+        spotify: spotify,
+        viewContext: AppDelegate.shared.persistentContainer.viewContext
+    )
+    
+    static let playerManager2 = PlayerManager(
+        spotify: spotify,
+        viewContext: AppDelegate.shared.persistentContainer.viewContext
+    )
 
     static var previews: some View {
         Self.withAllColorSchemes(previewDisplayName: "Player View") {

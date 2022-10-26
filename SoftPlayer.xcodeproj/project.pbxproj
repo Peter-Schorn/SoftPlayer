@@ -24,6 +24,7 @@
 		473F215227E954DA005B8042 /* SavedTracksImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 473F215127E954DA005B8042 /* SavedTracksImage.swift */; };
 		4748B8C027D756A600ACF95E /* MouseEventHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4748B8BF27D756A600ACF95E /* MouseEventHandler.swift */; };
 		474C7C922570F713004A3DB5 /* AvailableDevicesButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 474C7C912570F713004A3DB5 /* AvailableDevicesButton.swift */; };
+		474DB4CE29077585005A551B /* DataModel.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 474DB4CC29077585005A551B /* DataModel.xcdatamodeld */; };
 		475878CE258731F1007EB435 /* CancelButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 475878CD258731F1007EB435 /* CancelButton.swift */; };
 		4768023A2570CDF800397202 /* Logging in Frameworks */ = {isa = PBXBuildFile; productRef = 476802392570CDF800397202 /* Logging */; };
 		47699875257DDE8400B7D6F5 /* ViewExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47699874257DDE8400B7D6F5 /* ViewExtensions.swift */; };
@@ -95,6 +96,7 @@
 		473F215127E954DA005B8042 /* SavedTracksImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavedTracksImage.swift; sourceTree = "<group>"; };
 		4748B8BF27D756A600ACF95E /* MouseEventHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MouseEventHandler.swift; sourceTree = "<group>"; };
 		474C7C912570F713004A3DB5 /* AvailableDevicesButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AvailableDevicesButton.swift; sourceTree = "<group>"; };
+		474DB4CD29077585005A551B /* DataModel.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = DataModel.xcdatamodel; sourceTree = "<group>"; };
 		475878CD258731F1007EB435 /* CancelButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CancelButton.swift; sourceTree = "<group>"; };
 		47699874257DDE8400B7D6F5 /* ViewExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewExtensions.swift; sourceTree = "<group>"; };
 		477447AF2797E1730074CB7E /* SharingServicesMenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharingServicesMenu.swift; sourceTree = "<group>"; };
@@ -200,6 +202,7 @@
 		47832F462566474300AADEA3 /* SoftPlayer */ = {
 			isa = PBXGroup;
 			children = (
+				474DB4CC29077585005A551B /* DataModel.xcdatamodeld */,
 				47832F472566474300AADEA3 /* AppDelegate.swift */,
 				47D8CF85256664C90034FA1E /* Model */,
 				47FD3DF0256FA71C000E2346 /* Views */,
@@ -460,6 +463,7 @@
 				47AA076E27D9D96200F6C140 /* ShapeExtensions.swift in Sources */,
 				4789987825747F0F00866EE1 /* PlaybackPositionView.swift in Sources */,
 				473CD55B28F78E2A0022160C /* QueueItemView.swift in Sources */,
+				474DB4CE29077585005A551B /* DataModel.xcdatamodeld in Sources */,
 				47D8CF7F256663080034FA1E /* NotificationNames.swift in Sources */,
 				47FD3E03256FB031000E2346 /* PlayerView.swift in Sources */,
 				47FD3DF7256FA77F000E2346 /* Spotify.swift in Sources */,
@@ -662,7 +666,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 8;
+				CURRENT_PROJECT_VERSION = 9;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"SoftPlayer/Preview Content\"";
 				DEVELOPMENT_TEAM = NB77K8UB8Y;
@@ -691,7 +695,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 8;
+				CURRENT_PROJECT_VERSION = 9;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"SoftPlayer/Preview Content\"";
 				DEVELOPMENT_TEAM = NB77K8UB8Y;
@@ -804,6 +808,19 @@
 			productName = KeychainAccess;
 		};
 /* End XCSwiftPackageProductDependency section */
+
+/* Begin XCVersionGroup section */
+		474DB4CC29077585005A551B /* DataModel.xcdatamodeld */ = {
+			isa = XCVersionGroup;
+			children = (
+				474DB4CD29077585005A551B /* DataModel.xcdatamodel */,
+			);
+			currentVersion = 474DB4CD29077585005A551B /* DataModel.xcdatamodel */;
+			path = DataModel.xcdatamodeld;
+			sourceTree = "<group>";
+			versionGroupType = wrapper.xcdatamodel;
+		};
+/* End XCVersionGroup section */
 	};
 	rootObject = 47832F3C2566474300AADEA3 /* Project object */;
 }

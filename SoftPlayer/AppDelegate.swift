@@ -6,6 +6,7 @@ import SpotifyWebAPI
 import KeyboardShortcuts
 import Logging
 import CoreSpotlight
+import CoreData
 
 @NSApplicationMain
 class AppDelegate: NSObject, NSApplicationDelegate {
@@ -27,6 +28,16 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var spotify: Spotify!
     var playerManager: PlayerManager!
 
+    lazy var persistentContainer: NSPersistentContainer = {
+        let container = NSPersistentContainer.init(name: "DataModel")
+        container.loadPersistentStores { description, error in
+            if let error = error {
+                fatalError("Unable to load persistent stores: \(error)")
+            }
+        }
+        return container
+    }()
+
     func applicationDidFinishLaunching(_ notification: Notification) {
         
         SoftPlayerLogHandler.bootstrap()
@@ -39,7 +50,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         self.spotify = Spotify()
 
-        self.playerManager = PlayerManager(spotify: spotify)
+        self.playerManager = PlayerManager(
+            spotify: spotify,
+            viewContext: self.persistentContainer.viewContext
+        )
         
         // MARK: Root View
         let rootView = RootView()
