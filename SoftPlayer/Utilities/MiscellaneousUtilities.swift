@@ -169,6 +169,13 @@ extension Sequence where Element: Hashable {
         var seen = Set<Element>()
         return !self.allSatisfy { seen.insert($0).inserted }
     }
+    
+    var duplicates: [Element] {
+        Array(
+            Dictionary(grouping: self, by: { $0 }).filter { $1.count > 1 }.keys
+        )
+    }
+
 }
 
 extension CGRect {

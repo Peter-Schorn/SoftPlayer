@@ -28,6 +28,11 @@ class PlayerManager: ObservableObject {
     
     @AppStorage("appearance") var appearance = AppAppearance.system
     
+    @AppStorage("indexAlbums") var indexAlbums = true
+    @AppStorage("indexPlaylists") var indexPlaylists = true
+    @AppStorage("indexPlaylistItems") var indexPlaylistItems = true
+    @AppStorage("indexAlbumTracks") var indexAlbumTracks = true
+    
     var colorSchemeObservation: NSKeyValueObservation? = nil
     
     var colorScheme: ColorScheme {
@@ -108,7 +113,7 @@ class PlayerManager: ObservableObject {
     var showOrArtistURL: URL? {
         self.storedSyncedCurrentlyPlayingContext?.showOrArtistIdentifier?.url
     }
-
+    
     /// Set only if the playback is occurring in the context of a playlist.
     //    @Published var currentlyPlayingPlaylistName: String? = nil
     @Published var shuffleIsOn = false
@@ -219,14 +224,14 @@ class PlayerManager: ObservableObject {
                 "images", isDirectory: true
             )
     }
-
+    
     // MARK: - Albums -
     
     /// Each album is guaranteed to have a non-`nil` id.
     @Published var savedAlbums: [Album] = []
-
+    
     @Published var isLoadingSavedAlbums = false
-
+    
     private let albumsLastModifiedDatesKey = "albumsLastModifiedDates"
     
     var albumsLastModifiedDates: [String: Date]
@@ -249,9 +254,9 @@ class PlayerManager: ObservableObject {
     /// Whether or not the saved albums have been retrieved at least once since
     /// launch or logging in to a new account.
     var didRetrieveAlbums = false
-
+    
     // MARK: - Playlists -
-
+    
     /// Sorted based on the last time they were played or an item was added to
     /// them, whichever was later.
     @Published var playlists: [Playlist<PlaylistItemsReference>] = []
@@ -261,7 +266,7 @@ class PlayerManager: ObservableObject {
     private let playlistsLastModifiedDatesKey = "playlistsLastModifiedDates"
     
     var playlistsLastModifiedDates: [String: Date]
-
+    
     /// The dates that playlists were last played or items were
     /// added to them. Dictionary key: playlist URI.
     var committedPlaylistsLastModifiedDates: [String: Date] {
@@ -277,17 +282,17 @@ class PlayerManager: ObservableObject {
             )
         }
     }
-
+    
     /// Whether or not the playlists have been retrieved at least once since
     /// launch or logging in to a new account.
     var didRetrievePlaylists = false
-
+    
     // MARK: - Queue -
-
+    
     /// The last time some queue item images have been deleted because there
     /// were more than 100.
     var lastTimeDeletedExtraQueueImages: Date? = nil
-
+    
     /// The last time unused images have been deleted.
     var lastTimeDeletedUnusedImages: Date? = nil
     
@@ -296,7 +301,7 @@ class PlayerManager: ObservableObject {
         insertion: .move(edge: .leading),
         removal: .move(edge: .trailing)
     )
-
+    
     // MARK: - Notification -
     
     let notificationSubject = PassthroughSubject<AlertItem, Never>()
@@ -310,11 +315,11 @@ class PlayerManager: ObservableObject {
     
     /// Emits after the popover dismisses.
     let popoverDidClose = PassthroughSubject<Void, Never>()
-
+    
     /// A publisher that emits when the Spotify player state changes.
     let playerStateDidChange = DistributedNotificationCenter
         .default().publisher(for: .spotifyPlayerStateDidChange)
-
+    
     let spotifyApplication = CustomSpotifyApplication()
     
     private var previousArtworkURL: String? = nil
@@ -339,6 +344,8 @@ class PlayerManager: ObservableObject {
     private var retrieveSavedAlbumsCancellable: AnyCancellable? = nil
     private var playAlbumCancellable: AnyCancellable? = nil
     private var retrieveQueueCancellable: AnyCancellable? = nil
+    private var indexAlbumTracksCancellables: Set<AnyCancellable> = []
+    private var indexPlaylistItemsCancellables: Set<AnyCancellable> = []
     
     init(
         spotify: Spotify,
@@ -359,7 +366,7 @@ class PlayerManager: ObservableObject {
         self.checkIfNotAuthorizedForNewScopes()
         self.checkIfSpotifyIsInstalled()
         self.observeColorScheme()
-
+        
         self.playerStateDidChangeCancellable = self.playerStateDidChange
             .receive(on: RunLoop.main)
             .sink(receiveValue: self.receivePlayerStateDidChange(notification:))
@@ -380,18 +387,18 @@ class PlayerManager: ObservableObject {
             .sink { _ in
                 
                 Loggers.soundVolumeAndPlayerPosition.trace("timer fired")
-
+                
                 guard self.spotify.isAuthorized else {
                     return
                 }
-
+                
                 self.shuffleIsOn = self.spotifyApplication?.shuffling ?? false
-
+                
                 // even though the like track button is not displayed when
                 // the library view is presented, users can still use a keyboard
                 // shortcut to like the track
                 self.checkIfCurrentTrackIsSaved()
-
+                
                 if self.isShowingLibraryView {
                     self.retrieveCurrentlyPlayingContext(fromTimer: true)
                     self.retrieveQueue()
@@ -427,7 +434,7 @@ class PlayerManager: ObservableObject {
             }
         }
         .store(in: &self.cancellables)
-
+        
         self.spotify.api.authorizationManager.didDeauthorize
             .receive(on: RunLoop.main)
             .sink {
@@ -448,16 +455,16 @@ class PlayerManager: ObservableObject {
                 self.deleteAllCoreDataObjects()
             }
             .store(in: &self.cancellables)
-
+        
         // ensure the UI is updated after a keyboard shortcut changes
         NotificationCenter.default.publisher(for: .shortcutByNameDidChange)
             .sink { _ in
                 self.objectWillChange.send()
             }
             .store(in: &self.cancellables)
-
-//        self.debug()
-
+        
+        //        self.debug()
+        
     }
     
     /// Newer versions of this app have added new authorization scopes. Check
@@ -469,9 +476,9 @@ class PlayerManager: ObservableObject {
         ) {
             self.spotify.api.authorizationManager.deauthorize()
         }
-
+        
     }
-
+    
     func observeColorScheme() {
         
         self.colorSchemeObservation = NSApplication.shared.observe(
@@ -486,7 +493,7 @@ class PlayerManager: ObservableObject {
 //            )
             self.objectWillChange.send()
         }
-
+        
     }
     
     func checkIfSpotifyIsInstalled() {
@@ -497,9 +504,9 @@ class PlayerManager: ObservableObject {
         if spotifyURL == nil {
             self.showSpotifyNotInstalledAlert()
         }
-
+        
     }
-
+    
     func showSpotifyNotInstalledAlert() {
         
         let alert = NSAlert()
@@ -518,37 +525,37 @@ class PlayerManager: ObservableObject {
         )
         
         alert.runModal()
-
+        
     }
-
+    
     // MARK: - Playback State -
     
     func updateFormattedPlaybackPosition() {
         
         // var formattedPlaybackPosition: String {
-            if self.spotifyApplication?.playerPosition == nil {
-                self.formattedPlaybackPosition =
-                        Self.noPlaybackPositionPlaceholder
-            }
-            self.formattedPlaybackPosition = self.formattedTimestamp(
-                self.playerPosition
-            )
+        if self.spotifyApplication?.playerPosition == nil {
+            self.formattedPlaybackPosition =
+            Self.noPlaybackPositionPlaceholder
+        }
+        self.formattedPlaybackPosition = self.formattedTimestamp(
+            self.playerPosition
+        )
         // }
         
         // var formattedDuration: String {
-            if self.currentTrack?.duration == nil {
-                self.formattedDuration = Self.noPlaybackPositionPlaceholder
-            }
-            let durationSeconds = CGFloat(
-                (self.currentTrack?.duration ?? 1) / 1000
-            )
-            self.formattedDuration = self.formattedTimestamp(durationSeconds)
+        if self.currentTrack?.duration == nil {
+            self.formattedDuration = Self.noPlaybackPositionPlaceholder
+        }
+        let durationSeconds = CGFloat(
+            (self.currentTrack?.duration ?? 1) / 1000
+        )
+        self.formattedDuration = self.formattedTimestamp(durationSeconds)
         // }
         
         self.objectWillChange.send()
         
     }
-
+    
     /// Returns the formatted timestamp for the duration or player position.
     private func formattedTimestamp(_ number: CGFloat) -> String {
         let formatter: DateComponentsFormatter = number >= 3600 ?
@@ -580,7 +587,7 @@ class PlayerManager: ObservableObject {
         Loggers.playerManager.trace(
             "received player state did change notification"
         )
-
+        
         if let playerState = PlayerStateNotification(
             userInfo: notification.userInfo
         ) {
@@ -604,13 +611,13 @@ class PlayerManager: ObservableObject {
                 """
             )
         }
-
+        
         if self.spotify.isAuthorized {
             self.updatePlayerState()
         }
         
     }
-
+    
     func updatePlayerState() {
         
         Loggers.playerState.trace("will update player state")
@@ -618,7 +625,7 @@ class PlayerManager: ObservableObject {
         self.retrieveAvailableDevices()
         self.checkIfCurrentTrackIsSaved()
         self.retrieveQueue()
-
+        
         if self.isTransferringPlayback {
             Loggers.artwork.notice(
                 "not updating player state because isTransferringPlayback"
@@ -634,9 +641,9 @@ class PlayerManager: ObservableObject {
             
             self.currentTrackIsSaved = false
         }
-
+        
         self.currentItemIdentifier = newIdentifier
-
+        
         self.updateSoundVolumeAndPlayerPosition()
         self.retrieveCurrentlyPlayingContext()
         Loggers.playerState.trace(
@@ -645,7 +652,7 @@ class PlayerManager: ObservableObject {
             to '\(self.spotifyApplication?.currentTrack?.name ?? "nil")'
             """
         )
-
+        
         self.updateFormattedPlaybackPosition()
         self.setAlbumArtistTitle()
         self.shuffleIsOn = spotifyApplication?.shuffling ?? false
@@ -664,7 +671,7 @@ class PlayerManager: ObservableObject {
         self.previousArtworkURL = self.spotifyApplication?.currentTrack?.artworkUrl
         
         self.isPlaying = self.spotifyApplication?.playerState == .playing
-
+        
         self.objectWillChange.send()
     }
     
@@ -679,7 +686,7 @@ class PlayerManager: ObservableObject {
         self.updatePlayerPosition(
             fromTimer: fromTimer
         )
-
+        
     }
     
     func updateSoundVolume(
@@ -746,9 +753,9 @@ class PlayerManager: ObservableObject {
                 """
             )
             return
-
+            
         }
-
+        
         // if the player position was adjusted by the user three seconds ago
         // or less, then don't update it here.
         if let lastAdjusted = self.lastAdjustedPlayerPositionDate,
@@ -770,9 +777,9 @@ class PlayerManager: ObservableObject {
             )
             self.playerPosition = cgPlayerPosition
         }
-
+        
     }
-
+    
     /// Loads the image from the artwork URL of the current track.
     func loadArtworkImage() {
         guard let url = self.currentTrack?.artworkUrl
@@ -825,9 +832,9 @@ class PlayerManager: ObservableObject {
             )
             return
         }
-
+        
         Loggers.availableDevices.trace("retrieving available devices")
-
+        
         self.retrieveAvailableDevicesCancellable = self.spotify.api
             .availableDevices()
             .receive(on: RunLoop.main)
@@ -874,7 +881,7 @@ class PlayerManager: ObservableObject {
         
         self.isUpdatingCurrentlyPlayingContext = true
         self.storedSyncedCurrentlyPlayingContext = nil
-
+        
         Loggers.syncContext.trace(
             """
             isUpdatingCurrentlyPlayingContext = true; \
@@ -885,14 +892,14 @@ class PlayerManager: ObservableObject {
         // after playback has changed. Without this delay, the web API
         // may return information for the previous playback.
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-
+            
             guard self.retrieveCurrentlyPlayingContextCancellable == nil else {
                 Loggers.syncContext.trace(
                     "retrieveCurrentlyPlayingContextCancellable != nil"
                 )
                 return
             }
-
+            
             self.retrieveCurrentlyPlayingContextCancellable =
                 self.spotify.api.currentPlayback()
                 .receive(on: RunLoop.main)
@@ -940,7 +947,7 @@ class PlayerManager: ObservableObject {
                                 """
                             )
                             self.receiveCurrentlyPlayingContext(context)
-
+                            
                         }
                         else if context?.itemType == .ad,
                             self.spotifyApplication?.currentTrack?.identifier?
@@ -968,46 +975,46 @@ class PlayerManager: ObservableObject {
                                 )
                             }
                         }
-                       
+                        
                     }
                 )
         }
         
     }
     
-//    func retrieveCurrentlyPlayingPlaylist() {
-//
-//        guard let context = self.currentlyPlayingContext?.context,
-//                context.type == .playlist else {
-//            self.currentlyPlayingPlaylistName = nil
-//            return
-//        }
-//
-//        let playlistURI = context.uri
-//
-//        self.retrieveCurrentlyPlayingPlaylistCancellable = self.spotify.api
-//            .playlistName(playlistURI)
-//            .receive(on: RunLoop.main)
-//            .handleAuthenticationError(spotify: self.spotify)
-//            .sink(
-//                receiveCompletion: { completion in
-//                    if case .failure(let error) = completion {
-//                        self.currentlyPlayingPlaylistName = nil
-//                        Loggers.playerState.error(
-//                            """
-//                            could not retrieve playlist name for \(playlistURI): \
-//                            \(error)
-//                            """
-//                        )
-//                    }
-//                },
-//                receiveValue: { playlistName in
-//                    self.currentlyPlayingPlaylistName = playlistName
-//                }
-//            )
-//
-//    }
-
+    //    func retrieveCurrentlyPlayingPlaylist() {
+    //
+    //        guard let context = self.currentlyPlayingContext?.context,
+    //                context.type == .playlist else {
+    //            self.currentlyPlayingPlaylistName = nil
+    //            return
+    //        }
+    //
+    //        let playlistURI = context.uri
+    //
+    //        self.retrieveCurrentlyPlayingPlaylistCancellable = self.spotify.api
+    //            .playlistName(playlistURI)
+    //            .receive(on: RunLoop.main)
+    //            .handleAuthenticationError(spotify: self.spotify)
+    //            .sink(
+    //                receiveCompletion: { completion in
+    //                    if case .failure(let error) = completion {
+    //                        self.currentlyPlayingPlaylistName = nil
+    //                        Loggers.playerState.error(
+    //                            """
+    //                            could not retrieve playlist name for \(playlistURI): \
+    //                            \(error)
+    //                            """
+    //                        )
+    //                    }
+    //                },
+    //                receiveValue: { playlistName in
+    //                    self.currentlyPlayingPlaylistName = playlistName
+    //                }
+    //            )
+    //
+    //    }
+    
     // MARK: - Player Controls -
     
     func cycleRepeatMode() {
@@ -1065,7 +1072,7 @@ class PlayerManager: ObservableObject {
             self.skipToPreviousTrack()
         }
     }
-
+    
     /// If a track is playing, skips to the next track;
     /// if an episode is playing, seeks forwards 15 seconds.
     func nextTrackOrSeekForwards() {
@@ -1100,7 +1107,7 @@ class PlayerManager: ObservableObject {
     func playPause() {
         self.spotifyApplication?.playpause()
     }
-
+    
     func skipToNextTrack() {
         Loggers.playerState.trace("")
         self.spotifyApplication?.nextTrack()
@@ -1126,7 +1133,7 @@ class PlayerManager: ObservableObject {
     }
     
     // MARK: - Saved Tracks -
- 
+    
     func addOrRemoveCurrentTrackFromSavedTracks() {
         if self.currentTrackIsSaved {
             self.addCurrentTrackToSavedTracks()
@@ -1150,13 +1157,13 @@ class PlayerManager: ObservableObject {
         }
         self.removeTrackFromSavedTracks(trackURI)
     }
-
+    
     func addTrackToSavedTracks(_ trackURI: SpotifyURIConvertible) {
         
         self.undoManager.registerUndo(withTarget: self) { playerManager in
             playerManager.removeTrackFromSavedTracks(trackURI)
         }
-
+        
         self.spotify.api.saveTracksForCurrentUser([trackURI])
             .receive(on: RunLoop.main)
             .handleAuthenticationError(spotify: self.spotify)
@@ -1182,7 +1189,7 @@ class PlayerManager: ObservableObject {
         self.undoManager.registerUndo(withTarget: self) { playerManager in
             playerManager.addTrackToSavedTracks(trackURI)
         }
-
+        
         self.spotify.api.removeSavedTracksForCurrentUser([trackURI])
             .receive(on: RunLoop.main)
             .handleAuthenticationError(spotify: self.spotify)
@@ -1212,13 +1219,13 @@ class PlayerManager: ObservableObject {
             )
             return
         }
-
+        
         guard let trackURI = self.currentTrack?.identifier,
-                trackURI.idCategory == .track else {
+              trackURI.idCategory == .track else {
             self.currentTrackIsSaved = false
             return
         }
-
+        
         self.currentUserSavedTracksContainsCancellable = self.spotify.api
             .currentUserSavedTracksContains([trackURI])
             .receive(on: RunLoop.main)
@@ -1246,37 +1253,37 @@ class PlayerManager: ObservableObject {
             )
         
     }
-
-//    func retrieveSavedTracks() {
-//
-//        self.spotify.api.currentUserSavedTracks(
-//            limit: 50
-//        )
-//        .extendPagesConcurrently(self.spotify.api)
-//        .collectAndSortByOffset()
-//        .receive(on: RunLoop.main)
-//        .handleAuthenticationError(spotify: self.spotify)
-//        .sink(
-//            receiveCompletion: { completion in
-//                Loggers.playerManager.trace(
-//                    "retrieveSavedTracks completion: \(completion)"
-//                )
-//            },
-//            receiveValue: { savedTracks in
-//                let tracks = savedTracks.map(\.item)
-//                self.savedTracks = tracks
-//            }
-//        )
-//        .store(in: &self.cancellables)
-//
-//    }
-
+    
+    //    func retrieveSavedTracks() {
+    //
+    //        self.spotify.api.currentUserSavedTracks(
+    //            limit: 50
+    //        )
+    //        .extendPagesConcurrently(self.spotify.api)
+    //        .collectAndSortByOffset()
+    //        .receive(on: RunLoop.main)
+    //        .handleAuthenticationError(spotify: self.spotify)
+    //        .sink(
+    //            receiveCompletion: { completion in
+    //                Loggers.playerManager.trace(
+    //                    "retrieveSavedTracks completion: \(completion)"
+    //                )
+    //            },
+    //            receiveValue: { savedTracks in
+    //                let tracks = savedTracks.map(\.item)
+    //                self.savedTracks = tracks
+    //            }
+    //        )
+    //        .store(in: &self.cancellables)
+    //
+    //    }
+    
     // MARK: - Albums -
     
     func retrieveSavedAlbums() {
         
         self.isLoadingSavedAlbums = true
-
+        
         self.retrieveSavedAlbumsCancellable = spotify.api
             .currentUserSavedAlbums(limit: 50)
             .extendPagesConcurrently(spotify.api)
@@ -1326,7 +1333,7 @@ class PlayerManager: ObservableObject {
                     self.sortAlbumsByLastModifiedDate(&savedAlbums)
                     self.savedAlbums = savedAlbums
                     self.retrieveAlbumImages()
-                    self.updateSpotlightAlbums()
+                    self.updateCoreDataAndSpotlightAlbums()
 //                    for album in self.savedAlbums {
 //                        Loggers.playerManager.trace(
 //                            "\(album.name): \(album.uri ?? "nil")"
@@ -1335,20 +1342,20 @@ class PlayerManager: ObservableObject {
 
                 }
             )
-
+        
     }
-
+    
     func addAlbumToLibrary(_ album: Album) {
         
         guard let albumURI = album.uri else {
             NSSound.beep()
             return
         }
-
+        
         self.undoManager.registerUndo(withTarget: self) { playerManager in
             playerManager.removeAlbumFromLibrary(album)
         }
-
+        
         self.spotify.api.saveAlbumsForCurrentUser(
             [albumURI]
         )
@@ -1366,7 +1373,7 @@ class PlayerManager: ObservableObject {
                         ),
                         album.name
                     )
-
+                    
                     let alert = AlertItem(
                         title: alertTitle,
                         message: error.customizedLocalizedDescription
@@ -1382,16 +1389,16 @@ class PlayerManager: ObservableObject {
     }
     
     func removeAlbumFromLibrary(_ album: Album) {
-
+        
         guard let albumURI = album.uri else {
             NSSound.beep()
             return
         }
-
+        
         self.undoManager.registerUndo(withTarget: self) { playerManager in
             playerManager.addAlbumToLibrary(album)
         }
-
+        
         self.spotify.api.removeSavedAlbumsForCurrentUser(
             [albumURI]
         )
@@ -1409,7 +1416,7 @@ class PlayerManager: ObservableObject {
                         ),
                         album.name
                     )
-
+                    
                     let alert = AlertItem(
                         title: alertTitle,
                         message: error.customizedLocalizedDescription
@@ -1423,13 +1430,13 @@ class PlayerManager: ObservableObject {
         .store(in: &self.cancellables)
         
     }
-
-
+    
+    
     func playAlbum(
         _ album: Album,
         alertType: AlertType = .notification
     ) {
-            
+        
         guard let albumURI = album.uri else {
             let title = String.localizedStringWithFormat(
                 NSLocalizedString(
@@ -1449,9 +1456,9 @@ class PlayerManager: ObservableObject {
         }
         
         self.playAlbum(albumURI, name: album.name, alertType: alertType)
-
+        
     }
-
+    
     func playAlbum(
         _ uri: String,
         name: String,
@@ -1459,7 +1466,7 @@ class PlayerManager: ObservableObject {
     ) {
         
         self.albumsLastModifiedDates[uri] = Date()
-
+        
         let playbackRequest = PlaybackRequest(
             context: .contextURI(uri),
             offset: nil
@@ -1493,9 +1500,9 @@ class PlayerManager: ObservableObject {
                     }
                 }
             })
-
+        
     }
-
+    
     // MARK: - Playlists -
     
     func playPlaylist(
@@ -1503,7 +1510,7 @@ class PlayerManager: ObservableObject {
     ) -> AnyPublisher<Void, AlertItem> {
         self.playPlaylist(uri: playlist.uri, name: playlist.name)
     }
-
+    
     func playPlaylist(
         uri: String,
         name: String
@@ -1540,7 +1547,7 @@ class PlayerManager: ObservableObject {
     func retrievePlaylists() {
         
         self.isLoadingPlaylists = true
-
+        
         self.retrievePlaylistsCancellable = self.spotify.api
             .currentUserPlaylists(limit: 50)
             .extendPagesConcurrently(self.spotify.api)
@@ -1577,11 +1584,11 @@ class PlayerManager: ObservableObject {
                 receiveValue: { playlists in
                     
                     var playlists = playlists
-
+                    
                     if let currentUser = self.currentUser {
                         
                         let uri = "spotify:user:\(currentUser.id):collection"
-
+                        
                         let savedTracksPlaylist = Playlist(
                             name: "Liked Songs",
                             items: PlaylistItemsReference(href: nil, total: 0),
@@ -1596,13 +1603,13 @@ class PlayerManager: ObservableObject {
                         )
                         
                         playlists.insert(savedTracksPlaylist, at: 0)
-
+                        
                     }
-
+                    
                     self.sortPlaylistsByLastModifiedDate(&playlists)
                     self.playlists = playlists
                     self.retrievePlaylistImages()
-                    self.updateSpotlightPlaylists()
+                    self.updateCoreDataAndSpotlightPlaylists()
 //                    for playlist in self.playlists {
 //                        Loggers.playerManager.trace(
 //                            "\(playlist.name): \(playlist.uri)"
@@ -1610,16 +1617,16 @@ class PlayerManager: ObservableObject {
 //                    }
                 }
             )
-
+        
     }
     
     /// Adds the currently playing track/episode to a playlist.
     func addCurrentItemToPlaylist(
         playlist: Playlist<PlaylistItemsReference>
     ) {
-
+        
         let itemName = self.currentTrack?.name ?? "unknown"
-
+        
         guard let itemIdentifier = self.currentTrack?.identifier else {
             Loggers.playerManager.notice(
                 """
@@ -1673,9 +1680,9 @@ class PlayerManager: ObservableObject {
             itemName: itemName,
             playlist: playlist
         )
-
+        
     }
-
+    
     /**
      Adds a track/episode to a playlist.
      
@@ -1693,7 +1700,7 @@ class PlayerManager: ObservableObject {
         Loggers.playerManager.notice(
             "will add '\(itemName)' to '\(playlist.name)'"
         )
-
+        
         self.undoManager.registerUndo(withTarget: self) { playerManager in
             playerManager.removeItemFromPlaylist(
                 itemURI: itemURI,
@@ -1734,7 +1741,7 @@ class PlayerManager: ObservableObject {
                             let alert = AlertItem(title: alertTitle, message: "")
                             self.notificationSubject.send(alert)
                         case .failure(let error):
-
+                            
                             let alertTitle = String.localizedStringWithFormat(
                                 NSLocalizedString(
                                     "Couldn't Add \"%@\" to \"%@\"",
@@ -1742,7 +1749,7 @@ class PlayerManager: ObservableObject {
                                 ),
                                 itemName, playlist.name
                             )
-
+                            
                             let alert = AlertItem(
                                 title: alertTitle,
                                 message: error.customizedLocalizedDescription
@@ -1756,9 +1763,9 @@ class PlayerManager: ObservableObject {
                 receiveValue: { }
             )
             .store(in: &self.cancellables)
-
+        
     }
-
+    
     /**
      Removes a track/episode from a playlist.
      
@@ -1772,11 +1779,11 @@ class PlayerManager: ObservableObject {
         itemName: String,
         playlist: Playlist<PlaylistItemsReference>
     ) {
-       
+        
         Loggers.playerManager.notice(
             "will remove '\(itemName)' from '\(playlist.name)'"
         )
-
+        
         self.undoManager.registerUndo(withTarget: self) { playerManager in
             playerManager.addItemToPlaylist(
                 itemURI: itemURI,
@@ -1799,7 +1806,7 @@ class PlayerManager: ObservableObject {
             .map { _ in }
             .eraseToAnyPublisher()
         }
-       
+        
         publisher
             .receive(on: RunLoop.main)
             .handleAuthenticationError(spotify: self.spotify)
@@ -1825,7 +1832,7 @@ class PlayerManager: ObservableObject {
                                 ),
                                 itemName, playlist.name
                             )
-
+                            
                             let alert = AlertItem(
                                 title: alertTitle,
                                 message: error.customizedLocalizedDescription
@@ -1839,19 +1846,19 @@ class PlayerManager: ObservableObject {
                 receiveValue: { }
             )
             .store(in: &self.cancellables)
-
+        
     }
-
+    
     func followPlaylist(_ playlist: Playlist<PlaylistItemsReference>) {
         
         Loggers.playerManager.trace("will follow playlist \(playlist.name)")
-
+        
         self.undoManager.registerUndo(
             withTarget: self
         ) { playerManager in
             playerManager.unfollowPlaylist(playlist)
         }
-
+        
         self.spotify.api.followPlaylistForCurrentUser(
             playlist.uri
         )
@@ -1872,7 +1879,7 @@ class PlayerManager: ObservableObject {
                         ),
                         playlist.name
                     )
-
+                    
                     let alert = AlertItem(
                         title: alertTitle,
                         message: error.customizedLocalizedDescription
@@ -1889,13 +1896,13 @@ class PlayerManager: ObservableObject {
     func unfollowPlaylist(_ playlist: Playlist<PlaylistItemsReference>) {
         
         Loggers.playerManager.trace("will unfollow playlist \(playlist.name)")
-
+        
         self.undoManager.registerUndo(
             withTarget: self
         ) { playerManager in
             playerManager.followPlaylist(playlist)
         }
-
+        
         self.spotify.api.unfollowPlaylistForCurrentUser(
             playlist.uri
         )
@@ -1916,7 +1923,7 @@ class PlayerManager: ObservableObject {
                         ),
                         playlist.name
                     )
-
+                    
                     let alert = AlertItem(
                         title: alertTitle,
                         message: error.customizedLocalizedDescription
@@ -1929,7 +1936,7 @@ class PlayerManager: ObservableObject {
         })
         .store(in: &self.cancellables)
     }
-
+    
     /// Re-sorts the playlists by the last date they were played or items
     /// were added to them, whichever was more recent.
     func sortPlaylistsByLastModifiedDate(
@@ -1945,7 +1952,7 @@ class PlayerManager: ObservableObject {
             lhs, rhs in
             
             // return true if lhs should be ordered before rhs
-
+            
             let lhsDate = dates[lhs.1.uri]
             let rhsDate = dates[rhs.1.uri]
             return self.areInDecreasingOrderByDateThenIncreasingOrderByIndex(
@@ -1983,7 +1990,7 @@ class PlayerManager: ObservableObject {
         .map(\.1)
         
         savedAlbums = sortedAlbums
-            
+        
     }
     
     // MARK: - Queue -
@@ -1991,12 +1998,12 @@ class PlayerManager: ObservableObject {
     func retrieveQueue(retries: Int = 2) {
         
         Loggers.queue.trace("retriving queue")
-
+        
         guard self.retrieveQueueCancellable == nil else {
             Loggers.queue.trace("retrieveQueueCancellable != nil")
             return
         }
-
+        
         self.retrieveQueueCancellable = self.spotify.api.queue()
             .receive(on: RunLoop.main)
             .handleAuthenticationError(spotify: self.spotify)
@@ -2025,10 +2032,10 @@ class PlayerManager: ObservableObject {
                         Loggers.queue.trace("updated queue")
                         self.retrieveQueueItemImages()
                     }
-
+                    
                 }
             )
-
+        
     }
     
     // MARK: - User -
@@ -2063,11 +2070,11 @@ class PlayerManager: ObservableObject {
                     self.currentUser = user
                 }
             )
-
+        
     }
-
+    
     // MARK: - Images -
-
+    
     func retrieveAlbumImages() {
         
         var onDiskAlbumIds: Set<String> = []
@@ -2092,7 +2099,7 @@ class PlayerManager: ObservableObject {
                 )
             }
         }
-
+        
         for album in self.savedAlbums {
             
             guard
@@ -2106,7 +2113,7 @@ class PlayerManager: ObservableObject {
                 )
                 continue
             }
-
+            
             guard self.images[albumIdentifier] == nil else {
                 // the image already exists in the cache, so we don't need
                 // to retrieve it again
@@ -2125,7 +2132,7 @@ class PlayerManager: ObservableObject {
                 )
                 continue
             }
-
+            
             Loggers.images.notice(
                 "will retrieve image for album '\(album.name)'"
             )
@@ -2141,7 +2148,7 @@ class PlayerManager: ObservableObject {
                 identifier: albumIdentifier,
                 folder: albumsFolder
             )
-
+            
         }
         
     }
@@ -2170,7 +2177,7 @@ class PlayerManager: ObservableObject {
                 )
             }
         }
-
+        
         for playlist in self.playlists {
             
             let playlistIdentifier: SpotifyIdentifier
@@ -2192,13 +2199,13 @@ class PlayerManager: ObservableObject {
                 // to retrieve it again
                 continue
             }
-
+            
             guard !onDiskPlaylistIds.contains(playlistIdentifier.id) else {
                 // the image already exists on the file system, so we don't need
                 // to retrieve it again
                 continue
             }
-
+            
             guard let spotifyImage = playlist.images.smallest else {
                 Loggers.images.warning(
                     "no images exist for playlist '\(playlist.name)'"
@@ -2221,17 +2228,17 @@ class PlayerManager: ObservableObject {
                 identifier: playlistIdentifier,
                 folder: playlistsFolder
             )
-
-        }  // for playlist in self.playlists
             
+        }  // for playlist in self.playlists
+        
     }
-
+    
     func retrieveQueueItemImages() {
-
+        
         self.deleteExtraQueueItemImagesIfNeeded()
         
         let savedAlbumURIs = Set(self.savedAlbums.compactMap(\.uri))
-
+        
         for queueItem in self.queue {
             
             if case .track(let track) = queueItem,
@@ -2241,7 +2248,7 @@ class PlayerManager: ObservableObject {
                 // album images
                 continue
             }
-
+            
             guard let imageIdentifier = self.queueItemImageIdentifier(
                 queueItem
             ) else {
@@ -2252,9 +2259,9 @@ class PlayerManager: ObservableObject {
                 self.queueItemImages[imageIdentifier]?.lastAccessed = Date()
                 continue
             }
-
+            
             let imageURL: URL?
-
+            
             switch queueItem {
                 case .track(let track):
                     if track.album?.uri != nil,
@@ -2271,7 +2278,7 @@ class PlayerManager: ObservableObject {
                     else {
                         imageURL = nil
                     }
-                        
+                    
                 case .episode(let episode):
                     if let episodeImageURL = episode.images?.smallest?.url {
                         imageURL = episodeImageURL
@@ -2286,7 +2293,7 @@ class PlayerManager: ObservableObject {
                         imageURL = nil
                     }
             }
-
+            
             guard let imageURL = imageURL else {
                 continue
             }
@@ -2319,7 +2326,7 @@ class PlayerManager: ObservableObject {
                                 "couldn't crop image: \(imageIdentifier.uri)"
                             )
                             return
-                                    
+                            
                         }
                         let image = Image(nsImage: resizedImage)
                         DispatchQueue.main.async {
@@ -2333,7 +2340,7 @@ class PlayerManager: ObservableObject {
             
             
         }
-
+        
     }
     
     func queueItemImageIdentifier(_ item: PlaylistItem) -> SpotifyIdentifier? {
@@ -2359,7 +2366,7 @@ class PlayerManager: ObservableObject {
                 else {
                     return nil
                 }
-                    
+                
             case .episode(let episode):
                 if episode.images?.smallest?.url != nil,
                         let episodeIdentifier = try? SpotifyIdentifier(uri: episode) {
@@ -2376,13 +2383,13 @@ class PlayerManager: ObservableObject {
                 }
         }
     }
-
+    
     func queueItemImage(for item: PlaylistItem) -> Image? {
-
+        
         guard let imageIdentifier = self.queueItemImageIdentifier(item) else {
             return nil
         }
-
+        
         if let queueImage = self.queueItemImages[imageIdentifier] {
             return queueImage.image
         }
@@ -2390,11 +2397,11 @@ class PlayerManager: ObservableObject {
         if let image = self.image(for: imageIdentifier) {
             return image
         }
-
+        
         return nil
-
+        
     }
-
+    
     /// Only for playlist and album images, not queue item images
     func image(for identifier: SpotifyIdentifier) -> Image? {
         
@@ -2469,7 +2476,7 @@ class PlayerManager: ObservableObject {
             )
             .store(in: &self.cancellables)
     }
-
+    
     func saveImageToFile(
         imageData: Data,
         identifier: SpotifyIdentifier,
@@ -2495,17 +2502,17 @@ class PlayerManager: ObservableObject {
                     return
                 }
                 let imageSize: CGFloat =
-                        identifier.idCategory == .playlist ? 30 : 64
+                identifier.idCategory == .playlist ? 30 : 64
                 guard let resizedImage = nsImage.croppedToSquare()?
                         .resized(width: imageSize, height: imageSize) else {
                     Loggers.images.error(
                         "couldn't crop image: \(identifier.uri)"
                     )
                     return
-                            
+                    
                 }
                 let swiftUIImage = Image(nsImage: resizedImage)
-
+                
                 guard let newImageData = resizedImage.tiffRepresentation else {
                     return
                 }
@@ -2527,13 +2534,13 @@ class PlayerManager: ObservableObject {
             }
             
         }
-
+        
     }
     
     /// Delete images which have been downloaded, but are no longer part of the
     /// user's playlists or saved albums.
     func deleteUnusedImagesIfNeeded() {
-
+        
         if let date = self.lastTimeDeletedUnusedImages {
             // only delete images every hour
             if date.addingTimeInterval(3_600) > Date() {
@@ -2541,11 +2548,11 @@ class PlayerManager: ObservableObject {
                 return
             }
         }
-
+        
         self.lastTimeDeletedUnusedImages = Date()
-
+        
         Loggers.images.notice("WILL delete unused images")
-
+        
         let items = [
             (
                 self.imageFolderURL(for: .playlist),
@@ -2598,9 +2605,9 @@ class PlayerManager: ObservableObject {
             }
             
         }
-
+        
     }
-
+    
     func deleteExtraQueueItemImagesIfNeeded() {
         
         if let date = self.lastTimeDeletedExtraQueueImages {
@@ -2615,13 +2622,13 @@ class PlayerManager: ObservableObject {
                 return
             }
         }
-
+        
         self.lastTimeDeletedExtraQueueImages = Date()
         
         Loggers.images.notice("MIGHT delete extra queue item images")
-
+        
         let max = 50
-
+        
         if self.queueItemImages.count <= max {
             Loggers.images.notice(
                 """
@@ -2631,13 +2638,13 @@ class PlayerManager: ObservableObject {
             )
             return
         }
-
+        
         let deleteCount = self.queueItemImages.count - max
-
+        
         Loggers.images.notice(
             "WILL delete \(deleteCount) images from queueItemImages"
         )
-
+        
         // delete images with lower dates
         
         let toDelete = self.queueItemImages.sorted { lhs, rhs in
@@ -2652,13 +2659,13 @@ class PlayerManager: ObservableObject {
             \(toDelete.map(\.uri))
             """
         )
-
+        
         for identifier in toDelete {
             self.queueItemImages[identifier] = nil
         }
- 
+        
     }
-
+    
     /// Removes the folder containing the images and removes all items from the
     /// `images` and `queueItemImages` dictionary.
     func removeImagesCache() {
@@ -2676,9 +2683,9 @@ class PlayerManager: ObservableObject {
             )
         }
     }
-
+    
     // MARK: - Open -
-
+    
     /// Open the currently playing track/episode in the browser.
     func openCurrentPlaybackInSpotify() {
         
@@ -2696,7 +2703,7 @@ class PlayerManager: ObservableObject {
         self.openSpotifyDesktopApplication { _, _ in
             NSWorkspace.shared.open(uriURL)
         }
-
+        
     }
     
     func openAlbumInSpotify() {
@@ -2720,7 +2727,7 @@ class PlayerManager: ObservableObject {
                             let url = URL(string: albumURI) else {
                         return
                     }
-
+                    
                     // Ensure the Spotify application is active before
                     // opening the URL
                     self.openSpotifyDesktopApplication { _, _ in
@@ -2728,9 +2735,9 @@ class PlayerManager: ObservableObject {
                     }
                 }
             )
-
+        
     }
-
+    
     /// Open the current artist/show in the browser.
     func openArtistOrShowInSpotify() {
         
@@ -2750,7 +2757,7 @@ class PlayerManager: ObservableObject {
                             let url = URL(string: uri) else {
                         return
                     }
-
+                    
                     // Ensure the Spotify application is active before
                     // opening the URL
                     self.openSpotifyDesktopApplication { _, _ in
@@ -2758,7 +2765,7 @@ class PlayerManager: ObservableObject {
                     }
                 }
             )
-            
+        
     }
     
     func openSpotifyDesktopApplication(
@@ -2774,9 +2781,9 @@ class PlayerManager: ObservableObject {
             configuration: configuration,
             completionHandler: completionHandler
         )
-
+        
     }
-
+    
     // MARK: - Key Events -
     
     /// Returns `true` if the key event was handled; else, `false`.
@@ -2786,13 +2793,13 @@ class PlayerManager: ObservableObject {
     ) -> Bool {
         
         Loggers.keyEvent.trace("PlayerManager: \(event)")
-
+        
         // 49 == space
         if !requireModifierKey && event.keyCode == 49 {
             self.playPause()
             return true
         }
-
+        
         guard let shortcut = KeyboardShortcuts.Shortcut(event: event) else {
             Loggers.keyEvent.notice("couldn't get shortcut for event")
             return false
@@ -2831,7 +2838,7 @@ class PlayerManager: ObservableObject {
                 else {
                     self.presentLibraryView()
                 }
-             case .repeatMode:
+            case .repeatMode:
                 self.cycleRepeatMode()
             case .shuffle:
                 self.toggleShuffle()
@@ -2866,7 +2873,7 @@ class PlayerManager: ObservableObject {
         }
         return true
     }
-
+    
     func presentLibraryView() {
         self.playerViewIsFirstResponder = false
         self.retrievePlaylists()
@@ -2879,7 +2886,7 @@ class PlayerManager: ObservableObject {
             log: Self.osLog,
             name: "present library view"
         )
-
+        
         withAnimation(PlayerView.animation) {
             self.isShowingLibraryView = true
         }
@@ -2899,7 +2906,7 @@ class PlayerManager: ObservableObject {
                 self.queueViewIsFirstResponder = true
         }
     }
-
+    
     func dismissLibraryView(animated: Bool) {
         
         os_signpost(
@@ -2907,7 +2914,7 @@ class PlayerManager: ObservableObject {
             log: Self.osLog,
             name: "dismiss library view"
         )
-
+        
         if animated {
             withAnimation(PlayerView.animation) {
                 self.isShowingLibraryView = false
@@ -2927,7 +2934,7 @@ class PlayerManager: ObservableObject {
         else {
             self.isShowingLibraryView = false
         }
-
+        
         self.didScrollToAlbumsSearchBar = false
         self.didScrollToPlaylistsSearchBar = false
         
@@ -2941,8 +2948,8 @@ class PlayerManager: ObservableObject {
         self.committedPlaylistsLastModifiedDates = self.playlistsLastModifiedDates
         self.committedAlbumsLastModifiedDates = self.albumsLastModifiedDates
     }
-
-    // MARK: - Spotlight -
+    
+    // MARK: - Spotlight and Core Data -
     
     func continueUserActivity(_ userActivity: NSUserActivity) -> Bool {
         
@@ -2962,65 +2969,66 @@ class PlayerManager: ObservableObject {
             alert.runModal()
             return false
         }
-
+        
+        let corruptedAlert = NSAlert()
+        corruptedAlert.messageText = NSLocalizedString(
+            "Could not Play this Content",
+            comment: ""
+        )
+        corruptedAlert.informativeText = NSLocalizedString(
+            """
+            This item is corrupted. If the issue persists, try logging out \
+            of Spotify in this app; then, log in again.
+            """,
+            comment: ""
+        )
+        
         guard
             let uri = userActivity.userInfo?[CSSearchableItemActivityIdentifier]
                 as? String,
             let spotifyIdentifier = try? SpotifyIdentifier(uri: uri)
         else {
-            let alert = NSAlert()
-            alert.messageText = NSLocalizedString(
-                "Could not play this content",
-                comment: ""
-            )
-            alert.informativeText = NSLocalizedString(
-                """
-                This item is corrupted. If the issue persists, try logging out \
-                of Spotify in this app; then, log in again.
-                """,
-                comment: ""
-            )
-            alert.runModal()
+            corruptedAlert.runModal()
             return false
         }
-
+        
         switch spotifyIdentifier.idCategory {
             case .playlist:
                 
                 let fetchRequest = CDPlaylist.fetchRequest()
                 fetchRequest.fetchLimit = 1
                 fetchRequest.predicate = NSPredicate(format: "uri = %@", uri)
-
+                
                 let playlistName: String
                 
-                getName: do {
-                    
-                    do {
-                        if let name = try self.viewConext.fetch(fetchRequest)
+            getName: do {
+                
+                do {
+                    if let name = try self.viewConext.fetch(fetchRequest)
                             .first?.name {
-                            playlistName = name
-                            Loggers.coreData.trace(
-                                "got playlist name from core data"
-                            )
-                            break getName
-                        }
-                        
-                    } catch {
-                        Loggers.coreData.error(
-                            "couldn't fetch playlists: \(error)"
-                        )
-                    }
-                    
-                    if let name = self.playlists.first(
-                        where: { $0.uri == uri }
-                    )?.name {
                         playlistName = name
-                    }
-                    else {
-                        playlistName = uri
+                        Loggers.coreData.trace(
+                            "got playlist name from core data"
+                        )
+                        break getName
                     }
                     
+                } catch {
+                    Loggers.coreData.error(
+                        "couldn't fetch playlists: \(error)"
+                    )
                 }
+                
+                if let name = self.playlists.first(
+                    where: { $0.uri == uri }
+                )?.name {
+                    playlistName = name
+                }
+                else {
+                    playlistName = uri
+                }
+                
+            }
                 
                 self.playPlaylist(uri: uri, name: playlistName)
                     .sink(receiveCompletion: { completion in
@@ -3038,36 +3046,36 @@ class PlayerManager: ObservableObject {
                 let fetchRequest = CDAlbum.fetchRequest()
                 fetchRequest.fetchLimit = 1
                 fetchRequest.predicate = NSPredicate(format: "uri = %@", uri)
-
+                
                 let albumName: String
                 
-                getName: do {
-                    do {
-                        if let name = try self.viewConext.fetch(fetchRequest)
-                                .first?.name {
-                            albumName = name
-                            Loggers.coreData.trace(
-                                "got album name from core data"
-                            )
-                            break getName
-                        }
-                        
-                    } catch {
-                        Loggers.coreData.error(
-                            "couldn't fetch albums: \(error)"
-                        )
-                    }
-                    
-                    if let name = self.savedAlbums.first(
-                        where: { $0.uri == uri }
-                    )?.name {
+            getName: do {
+                do {
+                    if let name = try self.viewConext.fetch(fetchRequest)
+                            .first?.name {
                         albumName = name
-                    }
-                    else {
-                        albumName = uri
+                        Loggers.coreData.trace(
+                            "got album name from core data"
+                        )
+                        break getName
                     }
                     
+                } catch {
+                    Loggers.coreData.error(
+                        "couldn't fetch albums: \(error)"
+                    )
                 }
+                
+                if let name = self.savedAlbums.first(
+                    where: { $0.uri == uri }
+                )?.name {
+                    albumName = name
+                }
+                else {
+                    albumName = uri
+                }
+                
+            }
                 
                 self.playAlbum(
                     uri,
@@ -3076,28 +3084,97 @@ class PlayerManager: ObservableObject {
                 )
                 
             default:
-                return false
+                // should be a playlist item or album track
+                
+                
+                let fetchRequest = CDPlaylistItem.fetchRequest()
+                let playlistItems: [CDPlaylistItem]
+                
+                do {
+                    playlistItems = try self.viewConext.fetch(fetchRequest)
+
+                } catch {
+                    Loggers.coreData.error(
+                        "couldn't retrieve playlist items"
+                    )
+                    let alert = NSAlert()
+                    alert.informativeText = NSLocalizedString(
+                        "Could not Play this Content",
+                        comment: ""
+                    )
+                    alert.messageText = NSLocalizedString(
+                        "An unexpected error occured.",
+                        comment: ""
+                    )
+                    return false
+                }
+
+                guard let playlistItem = playlistItems.first(
+                    where: { $0.uri == uri }
+                ) else {
+                    corruptedAlert.runModal()
+                    return false
+                }
+
+                if let playlist = playlistItem.playlist {
+                    guard let playlistURI = playlist.uri else {
+                        corruptedAlert.runModal()
+                        return false
+                    }
+                    self.spotifyApplication?.playTrack(
+                        uri, inContext: playlistURI
+                    )
+                }
+                else if let album = playlistItem.album {
+                    guard let albumURI = album.uri else {
+                        corruptedAlert.runModal()
+                        return false
+                    }
+                    self.spotifyApplication?.playTrack(
+                        uri, inContext: albumURI
+                    )
+                }
+                else {
+                    corruptedAlert.runModal()
+                    return false
+                }
+                
                 
         }
-
+        
         return true
         
     }
-
-    func updateSpotlightPlaylists() {
-        
-        let cdPlaylists: [CDPlaylist]
-        
+    
+    func fetchCDPlaylists() -> [CDPlaylist]? {
         do {
             let fetchRequest = CDPlaylist.fetchRequest()
-            cdPlaylists = try self.viewConext.fetch(fetchRequest)
+            return try self.viewConext.fetch(fetchRequest)
             
         } catch {
             Loggers.coreData.error("couldn't fetch playlists: \(error)")
+            return nil
+        }
+    }
+
+    func fetchCDAlbums() -> [CDAlbum]? {
+        do {
+            let fetchRequest = CDAlbum.fetchRequest()
+            return try self.viewConext.fetch(fetchRequest)
+            
+        } catch {
+            Loggers.coreData.error("couldn't fetch albums: \(error)")
+            return nil
+        }
+    }
+
+    func updateCoreDataAndSpotlightPlaylists() {
+        
+        guard let cdPlaylists = self.fetchCDPlaylists() else {
             return
         }
 
-        var items: [CSSearchableItem] = []
+        var csSearchableItems: [CSSearchableItem] = []
 
         for playlist in self.playlists {
 
@@ -3110,36 +3187,42 @@ class PlayerManager: ObservableObject {
             // the user could have renamed the playlist
             cdPlaylist.name = playlist.name
 
-            let attributeSet = CSSearchableItemAttributeSet(
-                contentType: .text
-            )
-            attributeSet.title = playlist.name
-            attributeSet.contentDescription = playlist.description
-
-            if let playlistsFolder = self.imageFolderURL(for: .playlist) {
-                let imageURL = playlistsFolder.appendingPathComponent(
-                    "\(playlist.id).tiff",
-                    isDirectory: false
+            if self.indexPlaylists {
+                
+                let attributeSet = CSSearchableItemAttributeSet(
+                    contentType: .text
                 )
-                attributeSet.thumbnailURL = imageURL
+                attributeSet.title = playlist.name
+                attributeSet.contentDescription = playlist.description
+                
+                if let playlistsFolder = self.imageFolderURL(for: .playlist) {
+                    let imageURL = playlistsFolder.appendingPathComponent(
+                        "\(playlist.id).tiff",
+                        isDirectory: false
+                    )
+                    attributeSet.thumbnailURL = imageURL
+                }
+                
+                let csSearchableitem = CSSearchableItem(
+                    uniqueIdentifier: playlist.uri,
+                    domainIdentifier: "playlist",
+                    attributeSet: attributeSet
+                )
+                
+                csSearchableItems.append(csSearchableitem)
+                
             }
-
-            let item = CSSearchableItem(
-                uniqueIdentifier: playlist.uri,
-                domainIdentifier: "playlist",
-                attributeSet: attributeSet
-            )
-            
-            items.append(item)
 
         }
         
-        CSSearchableIndex.default().indexSearchableItems(items) { error in
-            if let error = error {
-                Loggers.spotlight.error("error indexing playlists: \(error)")
-            }
-            else {
-                Loggers.spotlight.trace("did index playlists")
+        if self.indexPlaylists {
+            CSSearchableIndex.default().indexSearchableItems(csSearchableItems) { error in
+                if let error = error {
+                    Loggers.spotlight.error("error indexing playlists: \(error)")
+                }
+                else {
+                    Loggers.spotlight.trace("did index playlists")
+                }
             }
         }
         
@@ -3175,77 +3258,79 @@ class PlayerManager: ObservableObject {
         CSSearchableIndex.default().deleteSearchableItems(
             withIdentifiers: searchItemsToRemove
         )
+        
+        if self.indexPlaylistItems {
+            self.updateCoreDataAndSpotlightPlaylistItems()
+        }
             
     }
     
-    func updateSpotlightAlbums() {
+    func updateCoreDataAndSpotlightAlbums() {
         
-        let cdAlbums: [CDAlbum]
-        
-        do {
-            let fetchRequest = CDAlbum.fetchRequest()
-            cdAlbums = try self.viewConext.fetch(fetchRequest)
-            
-        } catch {
-            Loggers.coreData.error("couldn't fetch albums: \(error)")
+        guard let cdAlbums = self.fetchCDAlbums() else {
             return
         }
 
-        var items: [CSSearchableItem] = []
+        var csSearchableItems: [CSSearchableItem] = []
 
         for album in self.savedAlbums {
             
             guard
-                let uri = album.uri,
-                let albumIdentifier = try? SpotifyIdentifier(uri: uri)
+                let albumURI = album.uri,
+                let albumIdentifier = try? SpotifyIdentifier(uri: albumURI)
             else {
                 continue
             }
             
             let cdAlbum = cdAlbums.first(
-                where: { $0.uri == uri }
+                where: { $0.uri == albumURI }
             ) ?? CDAlbum(context: self.viewConext)
             
             // neither should change, but reassigning the same values is
             // harmless
-            cdAlbum.uri = uri
+            cdAlbum.uri = albumURI
             cdAlbum.name = album.name
             
-            let attributeSet = CSSearchableItemAttributeSet(
-                contentType: .text
-            )
-            attributeSet.title = album.name
-            attributeSet.artist = album.artists?.first?.name
-//            attributeSet.contentDescription = album.description
-
-            if let albumsFolder = self.imageFolderURL(for: .album) {
-                let imageURL = albumsFolder.appendingPathComponent(
-                    "\(albumIdentifier.id).tiff",
-                    isDirectory: false
+            if self.indexAlbums {
+                
+                let attributeSet = CSSearchableItemAttributeSet(
+                    contentType: .text
                 )
-                attributeSet.thumbnailURL = imageURL
+                attributeSet.title = album.name
+                attributeSet.artist = album.artists?.first?.name
+                
+                if let albumsFolder = self.imageFolderURL(for: .album) {
+                    let imageURL = albumsFolder.appendingPathComponent(
+                        "\(albumIdentifier.id).tiff",
+                        isDirectory: false
+                    )
+                    attributeSet.thumbnailURL = imageURL
+                }
+                
+                let csSearchableItem = CSSearchableItem(
+                    uniqueIdentifier: albumURI,
+                    domainIdentifier: "album",
+                    attributeSet: attributeSet
+                )
+                
+                csSearchableItems.append(csSearchableItem)
+                
             }
-
-            let item = CSSearchableItem(
-                uniqueIdentifier: albumIdentifier.uri,
-                domainIdentifier: "album",
-                attributeSet: attributeSet
-            )
-            
-            items.append(item)
 
         }
         
-        CSSearchableIndex.default().indexSearchableItems(items) { error in
-            if let error = error {
-                Loggers.spotlight.error("error indexing albums: \(error)")
-            }
-            else {
-                Loggers.spotlight.trace("did index albums")
+        if self.indexAlbums {
+            CSSearchableIndex.default().indexSearchableItems(csSearchableItems) { error in
+                if let error = error {
+                    Loggers.spotlight.error("error indexing albums: \(error)")
+                }
+                else {
+                    Loggers.spotlight.trace("did index albums")
+                }
             }
         }
         
-        let albumURIs = Set(self.savedAlbums.map(\.uri))
+        let albumURIs = Set(self.savedAlbums.compactMap(\.uri))
 
         var searchItemsToRemove: [String] = []
 
@@ -3277,6 +3362,310 @@ class PlayerManager: ObservableObject {
         CSSearchableIndex.default().deleteSearchableItems(
             withIdentifiers: searchItemsToRemove
         )
+        
+        if self.indexAlbumTracks {
+            self.updateCoreDataAndSpotlightAlbumTracks()
+        }
+
+    }
+
+    func updateCoreDataAndSpotlightPlaylistItems() {
+        
+        guard let cdPlaylists = self.fetchCDPlaylists() else {
+            return
+        }
+        
+        for playlist in self.playlists {
+
+            guard let cdPlaylist = cdPlaylists.first(
+                where: { $0.uri == playlist.uri }
+            ) else {
+                continue
+            }
+                
+            let cdPlaylistItems = cdPlaylist.itemsSet
+
+            var csSearchableItems: [CSSearchableItem] = []
+            
+            var playlistItemURIs: Set<String> = []
+
+            var searchItemsToRemove: [String] = []
+
+            self.spotify.api.playlistItems(playlist)
+                .extendPages(self.spotify.api)
+                .receive(on: RunLoop.main)
+                .sink(
+                    receiveCompletion: { completion in
+                        // MARK: TODO: check if indexing has been cancelled
+                        
+                        // remove deleted items from core data and spotlight
+                        for cdPlaylistItem in cdPlaylistItems {
+                            
+                            guard let cdPlaylistItemURI = cdPlaylistItem.uri else {
+                                continue
+                            }
+                            
+                            if !playlistItemURIs.contains(cdPlaylistItemURI) {
+                                Loggers.coreData.trace(
+                                    """
+                                    will remove playlist item \
+                                    '\(cdPlaylistItem.name ?? cdPlaylistItemURI)' \
+                                    from spotlight index and core data
+                                    """
+                                )
+                                searchItemsToRemove.append(cdPlaylistItemURI)
+                                self.viewConext.delete(cdPlaylistItem)
+                                
+                            }
+                            
+                        }
+
+                        self.saveViewContext()
+                        
+                        // remove playlist items that the user deleted from the
+                        // spotlight index
+                        CSSearchableIndex.default().deleteSearchableItems(
+                            withIdentifiers: searchItemsToRemove
+                        )
+
+                        CSSearchableIndex.default().indexSearchableItems(
+                            csSearchableItems
+                        ) { error in
+                            
+                            if let error = error {
+                                Loggers.spotlight.error(
+                                    """
+                                    error indexing items for playlist \
+                                    '\(playlist.name)': \(error)
+                                    """
+                                )
+                            }
+                            else {
+                                Loggers.spotlight.trace(
+                                    """
+                                    did index items for playlist \
+                                    '\(playlist.name)'
+                                    """
+                                )
+                            }
+                        }
+
+                        switch completion {
+                            case .finished:
+                                break
+                            case .failure(let error):
+                                Loggers.spotlight.error(
+                                    "couldn't retrieve playlist items: \(error)"
+                                )
+                        }
+                    },
+                    receiveValue: { playlistItemsPage in
+                        
+                        for playlistItem in playlistItemsPage.items.compactMap(\.item) {
+                            
+                            guard let playlistItemURI = playlistItem.uri else {
+                                continue
+                            }
+                            
+                            if case .track(let track) = playlistItem,
+                                    track.isLocal {
+                                continue
+                            }
+                            
+                            playlistItemURIs.insert(playlistItemURI)
+
+                            let cdPlaylistItem = cdPlaylistItems.first(
+                                where: { $0.uri == playlistItemURI }
+                            ) ?? CDPlaylistItem(context: self.viewConext)
+
+                            cdPlaylistItem.uri = playlistItemURI
+                            cdPlaylistItem.name = playlistItem.name
+                            cdPlaylistItem.playlist = cdPlaylist
+
+                            let attributeSet = CSSearchableItemAttributeSet(
+                                contentType: .text
+                            )
+                            
+                            attributeSet.title = playlistItem.name
+                            
+                            switch playlistItem {
+                                case .track(let track):
+                                    attributeSet.album = track.album?.name
+                                    attributeSet.artist = track.artists?.first?.name
+                                    if let albumsFolder = self.imageFolderURL(
+                                        for: .album
+                                    ), let albumId = track.album?.id {
+                                        let imageURL = albumsFolder.appendingPathComponent(
+                                            "\(albumId).tiff",
+                                            isDirectory: false
+                                        )
+                                        attributeSet.thumbnailURL = imageURL
+                                    }
+                                case .episode(_):
+                                    break
+                            }
+                            
+                            let csSearchableItem = CSSearchableItem(
+                                uniqueIdentifier: playlistItemURI,
+                                domainIdentifier: "playlistItem",
+                                attributeSet: attributeSet
+                            )
+                            
+                            csSearchableItems.append(csSearchableItem)
+
+                        }
+
+                    }
+                )
+                .store(in: &self.indexPlaylistItemsCancellables)
+            
+        }
+
+    }
+
+    func updateCoreDataAndSpotlightAlbumTracks() {
+        
+        guard let cdAlbums = self.fetchCDAlbums() else {
+            return
+        }
+
+        for album in self.savedAlbums {
+            
+            guard
+                let albumURI = album.uri,
+                let albumIdentifier = try? SpotifyIdentifier(uri: albumURI)
+            else {
+                continue
+            }
+            
+            guard let cdAlbum = cdAlbums.first(
+                where: { $0.uri == albumURI }
+            ) else {
+                continue
+            }
+            
+            let cdPlaylistItems = cdAlbum.itemsSet
+
+            var csSearchableItems: [CSSearchableItem] = []
+            
+            var playlistItemURIs: Set<String> = []
+
+            var searchItemsToRemove: [String] = []
+
+            self.spotify.api.albumTracks(albumURI, limit: 50)
+                // reduce concurrent requests by not using
+                // `extendPagesConcurrently`
+                .extendPages(self.spotify.api)
+                .receive(on: RunLoop.main)
+                .sink(
+                    receiveCompletion: { completion in
+                        // MARK: TODO: check if indexing has been cancelled
+                        
+                        // remove deleted items from core data and spotlight
+                        for cdPlaylistItem in cdPlaylistItems {
+                            
+                            guard let cdPlaylistItemURI = cdPlaylistItem.uri else {
+                                continue
+                            }
+                            
+                            if !playlistItemURIs.contains(cdPlaylistItemURI) {
+                                Loggers.coreData.trace(
+                                    """
+                                    will remove playlist item \
+                                    '\(cdPlaylistItem.name ?? cdPlaylistItemURI)' \
+                                    from spotlight index and core data
+                                    """
+                                )
+                                searchItemsToRemove.append(cdPlaylistItemURI)
+                                self.viewConext.delete(cdPlaylistItem)
+                                
+                            }
+                            
+                        }
+
+                        
+                        self.saveViewContext()
+                        
+                        CSSearchableIndex.default().indexSearchableItems(
+                            csSearchableItems
+                        ) { error in
+                            
+                            if let error = error {
+                                Loggers.spotlight.error(
+                                    """
+                                    error indexing tracks for album \
+                                    '\(album.name)': \(error)
+                                    """
+                                )
+                            }
+                            else {
+                                Loggers.spotlight.trace(
+                                    """
+                                    did index tracks for album \
+                                    '\(album.name)'
+                                    """
+                                )
+                            }
+                        }
+                        switch completion {
+                            case .finished:
+                                break
+                            case .failure(let error):
+                                Loggers.spotlight.error(
+                                    "couldn't retrieve album tracks: \(error)"
+                                )
+                        }
+                    },
+                    receiveValue: { tracksPage in
+                        // MARK: TODO: don't continue indexing if user disabled
+                        // MARK: it
+                        
+                        for track in tracksPage.items {
+                            
+                            guard let trackURI = track.uri, !track.isLocal else {
+                                continue
+                            }
+                            
+                            playlistItemURIs.insert(trackURI)
+                            
+                            let cdPlaylistItem = cdPlaylistItems.first(
+                                where: { $0.uri == trackURI }
+                            ) ?? CDPlaylistItem(context: self.viewConext)
+                            
+                            cdPlaylistItem.uri = trackURI
+                            cdPlaylistItem.name = track.name
+                            cdPlaylistItem.album = cdAlbum
+
+                            let attributeSet = CSSearchableItemAttributeSet(
+                                contentType: .text
+                            )
+                            attributeSet.title = track.name
+                            attributeSet.album = album.name
+                            attributeSet.artist = album.artists?.first?.name
+                            
+                            if let albumsFolder = self.imageFolderURL(for: .album) {
+                                let imageURL = albumsFolder.appendingPathComponent(
+                                    "\(albumIdentifier.id).tiff",
+                                    isDirectory: false
+                                )
+                                attributeSet.thumbnailURL = imageURL
+                            }
+                            
+                            let csSearchableItem = CSSearchableItem(
+                                uniqueIdentifier: trackURI,
+                                domainIdentifier: "playlistItem",
+                                attributeSet: attributeSet
+                            )
+                            
+                            csSearchableItems.append(csSearchableItem)
+                            
+                        }
+
+                    }
+                )
+                .store(in: &self.indexAlbumTracksCancellables)
+
+        }
 
     }
     
@@ -3297,7 +3686,7 @@ class PlayerManager: ObservableObject {
         
     }
     
-    // MARK: Core Data
+    // MARK: - Core Data -
     
     func saveViewContext() {
         
@@ -3330,6 +3719,15 @@ class PlayerManager: ObservableObject {
         else {
             Loggers.coreData.error(
                 "couldn't get entity name for CDAlbum"
+            )
+        }
+        
+        if let playlistItemEntityName = CDPlaylistItem.entity().name {
+            entityNames.append(playlistItemEntityName)
+        }
+        else {
+            Loggers.coreData.error(
+                "couldn't get entity name for CDPlaylistItem"
             )
         }
         
