@@ -7,6 +7,7 @@ import SpotifyWebAPI
 import KeyboardShortcuts
 import os
 import CoreSpotlight
+import CoreData
 
 class PlayerManager: ObservableObject {
     
@@ -14,6 +15,8 @@ class PlayerManager: ObservableObject {
         subsystem: Bundle.main.bundleIdentifier!,
         category: .pointsOfInterest
     )
+    
+    let viewConext: NSManagedObjectContext
     
     let spotify: Spotify
     
@@ -337,9 +340,13 @@ class PlayerManager: ObservableObject {
     private var playAlbumCancellable: AnyCancellable? = nil
     private var retrieveQueueCancellable: AnyCancellable? = nil
     
-    init(spotify: Spotify) {
+    init(
+        spotify: Spotify,
+        viewContext: NSManagedObjectContext
+    ) {
         
         self.spotify = spotify
+        self.viewConext = viewContext
         
         self.albumsLastModifiedDates = UserDefaults.standard.dictionary(
             forKey: self.albumsLastModifiedDatesKey
@@ -437,6 +444,8 @@ class PlayerManager: ObservableObject {
                 self.didRetrieveAlbums = false
                 self.queue = []
                 self.removeImagesCache()
+                self.deleteSpotlightIndex()
+                self.deleteAllCoreDataObjects()
             }
             .store(in: &self.cancellables)
 
@@ -1416,13 +1425,16 @@ class PlayerManager: ObservableObject {
     }
 
 
-    func playAlbum(_ album: Album) {
+    func playAlbum(
+        _ album: Album,
+        alertType: AlertType = .notification
+    ) {
             
         guard let albumURI = album.uri else {
             let title = String.localizedStringWithFormat(
                 NSLocalizedString(
-                    "Couldn't Play \"%@\"",
-                    comment: "Couldn't Play [album name]"
+                    "Couldn't Play the Album \"%@\"",
+                    comment: "Couldn't Play the Album [album name]"
                 ),
                 album.name
             )
@@ -1436,11 +1448,15 @@ class PlayerManager: ObservableObject {
             return
         }
         
-        self.playAlbum(albumURI, name: album.name)
+        self.playAlbum(albumURI, name: album.name, alertType: alertType)
 
     }
 
-    func playAlbum(_ uri: String, name: String) {
+    func playAlbum(
+        _ uri: String,
+        name: String,
+        alertType: AlertType = .notification
+    ) {
         
         self.albumsLastModifiedDates[uri] = Date()
 
@@ -1457,15 +1473,24 @@ class PlayerManager: ObservableObject {
                 if case .failure(let error) = completion {
                     let title = String.localizedStringWithFormat(
                         NSLocalizedString(
-                            "Couldn't Play \"%@\"",
-                            comment: "Couldn't Play [album name]"
+                            "Couldn't Play the Album \"%@\"",
+                            comment: "Couldn't Play the Album [album name]"
                         ),
                         name
                     )
                     Loggers.playerManager.error("\(title): \(error)")
                     let message = error.customizedLocalizedDescription
-                    let alert = AlertItem(title: title, message: message)
-                    self.notificationSubject.send(alert)
+                    
+                    switch alertType {
+                        case .notification:
+                            let alert = AlertItem(title: title, message: message)
+                            self.notificationSubject.send(alert)
+                        case .appModalDialog:
+                            let alert = NSAlert()
+                            alert.messageText = title
+                            alert.informativeText = message
+                            alert.runModal()
+                    }
                 }
             })
 
@@ -1498,8 +1523,8 @@ class PlayerManager: ObservableObject {
             .mapError { error -> AlertItem in
                 let title = String.localizedStringWithFormat(
                     NSLocalizedString(
-                        "Couldn't Play \"%@\"",
-                        comment: "Couldn't Play [playlist name]"
+                        "Couldn't Play the Playlist \"%@\"",
+                        comment: "Couldn't Play the Playlist [playlist name]"
                     ),
                     name
                 )
@@ -2922,40 +2947,134 @@ class PlayerManager: ObservableObject {
     func continueUserActivity(_ userActivity: NSUserActivity) -> Bool {
         
         guard self.spotify.isAuthorized else {
-            // MARK: TODO: display error telling the user they are not authorized
+            let alert = NSAlert()
+            alert.messageText = NSLocalizedString(
+                "Your Spotify Account is not connected",
+                comment: ""
+            )
+            alert.informativeText = NSLocalizedString(
+                """
+                In order to play this content, you must first log in with \
+                Spotify.
+                """,
+                comment: ""
+            )
+            alert.runModal()
             return false
         }
 
-        guard let uri = userActivity.userInfo?[CSSearchableItemActivityIdentifier]
-                as? String else {
-            // MARK: TODO: display error to user
+        guard
+            let uri = userActivity.userInfo?[CSSearchableItemActivityIdentifier]
+                as? String,
+            let spotifyIdentifier = try? SpotifyIdentifier(uri: uri)
+        else {
+            let alert = NSAlert()
+            alert.messageText = NSLocalizedString(
+                "Could not play this content",
+                comment: ""
+            )
+            alert.informativeText = NSLocalizedString(
+                """
+                This item is corrupted. If the issue persists, try logging out \
+                of Spotify in this app; then, log in again.
+                """,
+                comment: ""
+            )
+            alert.runModal()
             return false
         }
-
-        guard let spotifyIdentifier = try? SpotifyIdentifier(uri: uri) else {
-            return false
-        }
-
-        // MARK: TODO: Get name
 
         switch spotifyIdentifier.idCategory {
             case .playlist:
-                let name = self.playlists.first(where: { $0.uri == uri })?
-                    .name ?? uri
-                self.playPlaylist(uri: uri, name: name)
-                    .sink(
-                        receiveCompletion: { completion in
-                            print("completion: \(completion)")
-                        },
-                        receiveValue: {
-                            
+                
+                let fetchRequest = CDPlaylist.fetchRequest()
+                fetchRequest.fetchLimit = 1
+                fetchRequest.predicate = NSPredicate(format: "uri = %@", uri)
+
+                let playlistName: String
+                
+                getName: do {
+                    
+                    do {
+                        if let name = try self.viewConext.fetch(fetchRequest)
+                            .first?.name {
+                            playlistName = name
+                            Loggers.coreData.trace(
+                                "got playlist name from core data"
+                            )
+                            break getName
                         }
-                    )
+                        
+                    } catch {
+                        Loggers.coreData.error(
+                            "couldn't fetch playlists: \(error)"
+                        )
+                    }
+                    
+                    if let name = self.playlists.first(
+                        where: { $0.uri == uri }
+                    )?.name {
+                        playlistName = name
+                    }
+                    else {
+                        playlistName = uri
+                    }
+                    
+                }
+                
+                self.playPlaylist(uri: uri, name: playlistName)
+                    .sink(receiveCompletion: { completion in
+                        if case .failure(let alertItem) = completion {
+                            let alert = NSAlert()
+                            alert.messageText = alertItem.title
+                            alert.informativeText = alertItem.message
+                            alert.runModal()
+                        }
+                    })
                     .store(in: &self.cancellables)
+                
             case .album:
-                let name = self.savedAlbums.first(where: { $0.uri == uri })?
-                    .name ?? uri
-                self.playAlbum(uri, name: name)
+                
+                let fetchRequest = CDAlbum.fetchRequest()
+                fetchRequest.fetchLimit = 1
+                fetchRequest.predicate = NSPredicate(format: "uri = %@", uri)
+
+                let albumName: String
+                
+                getName: do {
+                    do {
+                        if let name = try self.viewConext.fetch(fetchRequest)
+                                .first?.name {
+                            albumName = name
+                            Loggers.coreData.trace(
+                                "got album name from core data"
+                            )
+                            break getName
+                        }
+                        
+                    } catch {
+                        Loggers.coreData.error(
+                            "couldn't fetch albums: \(error)"
+                        )
+                    }
+                    
+                    if let name = self.savedAlbums.first(
+                        where: { $0.uri == uri }
+                    )?.name {
+                        albumName = name
+                    }
+                    else {
+                        albumName = uri
+                    }
+                    
+                }
+                
+                self.playAlbum(
+                    uri,
+                    name: albumName,
+                    alertType: .appModalDialog
+                )
+                
             default:
                 return false
                 
@@ -2967,14 +3086,30 @@ class PlayerManager: ObservableObject {
 
     func updateSpotlightPlaylists() {
         
-        CSSearchableIndex.default().deleteSearchableItems(
-            withDomainIdentifiers: ["playlist"]
-        )
+        let cdPlaylists: [CDPlaylist]
+        
+        do {
+            let fetchRequest = CDPlaylist.fetchRequest()
+            cdPlaylists = try self.viewConext.fetch(fetchRequest)
+            
+        } catch {
+            Loggers.coreData.error("couldn't fetch playlists: \(error)")
+            return
+        }
 
         var items: [CSSearchableItem] = []
 
         for playlist in self.playlists {
-            
+
+            let cdPlaylist = cdPlaylists.first(
+                where: { $0.uri == playlist.uri }
+            ) ?? CDPlaylist(context: self.viewConext)
+           
+            // won't change, but reassigning the same value is harmless
+            cdPlaylist.uri = playlist.uri
+            // the user could have renamed the playlist
+            cdPlaylist.name = playlist.name
+
             let attributeSet = CSSearchableItemAttributeSet(
                 contentType: .text
             )
@@ -3003,25 +3138,79 @@ class PlayerManager: ObservableObject {
             if let error = error {
                 Loggers.spotlight.error("error indexing playlists: \(error)")
             }
+            else {
+                Loggers.spotlight.trace("did index playlists")
+            }
         }
         
+        let playlistURIs = Set(self.playlists.map(\.uri))
+
+        var searchItemsToRemove: [String] = []
+
+        for cdPlaylist in cdPlaylists {
+            
+            guard let cdPlaylistURI = cdPlaylist.uri else {
+                continue
+            }
+            
+            if !playlistURIs.contains(cdPlaylistURI) {
+                // then the user deleted this playlist
+                Loggers.coreData.trace(
+                    """
+                    will remove playlist \
+                    '\(cdPlaylist.name ?? cdPlaylistURI)' from spotlight \
+                    index and core data
+                    """
+                )
+                searchItemsToRemove.append(cdPlaylistURI)
+                // remove the playlist that the user deleted from core data
+                self.viewConext.delete(cdPlaylist)
+            }
+
+        }
+        
+        self.saveViewContext()
+
+        // remove playlists that the user deleted from the spotlight index
+        CSSearchableIndex.default().deleteSearchableItems(
+            withIdentifiers: searchItemsToRemove
+        )
+            
     }
     
     func updateSpotlightAlbums() {
         
-        CSSearchableIndex.default().deleteSearchableItems(
-            withDomainIdentifiers: ["album"]
-        )
+        let cdAlbums: [CDAlbum]
+        
+        do {
+            let fetchRequest = CDAlbum.fetchRequest()
+            cdAlbums = try self.viewConext.fetch(fetchRequest)
+            
+        } catch {
+            Loggers.coreData.error("couldn't fetch albums: \(error)")
+            return
+        }
 
         var items: [CSSearchableItem] = []
 
         for album in self.savedAlbums {
             
-            guard let uri = album.uri,
-                    let albumIdentifier = try? SpotifyIdentifier(uri: uri) else {
+            guard
+                let uri = album.uri,
+                let albumIdentifier = try? SpotifyIdentifier(uri: uri)
+            else {
                 continue
             }
-
+            
+            let cdAlbum = cdAlbums.first(
+                where: { $0.uri == uri }
+            ) ?? CDAlbum(context: self.viewConext)
+            
+            // neither should change, but reassigning the same values is
+            // harmless
+            cdAlbum.uri = uri
+            cdAlbum.name = album.name
+            
             let attributeSet = CSSearchableItemAttributeSet(
                 contentType: .text
             )
@@ -3051,10 +3240,121 @@ class PlayerManager: ObservableObject {
             if let error = error {
                 Loggers.spotlight.error("error indexing albums: \(error)")
             }
+            else {
+                Loggers.spotlight.trace("did index albums")
+            }
+        }
+        
+        let albumURIs = Set(self.savedAlbums.map(\.uri))
+
+        var searchItemsToRemove: [String] = []
+
+        for cdAlbum in cdAlbums {
+            
+            guard let cdAlbumURI = cdAlbum.uri else {
+                continue
+            }
+            
+            if !albumURIs.contains(cdAlbumURI) {
+                // then the user deleted this album
+                Loggers.coreData.trace(
+                    """
+                    will remove album \
+                    '\(cdAlbum.name ?? cdAlbumURI)' from spotlight \
+                    index and core data
+                    """
+                )
+                searchItemsToRemove.append(cdAlbumURI)
+                // remove the album that the user deleted from core data
+                self.viewConext.delete(cdAlbum)
+            }
+
+        }
+        
+        self.saveViewContext()
+
+        // remove albums that the user deleted from the spotlight index
+        CSSearchableIndex.default().deleteSearchableItems(
+            withIdentifiers: searchItemsToRemove
+        )
+
+    }
+    
+    func deleteSpotlightIndex() {
+        
+        CSSearchableIndex.default().deleteAllSearchableItems { error in
+            if let error = error {
+                Loggers.spotlight.notice(
+                    "couldn't delete spotlight index: \(error)"
+                )
+            }
+            else {
+                Loggers.spotlight.notice(
+                    "journaled request to delete spotlight index"
+                )
+            }
+        }
+        
+    }
+    
+    // MARK: Core Data
+    
+    func saveViewContext() {
+        
+        do {
+            
+            try self.viewConext.save()
+            
+        } catch {
+            Loggers.coreData.error("couldn't save view context: \(error)")
         }
 
     }
+    
+    func deleteAllCoreDataObjects() {
+        
+        var entityNames: [String] = []
+        
+        if let playlistEntityName = CDPlaylist.entity().name {
+            entityNames.append(playlistEntityName)
+        }
+        else {
+            Loggers.coreData.error(
+                "couldn't get entity name for CDPlaylist"
+            )
+        }
+        
+        if let albumEntityName = CDAlbum.entity().name {
+            entityNames.append(albumEntityName)
+        }
+        else {
+            Loggers.coreData.error(
+                "couldn't get entity name for CDAlbum"
+            )
+        }
+        
+        for entityName in entityNames {
+            do {
+                
+                let fetchRequest = NSFetchRequest<NSFetchRequestResult>(
+                    entityName: entityName
+                )
+                let deleteRequest = NSBatchDeleteRequest(
+                    fetchRequest: fetchRequest
+                )
+                try self.viewConext.execute(deleteRequest)
 
+            } catch {
+                Loggers.coreData.error(
+                    "couldn't delete all core data objects for \(entityName)"
+                )
+            }
+        }
+        
+        Loggers.coreData.notice("deleted all core data objects")
+
+    }
+    
 }
 
 // MARK: - Private Members -

@@ -125,7 +125,7 @@ extension Error {
         if case .httpError(let data, _) = self as? SpotifyGeneralError,
                 let dataString = String(data: data, encoding: .utf8),
                 dataString.lowercased().starts(with: "user not approved for app") {
-            return dataString
+            return NSLocalizedString(dataString, comment: "")
         }
         
         return NSLocalizedString(self.localizedDescription, comment: "")
@@ -238,11 +238,16 @@ extension URL {
 extension NSEvent.ModifierFlags {
     
     /// The modifier keys that should be present in a keyboard shortcut:
-    /// control, option and command.
+    /// control, option, and command.
     static let shortchutModifiers: Self = [
         .control,
         .option,
         .command
     ]
 
+}
+
+enum AlertType {
+    case notification
+    case appModalDialog
 }

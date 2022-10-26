@@ -99,9 +99,14 @@ enum Loggers {
     
     static let spotlight = Logger(
         label: "Spotlight",
-        level: .warning
+        level: .trace
     )
     
+    static let coreData = Logger(
+        label: "CoreData",
+        level: .trace
+    )
+
 }
 
 struct SoftPlayerLogHandler: LogHandler {

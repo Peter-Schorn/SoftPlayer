@@ -48,7 +48,10 @@ struct SettingsView: View {
 
 struct SettingsView_Previews: PreviewProvider {
     
-    static let playerManager = PlayerManager(spotify: Spotify())
+    static let playerManager = PlayerManager(
+        spotify: Spotify(),
+        viewContext: AppDelegate.shared.persistentContainer.viewContext
+    )
 
     static var previews: some View {
         SettingsView()

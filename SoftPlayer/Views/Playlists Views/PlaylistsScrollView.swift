@@ -40,7 +40,7 @@ struct PlaylistsScrollView: View {
     var filteredPlaylists:
         [(offset: Int, element: Playlist<PlaylistItemsReference>)] {
         
-        let currentUserId = self.playerManager.currentUser?.id
+        let currentUserURI = self.playerManager.currentUser?.uri
         
         let lowercasedSearch = searchText.strip().lowercased()
 
@@ -48,8 +48,8 @@ struct PlaylistsScrollView: View {
             let playlists = self.playerManager.playlists
                 .filter { playlist in
                     if self.onlyShowMyPlaylists,
-                            let userId = playlist.owner?.id,
-                            userId != currentUserId {
+                            let userURI = playlist.owner?.uri,
+                            userURI != currentUserURI {
                         return false
                     }
                     return true
@@ -65,8 +65,8 @@ struct PlaylistsScrollView: View {
             .compactMap { playlist -> RatedPlaylist? in
                 
                 if self.onlyShowMyPlaylists,
-                        let userId = playlist.owner?.id,
-                        userId != currentUserId {
+                        let userURI = playlist.owner?.uri,
+                        userURI != currentUserURI {
                     return nil
                 }
                 
@@ -312,8 +312,11 @@ struct PlaylistsScrollView: View {
         self.playPlaylistCancellable = self.playerManager
             .playPlaylist(playlist)
             .sink(receiveCompletion: { completion in
-                if case .failure(let alert) = completion {
-                    self.playerManager.notificationSubject.send(alert)
+                switch completion {
+                    case .finished:
+                        self.playerManager.retrieveCurrentlyPlayingContext()
+                    case .failure(let alert):
+                        self.playerManager.notificationSubject.send(alert)
                 }
             })
 
@@ -323,7 +326,10 @@ struct PlaylistsScrollView: View {
 
 struct PlaylistsScrollView_Previews: PreviewProvider {
     
-    static let playerManager = PlayerManager(spotify: Spotify())
+    static let playerManager = PlayerManager(
+        spotify: Spotify(),
+        viewContext: AppDelegate.shared.persistentContainer.viewContext
+    )
 
     static var previews: some View {
         PlaylistsScrollView()

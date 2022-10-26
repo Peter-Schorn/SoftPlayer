@@ -43,8 +43,8 @@ struct PlaylistCellView: View {
     }
     
     var playlistOwnedByCurrentUser: Bool {
-        if let userId = self.playlist.owner?.id {
-            return self.playerManager.currentUser?.id == userId
+        if let userURI = self.playlist.owner?.uri {
+            return self.playerManager.currentUser?.uri == userURI
         }
         return false
     }
@@ -167,7 +167,10 @@ struct PlaylistCellView: View {
 
 struct PlaylistCellView_Previews: PreviewProvider {
     
-    static let playerManager = PlayerManager(spotify: Spotify())
+    static let playerManager = PlayerManager(
+        spotify: Spotify(),
+        viewContext: AppDelegate.shared.persistentContainer.viewContext
+    )
 
     static var previews: some View {
         
