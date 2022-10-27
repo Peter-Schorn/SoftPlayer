@@ -2983,11 +2983,27 @@ class PlayerManager: ObservableObject {
             comment: ""
         )
         
-        guard
-            let uri = userActivity.userInfo?[CSSearchableItemActivityIdentifier]
-                as? String,
-            let spotifyIdentifier = try? SpotifyIdentifier(uri: uri)
-        else {
+        guard let uri = userActivity
+                .userInfo?[CSSearchableItemActivityIdentifier] as? String else {
+            corruptedAlert.runModal()
+            return false
+        }
+        
+        if uri.isSavedTracksURI {
+            self.playPlaylist(uri: uri, name: "Liked Songs")
+                .sink(receiveCompletion: { completion in
+                    if case .failure(let alertItem) = completion {
+                        let alert = NSAlert()
+                        alert.messageText = alertItem.title
+                        alert.informativeText = alertItem.message
+                        alert.runModal()
+                    }
+                })
+                .store(in: &self.cancellables)
+            return true
+        }
+
+        guard let spotifyIdentifier = try? SpotifyIdentifier(uri: uri) else {
             corruptedAlert.runModal()
             return false
         }
@@ -3196,11 +3212,16 @@ class PlayerManager: ObservableObject {
                 attributeSet.contentDescription = playlist.description
                 
                 if let playlistsFolder = self.imageFolderURL(for: .playlist) {
-                    let imageURL = playlistsFolder.appendingPathComponent(
-                        "\(playlist.id).tiff",
-                        isDirectory: false
-                    )
-                    attributeSet.thumbnailURL = imageURL
+                    if playlist.uri.isSavedTracksURI {
+                        // MARK: TODO: Generate image for saved tracks playlists
+                    }
+                    else {
+                        let imageURL = playlistsFolder.appendingPathComponent(
+                            "\(playlist.id).tiff",
+                            isDirectory: false
+                        )
+                        attributeSet.thumbnailURL = imageURL
+                    }
                 }
                 
                 let csSearchableitem = CSSearchableItem(
@@ -3376,6 +3397,10 @@ class PlayerManager: ObservableObject {
         }
         
         for playlist in self.playlists {
+
+            if playlist.uri.isSavedTracksURI {
+                continue
+            }
 
             guard let cdPlaylist = cdPlaylists.first(
                 where: { $0.uri == playlist.uri }
