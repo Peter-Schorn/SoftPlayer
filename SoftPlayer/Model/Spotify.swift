@@ -317,9 +317,7 @@ final class Spotify: ObservableObject {
      */
     func authorizationManagerDidDeauthorize() {
         
-        withAnimation {
-            self.isAuthorized = false
-        }
+        self.isAuthorized = false
 
         do {
             /*

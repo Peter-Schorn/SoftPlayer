@@ -388,6 +388,11 @@ class PlayerManager: ObservableObject {
             .sink(receiveValue: self.loadArtworkImage)
             .store(in: &self.cancellables)
         
+        self.spotify.objectWillChange.sink {
+            self.objectWillChange.send()
+        }
+        .store(in: &self.cancellables)
+
         self.popoverWillShow.sink {
             
             if self.spotify.isAuthorized {

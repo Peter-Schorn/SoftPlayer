@@ -31,9 +31,9 @@ struct SettingsView: View {
                 .tag(Tab.spotlight)
             
         }
-        .padding()
+        .padding(20)
         .frame(
-            width:  selectedTab == .keyboardShortcuts ? 450 : 400,
+            width:  450,
             height: selectedTab == .keyboardShortcuts ? 550 : 300
         )
         .background(

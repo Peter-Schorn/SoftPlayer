@@ -36,6 +36,7 @@ struct GeneralSettingsView: View {
             .font(.footnote)
             .foregroundColor(.secondary)
             .fixedSize(horizontal: false, vertical: true)
+//            .border(Color.green)
             
             
             Button(action: spotify.api.authorizationManager.deauthorize, label: {
