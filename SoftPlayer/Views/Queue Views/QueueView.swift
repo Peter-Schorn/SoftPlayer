@@ -26,12 +26,11 @@ struct QueueView: View {
                     ) { (offset, item) in
                         QueueItemView(item: item, index: offset)
                     }
-                    if self.playerManager.queue.count == 2 {
+                    if self.playerManager.queue.count <= 2 {
                         Text(
                             """
-                            If you expect to see more than two items in the \
-                            queue, then this is a bug on Spotify's end, not \
-                            with this app.
+                            If you expect to see more items in the queue, then \
+                            this is a bug on Spotify's end, not with this app.
                             """
                         )
                         .foregroundColor(.secondary)
