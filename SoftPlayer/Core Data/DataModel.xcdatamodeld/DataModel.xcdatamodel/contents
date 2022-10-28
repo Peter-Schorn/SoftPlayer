@@ -3,12 +3,12 @@
     <entity name="CDAlbum" representedClassName="CDAlbum" syncable="YES">
         <attribute name="name" optional="YES" attributeType="String"/>
         <attribute name="uri" optional="YES" attributeType="String"/>
-        <relationship name="items" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="CDPlaylistItem" inverseName="album" inverseEntity="CDPlaylistItem"/>
+        <relationship name="items" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="CDPlaylistItem" inverseName="album" inverseEntity="CDPlaylistItem"/>
     </entity>
     <entity name="CDPlaylist" representedClassName="CDPlaylist" syncable="YES">
         <attribute name="name" optional="YES" attributeType="String"/>
         <attribute name="uri" optional="YES" attributeType="String"/>
-        <relationship name="items" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="CDPlaylistItem" inverseName="playlist" inverseEntity="CDPlaylistItem"/>
+        <relationship name="items" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="CDPlaylistItem" inverseName="playlist" inverseEntity="CDPlaylistItem"/>
     </entity>
     <entity name="CDPlaylistItem" representedClassName="CDPlaylistItem" syncable="YES">
         <attribute name="name" optional="YES" attributeType="String"/>
