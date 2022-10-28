@@ -4,7 +4,7 @@ import Combine
 struct SpotlightSettingsView: View {
     
     @EnvironmentObject var playerManager: PlayerManager
-    @EnvironmentObject var spotify: Spotify
+//    @EnvironmentObject var spotify: Spotify
 
     @State private var indexPlaylists = true
     @State private var indexPlaylistItems = true
@@ -57,6 +57,16 @@ struct SpotlightSettingsView: View {
             }
             .disabled(playerManager.isIndexingSpotlight)
 
+            HStack {
+                if hasChanges {
+                    Text("Re-index Spotlight to save changes")
+                        .foregroundColor(.secondary)
+                        .font(.callout)
+                }
+            }
+            .frame(height: 20)
+//            .border(Color.green)
+
             Spacer()
             
             HStack {
@@ -78,18 +88,9 @@ struct SpotlightSettingsView: View {
             }
 //            .border(Color.green)
             
-            HStack {
-                if hasChanges {
-                    Text("Re-index Spotlight to save changes")
-                        .foregroundColor(.secondary)
-                        .font(.callout)
-                }
-            }
-            .frame(height: 20)
-//            .border(Color.blue)
             
         }
-        .padding()
+        .padding(20)
         .onAppear(perform: onAppear)
         .background(
             KeyEventHandler(name: "SpotlightSettingsView") { event in
