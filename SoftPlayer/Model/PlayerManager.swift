@@ -327,7 +327,9 @@ class PlayerManager: ObservableObject {
     private var didUpdateCurrentlyPlayingContext = PassthroughSubject<Void, Never>()
     
     // MARK: - Spotlight and Core Data -
-    
+
+    @Published var isIndexingSpotlight = false
+
     let retrievePlaylistsAndAlbumsDispatchGroup = DispatchGroup()
 
     /// The URIs of the items in all the playlists and albums
@@ -2217,9 +2219,11 @@ class PlayerManager: ObservableObject {
             }
             
             guard let spotifyImage = playlist.images.smallest else {
-                Loggers.images.warning(
-                    "no images exist for playlist '\(playlist.name)'"
-                )
+                if !playlist.uri.isSavedTracksURI {
+                    Loggers.images.warning(
+                        "no images exist for playlist '\(playlist.name)'"
+                    )
+                }
                 continue
             }
             
@@ -2962,6 +2966,8 @@ class PlayerManager: ObservableObject {
     // MARK: - Spotlight and Core Data -
     
     func indexSpotlight() {
+        
+        self.isIndexingSpotlight = true
 
         self.playlistItemURIs = []
 
@@ -3803,27 +3809,31 @@ class PlayerManager: ObservableObject {
                 
         }
         
-        CSSearchableIndex.default().deleteSearchableItems(
-            withIdentifiers: searchItemsToRemove
-        ) { error in
-            
-            if let error = error {
-                Loggers.spotlight.error(
+        if !searchItemsToRemove.isEmpty {
+            CSSearchableIndex.default().deleteSearchableItems(
+                withIdentifiers: searchItemsToRemove
+            ) { error in
+                
+                if let error = error {
+                    Loggers.spotlight.error(
                     """
                     couldn't remove deleted playlist items from spotlight \
                     index: \(error)
                     """
-                )
+                    )
+                }
+                else {
+                    Loggers.spotlight.trace(
+                        "removed deleted playlist items from spotlight index"
+                    )
+                }
+                
             }
-            else {
-                Loggers.spotlight.trace(
-                    "removed deleted playlist items from spotlight index"
-                )
-            }
-
         }
 
         self.saveViewContext()
+
+        self.isIndexingSpotlight = false
 
     }
 
@@ -3848,6 +3858,10 @@ class PlayerManager: ObservableObject {
     
     func saveViewContext() {
         
+        guard self.viewConext.hasChanges else {
+            return
+        }
+
         do {
             
             try self.viewConext.save()

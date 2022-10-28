@@ -87,7 +87,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             button.sendAction(on: [.leftMouseDown, .rightMouseDown])
         }
         else {
-            Loggers.general.critical(
+            Loggers.appDelegate.critical(
                 "AppDelegate.statusBarItem.button was nil"
             )
         }
@@ -129,6 +129,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             title: NSLocalizedString("Options", comment: "")
         )
         
+        if ProcessInfo.processInfo.isPreviewing {
+            self.contextMenu.addItem(
+                withTitle: "Preview Build",
+                action: nil,
+                keyEquivalent: ""
+            )
+        }
+        
         self.contextMenu.addItem(
             withTitle: NSLocalizedString("Settings", comment: ""),
             action: #selector(self.openSettingsWindow),
@@ -149,18 +157,18 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         self.playerManager.spotifyApplication?.blockAppleEvents = true
         self.playerManager.playerStateDidChangeCancellable = nil
         self.playerManager.commitModifiedDates()
-        
+        self.playerManager.saveViewContext()
     }
 
     func application(_ application: NSApplication, open urls: [URL]) {
         
         guard let url = urls.first else {
-            Loggers.general.trace("application open urls: urls was empty")
+            Loggers.appDelegate.trace("application open urls: urls was empty")
             return
         }
         
         guard url.scheme == spotify.loginCallbackURL.scheme else {
-            Loggers.general.trace("unsupported URL: \(url)")
+            Loggers.appDelegate.trace("unsupported URL: \(url)")
             return
         }
         
@@ -250,9 +258,14 @@ extension AppDelegate: NSPopoverDelegate {
     
     @objc func togglePopover(_ sender: AnyObject?) {
 
-        if let event = NSApplication.shared.currentEvent,
-                event.type == .rightMouseDown {
+
+        if
+            let event = NSApplication.shared.currentEvent,
+            event.type == .rightMouseDown ||
+            (event.type == .leftMouseDown && event.modifierFlags.contains(.control))
+        {
             // then the user right-clicked on the status bar item
+            Loggers.appDelegate.trace("toggle popover right click")
 
             self.statusBarItem.menu = self.contextMenu
             self.statusBarItem.button?.performClick(nil)
@@ -261,6 +274,8 @@ extension AppDelegate: NSPopoverDelegate {
         }
         else {
             // assume the user left-clicked on the status bar item
+            Loggers.appDelegate.trace("toggle popover left click")
+
 
             if self.popover.isShown {
                 self.closePopover()
@@ -276,7 +291,7 @@ extension AppDelegate: NSPopoverDelegate {
     func openPopover() {
         
         guard let button = self.statusBarItem.button else {
-            Loggers.general.critical(
+            Loggers.appDelegate.critical(
                 "AppDelegate.statusBarItem.button was nil"
             )
             return
