@@ -6,6 +6,24 @@ struct SpotlightSettingsView: View {
     @EnvironmentObject var playerManager: PlayerManager
     @EnvironmentObject var spotify: Spotify
 
+    @State private var indexPlaylists = true
+    @State private var indexPlaylistItems = true
+    @State private var indexAlbums = true
+    @State private var indexAlbumTracks = true
+
+    /// Whether or not the user has changed the settings for which items to
+    /// index since the last time spotlight has been re-indexed.
+    var hasChanges: Bool {
+        self.playerManager.indexPlaylists
+                != self.indexPlaylists ||
+                self.playerManager.indexPlaylistItems !=
+                self.indexPlaylistItems ||
+                self.playerManager.indexAlbums !=
+                self.indexAlbums ||
+                self.playerManager.indexAlbumTracks !=
+                self.indexAlbumTracks
+    }
+
     var indexSpotlightButtonIsDisabled: Bool {
         !self.playerManager.spotify.isAuthorized ||
             self.playerManager.isIndexingSpotlight
@@ -22,19 +40,19 @@ struct SpotlightSettingsView: View {
             Group {
                 Toggle(
                     "Index Playlists",
-                    isOn: playerManager.$indexPlaylists
+                    isOn: $indexPlaylists
                 )
                 Toggle(
                     "Index Playlist Tracks and Episodes",
-                    isOn: playerManager.$indexPlaylists
+                    isOn: $indexPlaylistItems
                 )
                 Toggle(
                     "Index Albums",
-                    isOn: playerManager.$indexAlbums
+                    isOn: $indexAlbums
                 )
                 Toggle(
                     "Index Album Tracks",
-                    isOn: playerManager.$indexAlbumTracks
+                    isOn: $indexAlbumTracks
                 )
             }
             .disabled(playerManager.isIndexingSpotlight)
@@ -42,15 +60,9 @@ struct SpotlightSettingsView: View {
             Spacer()
             
             HStack {
-                Button {
-                    self.playerManager.deleteAllCoreDataObjects()
-                    self.playerManager.deleteSpotlightIndex()
-//                    DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
-                        self.playerManager.indexSpotlight()
-//                    }
-                } label: {
+                Button(action: reIndexSpotlight, label: {
                     Text("Re-index Spotlight")
-                }
+                })
                 .disabled(indexSpotlightButtonIsDisabled)
                 .if(!playerManager.spotify.isAuthorized) { view in
                     view.help(mustLoginText)
@@ -66,8 +78,19 @@ struct SpotlightSettingsView: View {
             }
 //            .border(Color.green)
             
+            HStack {
+                if hasChanges {
+                    Text("Re-index Spotlight to save changes")
+                        .foregroundColor(.secondary)
+                        .font(.callout)
+                }
+            }
+            .frame(height: 20)
+//            .border(Color.blue)
+            
         }
         .padding()
+        .onAppear(perform: onAppear)
         .background(
             KeyEventHandler(name: "SpotlightSettingsView") { event in
                 return self.playerManager.receiveKeyEvent(
@@ -77,6 +100,26 @@ struct SpotlightSettingsView: View {
             }
             .touchBar(content: PlayPlaylistsTouchBarView.init)
         )
+        
+    }
+    
+    func onAppear() {
+        self.indexPlaylists = self.playerManager.indexPlaylists
+        self.indexPlaylistItems = self.playerManager.indexPlaylistItems
+        self.indexAlbums = self.playerManager.indexAlbums
+        self.indexAlbumTracks = self.playerManager.indexAlbumTracks
+    }
+    
+    func reIndexSpotlight() {
+        
+        self.playerManager.indexPlaylists = self.indexPlaylists
+        self.playerManager.indexPlaylistItems = self.indexPlaylistItems
+        self.playerManager.indexAlbums = self.indexAlbums
+        self.playerManager.indexAlbumTracks = self.indexAlbumTracks
+
+        self.playerManager.deleteAllCoreDataObjects()
+        self.playerManager.deleteSpotlightIndex()
+        self.playerManager.indexSpotlight()
         
     }
     
@@ -100,3 +143,9 @@ struct SpotlightSettingsView_Previews: PreviewProvider {
         .frame(width: 400, height: 250)
     }
 }
+
+/*
+ Text("Re-index Spotlight to save changes")
+     .foregroundColor(.secondary)
+     .font(.callout)
+ */
