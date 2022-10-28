@@ -350,6 +350,7 @@ class PlayerManager: ObservableObject {
     private var openAlbumCancellable: AnyCancellable? = nil
     private var cycleRepeatModeCancellable: AnyCancellable? = nil
     private var updatePlayerStateCancellable: AnyCancellable? = nil
+    private var indexSpotlightIfNeededCancellable: AnyCancellable? = nil
     private var retrieveCurrentlyPlayingPlaylistCancellable: AnyCancellable? = nil
     private var currentUserSavedTracksContainsCancellable: AnyCancellable? = nil
     var playerStateDidChangeCancellable: AnyCancellable? = nil
@@ -391,7 +392,6 @@ class PlayerManager: ObservableObject {
             
             if self.spotify.isAuthorized {
                 self.updatePlayerState()
-                self.indexSpotlightIfNeeded()
             }
             self.updatePlayerStateCancellable = Timer.publish(
                 every: 2, on: .main, in: .common
@@ -445,6 +445,20 @@ class PlayerManager: ObservableObject {
                 self.indexSpotlight()
                 self.retrieveQueue()
                 self.updatePlayerState()
+                
+                self.indexSpotlightIfNeededCancellable = Timer.publish(
+                    // 5 minutes, not 1 hour because the user could've clicked
+                    // the "re-index Spotlight" button less than an hour ago
+                    every: 300, on: .main, in: .common
+                )
+                .autoconnect()
+                .sink { _ in
+                    self.indexSpotlightIfNeeded()
+                }
+
+            }
+            else {
+                self.indexSpotlightIfNeededCancellable = nil
             }
         }
         .store(in: &self.cancellables)
@@ -3031,7 +3045,7 @@ class PlayerManager: ObservableObject {
                             return Empty().eraseToAnyPublisher()
                         }
                     }
-                    .sink(receiveValue: {
+                    .sink(receiveCompletion: { _ in
                         self.removeDeletedItemsFromSpotlightAndCoreData()
                     })
                     .store(in: &self.cancellables)
@@ -3039,7 +3053,7 @@ class PlayerManager: ObservableObject {
             }
             else if self.indexAlbumTracks {
                 self.updateCoreDataAndSpotlightAlbumTracks()
-                    .sink(receiveValue: {
+                    .sink(receiveCompletion: { _ in
                         self.removeDeletedItemsFromSpotlightAndCoreData()
                     })
                     .store(in: &self.cancellables)
@@ -3302,6 +3316,7 @@ class PlayerManager: ObservableObject {
     func updateCoreDataAndSpotlightPlaylists() {
         
         guard let cdPlaylists = self.fetchCDPlaylists() else {
+            self.isIndexingSpotlight = false
             return
         }
 
@@ -3404,6 +3419,7 @@ class PlayerManager: ObservableObject {
     func updateCoreDataAndSpotlightAlbums() {
         
         guard let cdAlbums = self.fetchCDAlbums() else {
+            self.isIndexingSpotlight = false
             return
         }
 
@@ -3507,11 +3523,13 @@ class PlayerManager: ObservableObject {
     func updateCoreDataAndSpotlightPlaylistItems() -> AnyPublisher<Void, Never> {
         
         guard let cdPlaylists = self.fetchCDPlaylists() else {
+            self.isIndexingSpotlight = false
             return Empty()
                 .eraseToAnyPublisher()
         }
         
         guard let cdPlaylistItems = self.fetchCDPlaylistItems() else {
+            self.isIndexingSpotlight = false
             return Empty()
                 .eraseToAnyPublisher()
         }
@@ -3745,11 +3763,13 @@ class PlayerManager: ObservableObject {
     func updateCoreDataAndSpotlightAlbumTracks() -> AnyPublisher<Void, Never> {
         
         guard let cdAlbums = self.fetchCDAlbums() else {
+            self.isIndexingSpotlight = false
             return Empty()
                 .eraseToAnyPublisher()
         }
         
         guard let cdPlaylistItems = self.fetchCDPlaylistItems() else {
+            self.isIndexingSpotlight = false
             return Empty()
                 .eraseToAnyPublisher()
         }
@@ -4022,6 +4042,7 @@ class PlayerManager: ObservableObject {
     func removeDeletedItemsFromSpotlightAndCoreData() {
         
         guard let cdPlaylistItems = self.fetchCDPlaylistItems() else {
+            self.isIndexingSpotlight = false
             return
         }
         
