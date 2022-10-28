@@ -7,6 +7,7 @@ struct SettingsView: View {
     enum Tab {
         case general
         case keyboardShortcuts
+        case spotlight
     }
 
     @EnvironmentObject var spotify: Spotify
@@ -25,11 +26,15 @@ struct SettingsView: View {
                 .tabItem { Text("Shortcuts") }
                 .tag(Tab.keyboardShortcuts)
             
+            SpotlightSettingsView()
+                .tabItem { Text("Spotlight") }
+                .tag(Tab.spotlight)
+            
         }
         .padding()
         .frame(
-            width:  selectedTab == .general ? 400 : 450,
-            height: selectedTab == .general ? 300 : 520
+            width:  selectedTab == .keyboardShortcuts ? 450 : 400,
+            height: selectedTab == .keyboardShortcuts ? 520 : 300
         )
         .background(
             KeyEventHandler(name: "SettingsView") { event in

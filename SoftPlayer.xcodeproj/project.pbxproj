@@ -50,6 +50,7 @@
 		478F57412909C88000D6A7CB /* CDAlbum+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 478F573F2909C88000D6A7CB /* CDAlbum+CoreDataProperties.swift */; };
 		478F57442909C99400D6A7CB /* CDPlaylistItem+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 478F57422909C99400D6A7CB /* CDPlaylistItem+CoreDataClass.swift */; };
 		478F57452909C99400D6A7CB /* CDPlaylistItem+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 478F57432909C99400D6A7CB /* CDPlaylistItem+CoreDataProperties.swift */; };
+		478F5747290AE39300D6A7CB /* SpotlightSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 478F5746290AE39300D6A7CB /* SpotlightSettingsView.swift */; };
 		4795210D25744AA6000A5B82 /* MiscellaneousUtilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4795210C25744AA6000A5B82 /* MiscellaneousUtilities.swift */; };
 		47993D2828FE688400D3D73F /* QueueImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47993D2728FE688400D3D73F /* QueueImage.swift */; };
 		47A89ED02908EBDD007C0BA7 /* CDPlaylist+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47A89EC82908EBDD007C0BA7 /* CDPlaylist+CoreDataClass.swift */; };
@@ -130,6 +131,7 @@
 		478F573F2909C88000D6A7CB /* CDAlbum+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CDAlbum+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		478F57422909C99400D6A7CB /* CDPlaylistItem+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CDPlaylistItem+CoreDataClass.swift"; sourceTree = "<group>"; };
 		478F57432909C99400D6A7CB /* CDPlaylistItem+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CDPlaylistItem+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		478F5746290AE39300D6A7CB /* SpotlightSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotlightSettingsView.swift; sourceTree = "<group>"; };
 		4795210C25744AA6000A5B82 /* MiscellaneousUtilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MiscellaneousUtilities.swift; sourceTree = "<group>"; };
 		47993D2728FE688400D3D73F /* QueueImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QueueImage.swift; sourceTree = "<group>"; };
 		47A89EC82908EBDD007C0BA7 /* CDPlaylist+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CDPlaylist+CoreDataClass.swift"; sourceTree = "<group>"; };
@@ -242,8 +244,9 @@
 			isa = PBXGroup;
 			children = (
 				472A742925859431008998C5 /* SettingsView.swift */,
-				4789A5B625885F0800A5E1E3 /* KeyboardShortcutsView.swift */,
 				4789A5B325885ECC00A5E1E3 /* GeneralSettingsView.swift */,
+				4789A5B625885F0800A5E1E3 /* KeyboardShortcutsView.swift */,
+				478F5746290AE39300D6A7CB /* SpotlightSettingsView.swift */,
 			);
 			path = "Settings Views";
 			sourceTree = "<group>";
@@ -509,6 +512,7 @@
 				47D8CF83256664C60034FA1E /* PlayerManager.swift in Sources */,
 				474C7C922570F713004A3DB5 /* AvailableDevicesButton.swift in Sources */,
 				478F57412909C88000D6A7CB /* CDAlbum+CoreDataProperties.swift in Sources */,
+				478F5747290AE39300D6A7CB /* SpotlightSettingsView.swift in Sources */,
 				470315232583EED900B2BDF2 /* FocusView.swift in Sources */,
 				47A89ED12908EBDD007C0BA7 /* CDPlaylist+CoreDataProperties.swift in Sources */,
 				47B3CF3E28F74F4500D93B80 /* QueueView.swift in Sources */,

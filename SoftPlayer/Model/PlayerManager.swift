@@ -326,6 +326,13 @@ class PlayerManager: ObservableObject {
     private var isUpdatingCurrentlyPlayingContext = false
     private var didUpdateCurrentlyPlayingContext = PassthroughSubject<Void, Never>()
     
+    // MARK: - Spotlight and Core Data -
+    
+    let retrievePlaylistsAndAlbumsDispatchGroup = DispatchGroup()
+
+    /// The URIs of the items in all the playlists and albums
+    var playlistItemURIs: Set<String> = []
+    
     // MARK: - Cancellables -
     private var cancellables: Set<AnyCancellable> = []
     private var retrieveAvailableDevicesCancellable: AnyCancellable? = nil
@@ -427,8 +434,9 @@ class PlayerManager: ObservableObject {
             )
             if isAuthorized {
                 self.retrieveCurrentUser()
-                self.retrievePlaylists()
-                self.retrieveSavedAlbums()
+                // this method calls through to `retrievePlaylists` and
+                // `retrieveSavedAlbums`
+                self.indexSpotlight()
                 self.retrieveQueue()
                 self.updatePlayerState()
             }
@@ -1284,6 +1292,7 @@ class PlayerManager: ObservableObject {
         
         self.isLoadingSavedAlbums = true
         
+        self.retrievePlaylistsAndAlbumsDispatchGroup.enter()
         self.retrieveSavedAlbumsCancellable = spotify.api
             .currentUserSavedAlbums(limit: 50)
             .extendPagesConcurrently(spotify.api)
@@ -1292,6 +1301,7 @@ class PlayerManager: ObservableObject {
             .handleAuthenticationError(spotify: self.spotify)
             .sink(
                 receiveCompletion: { completion in
+                    self.retrievePlaylistsAndAlbumsDispatchGroup.leave()
                     self.isLoadingSavedAlbums = false
                     self.didRetrieveAlbums = true
                     if self.didRetrievePlaylists {
@@ -1333,7 +1343,6 @@ class PlayerManager: ObservableObject {
                     self.sortAlbumsByLastModifiedDate(&savedAlbums)
                     self.savedAlbums = savedAlbums
                     self.retrieveAlbumImages()
-                    self.updateCoreDataAndSpotlightAlbums()
 //                    for album in self.savedAlbums {
 //                        Loggers.playerManager.trace(
 //                            "\(album.name): \(album.uri ?? "nil")"
@@ -1547,7 +1556,8 @@ class PlayerManager: ObservableObject {
     func retrievePlaylists() {
         
         self.isLoadingPlaylists = true
-        
+
+        self.retrievePlaylistsAndAlbumsDispatchGroup.enter()
         self.retrievePlaylistsCancellable = self.spotify.api
             .currentUserPlaylists(limit: 50)
             .extendPagesConcurrently(self.spotify.api)
@@ -1556,6 +1566,7 @@ class PlayerManager: ObservableObject {
             .handleAuthenticationError(spotify: self.spotify)
             .sink(
                 receiveCompletion: { completion in
+                    self.retrievePlaylistsAndAlbumsDispatchGroup.leave()
                     self.isLoadingPlaylists = false
                     self.didRetrievePlaylists = true
                     if self.didRetrieveAlbums {
@@ -1609,7 +1620,6 @@ class PlayerManager: ObservableObject {
                     self.sortPlaylistsByLastModifiedDate(&playlists)
                     self.playlists = playlists
                     self.retrievePlaylistImages()
-                    self.updateCoreDataAndSpotlightPlaylists()
 //                    for playlist in self.playlists {
 //                        Loggers.playerManager.trace(
 //                            "\(playlist.name): \(playlist.uri)"
@@ -2951,6 +2961,60 @@ class PlayerManager: ObservableObject {
     
     // MARK: - Spotlight and Core Data -
     
+    func indexSpotlight() {
+
+        self.playlistItemURIs = []
+
+        self.retrievePlaylists()
+        self.retrieveSavedAlbums()
+        
+        // wait for the playlists and saved albums to be retrieved
+        self.retrievePlaylistsAndAlbumsDispatchGroup.notify(queue: .main) {
+            
+            Loggers.spotlight.trace(
+                "did retrieve playlists and saved albums"
+            )
+
+            if self.indexPlaylists {
+                self.updateCoreDataAndSpotlightPlaylists()
+            }
+            if self.indexAlbums {
+                self.updateCoreDataAndSpotlightAlbums()
+            }
+            
+            if self.indexPlaylistItems {
+                
+                self.updateCoreDataAndSpotlightPlaylistItems()
+                    .flatMap { () -> AnyPublisher<Void, Never> in
+                        if self.indexAlbumTracks {
+                            return self.updateCoreDataAndSpotlightAlbumTracks()
+                        }
+                        else {
+                            return Empty().eraseToAnyPublisher()
+                        }
+                    }
+                    .sink(receiveValue: {
+                        self.removeDeletedItemsFromSpotlightAndCoreData()
+                    })
+                    .store(in: &self.cancellables)
+                
+            }
+            else if self.indexAlbumTracks {
+                self.updateCoreDataAndSpotlightAlbumTracks()
+                    .sink(receiveValue: {
+                        self.removeDeletedItemsFromSpotlightAndCoreData()
+                    })
+                    .store(in: &self.cancellables)
+                
+            }
+            else {
+                self.removeDeletedItemsFromSpotlightAndCoreData()
+            }
+            
+        }
+        
+    }
+
     func continueUserActivity(_ userActivity: NSUserActivity) -> Bool {
         
         guard self.spotify.isAuthorized else {
@@ -3183,6 +3247,19 @@ class PlayerManager: ObservableObject {
             return nil
         }
     }
+    
+    func fetchPlaylistItems() -> [CDPlaylistItem]? {
+        do {
+            let fetchRequest = CDPlaylistItem.fetchRequest()
+            return try self.viewConext.fetch(fetchRequest)
+            
+        } catch {
+            Loggers.coreData.error(
+                "couldn't fetch all playlist items: \(error)"
+            )
+            return nil
+        }
+    }
 
     func updateCoreDataAndSpotlightPlaylists() {
         
@@ -3213,7 +3290,9 @@ class PlayerManager: ObservableObject {
                 
                 if let playlistsFolder = self.imageFolderURL(for: .playlist) {
                     if playlist.uri.isSavedTracksURI {
-                        // MARK: TODO: Generate image for saved tracks playlists
+                        if let imageData = SavedTracksImage().imageDataSnapshot() {
+                            attributeSet.thumbnailData = imageData
+                        }
                     }
                     else {
                         let imageURL = playlistsFolder.appendingPathComponent(
@@ -3251,9 +3330,11 @@ class PlayerManager: ObservableObject {
 
         var searchItemsToRemove: [String] = []
 
+        // remove playlists that the user deleted from their Spotify library
         for cdPlaylist in cdPlaylists {
             
             guard let cdPlaylistURI = cdPlaylist.uri else {
+                self.viewConext.delete(cdPlaylist)
                 continue
             }
             
@@ -3279,10 +3360,6 @@ class PlayerManager: ObservableObject {
         CSSearchableIndex.default().deleteSearchableItems(
             withIdentifiers: searchItemsToRemove
         )
-        
-        if self.indexPlaylistItems {
-            self.updateCoreDataAndSpotlightPlaylistItems()
-        }
             
     }
     
@@ -3355,9 +3432,11 @@ class PlayerManager: ObservableObject {
 
         var searchItemsToRemove: [String] = []
 
+        // remove albums that the user deleted from their Spotify library
         for cdAlbum in cdAlbums {
             
             guard let cdAlbumURI = cdAlbum.uri else {
+                self.viewConext.delete(cdAlbum)
                 continue
             }
             
@@ -3383,19 +3462,24 @@ class PlayerManager: ObservableObject {
         CSSearchableIndex.default().deleteSearchableItems(
             withIdentifiers: searchItemsToRemove
         )
-        
-        if self.indexAlbumTracks {
-            self.updateCoreDataAndSpotlightAlbumTracks()
-        }
 
     }
 
-    func updateCoreDataAndSpotlightPlaylistItems() {
+    /// Returns a publisher that completes when indexing is finished.
+    func updateCoreDataAndSpotlightPlaylistItems() -> AnyPublisher<Void, Never> {
         
         guard let cdPlaylists = self.fetchCDPlaylists() else {
-            return
+            return Empty()
+                .eraseToAnyPublisher()
         }
         
+        guard let cdPlaylistItems = self.fetchPlaylistItems() else {
+            return Empty()
+                .eraseToAnyPublisher()
+        }
+        
+        let dispatchGroup = DispatchGroup()
+
         for playlist in self.playlists {
 
             if playlist.uri.isSavedTracksURI {
@@ -3408,51 +3492,18 @@ class PlayerManager: ObservableObject {
                 continue
             }
                 
-            let cdPlaylistItems = cdPlaylist.itemsSet
-
             var csSearchableItems: [CSSearchableItem] = []
-            
-            var playlistItemURIs: Set<String> = []
 
-            var searchItemsToRemove: [String] = []
-
+            dispatchGroup.enter()
             self.spotify.api.playlistItems(playlist)
                 .extendPages(self.spotify.api)
                 .receive(on: RunLoop.main)
                 .sink(
                     receiveCompletion: { completion in
                         // MARK: TODO: check if indexing has been cancelled
-                        
-                        // remove deleted items from core data and spotlight
-                        for cdPlaylistItem in cdPlaylistItems {
-                            
-                            guard let cdPlaylistItemURI = cdPlaylistItem.uri else {
-                                continue
-                            }
-                            
-                            if !playlistItemURIs.contains(cdPlaylistItemURI) {
-                                Loggers.coreData.trace(
-                                    """
-                                    will remove playlist item \
-                                    '\(cdPlaylistItem.name ?? cdPlaylistItemURI)' \
-                                    from spotlight index and core data
-                                    """
-                                )
-                                searchItemsToRemove.append(cdPlaylistItemURI)
-                                self.viewConext.delete(cdPlaylistItem)
-                                
-                            }
-                            
-                        }
 
                         self.saveViewContext()
                         
-                        // remove playlist items that the user deleted from the
-                        // spotlight index
-                        CSSearchableIndex.default().deleteSearchableItems(
-                            withIdentifiers: searchItemsToRemove
-                        )
-
                         CSSearchableIndex.default().indexSearchableItems(
                             csSearchableItems
                         ) { error in
@@ -3473,6 +3524,8 @@ class PlayerManager: ObservableObject {
                                     """
                                 )
                             }
+                            dispatchGroup.leave()
+                            
                         }
 
                         switch completion {
@@ -3486,6 +3539,9 @@ class PlayerManager: ObservableObject {
                     },
                     receiveValue: { playlistItemsPage in
                         
+                        // MARK: TODO: don't continue indexing if user disabled
+                        // MARK: TODO: it
+
                         for playlistItem in playlistItemsPage.items.compactMap(\.item) {
                             
                             guard let playlistItemURI = playlistItem.uri else {
@@ -3497,8 +3553,8 @@ class PlayerManager: ObservableObject {
                                 continue
                             }
                             
-                            playlistItemURIs.insert(playlistItemURI)
-
+                            self.playlistItemURIs.insert(playlistItemURI)
+                            
                             let cdPlaylistItem = cdPlaylistItems.first(
                                 where: { $0.uri == playlistItemURI }
                             ) ?? CDPlaylistItem(context: self.viewConext)
@@ -3545,14 +3601,33 @@ class PlayerManager: ObservableObject {
                 .store(in: &self.indexPlaylistItemsCancellables)
             
         }
+        
+        return Future { promise in
+            dispatchGroup.notify(queue: .main) {
+                Loggers.coreData.trace(
+                    "--- did finish indexing playlist items ---"
+                )
+                promise(.success(()))
+            }
+        }
+        .eraseToAnyPublisher()
 
     }
 
-    func updateCoreDataAndSpotlightAlbumTracks() {
+    /// Returns a publisher that completes when indexing is finished.
+    func updateCoreDataAndSpotlightAlbumTracks() -> AnyPublisher<Void, Never> {
         
         guard let cdAlbums = self.fetchCDAlbums() else {
-            return
+            return Empty()
+                .eraseToAnyPublisher()
         }
+        
+        guard let cdPlaylistItems = self.fetchPlaylistItems() else {
+            return Empty()
+                .eraseToAnyPublisher()
+        }
+
+        let dispatchGroup = DispatchGroup()
 
         for album in self.savedAlbums {
             
@@ -3569,14 +3644,9 @@ class PlayerManager: ObservableObject {
                 continue
             }
             
-            let cdPlaylistItems = cdAlbum.itemsSet
-
             var csSearchableItems: [CSSearchableItem] = []
             
-            var playlistItemURIs: Set<String> = []
-
-            var searchItemsToRemove: [String] = []
-
+            dispatchGroup.enter()
             self.spotify.api.albumTracks(albumURI, limit: 50)
                 // reduce concurrent requests by not using
                 // `extendPagesConcurrently`
@@ -3585,29 +3655,6 @@ class PlayerManager: ObservableObject {
                 .sink(
                     receiveCompletion: { completion in
                         // MARK: TODO: check if indexing has been cancelled
-                        
-                        // remove deleted items from core data and spotlight
-                        for cdPlaylistItem in cdPlaylistItems {
-                            
-                            guard let cdPlaylistItemURI = cdPlaylistItem.uri else {
-                                continue
-                            }
-                            
-                            if !playlistItemURIs.contains(cdPlaylistItemURI) {
-                                Loggers.coreData.trace(
-                                    """
-                                    will remove playlist item \
-                                    '\(cdPlaylistItem.name ?? cdPlaylistItemURI)' \
-                                    from spotlight index and core data
-                                    """
-                                )
-                                searchItemsToRemove.append(cdPlaylistItemURI)
-                                self.viewConext.delete(cdPlaylistItem)
-                                
-                            }
-                            
-                        }
-
                         
                         self.saveViewContext()
                         
@@ -3631,6 +3678,7 @@ class PlayerManager: ObservableObject {
                                     """
                                 )
                             }
+                            dispatchGroup.leave()
                         }
                         switch completion {
                             case .finished:
@@ -3651,8 +3699,8 @@ class PlayerManager: ObservableObject {
                                 continue
                             }
                             
-                            playlistItemURIs.insert(trackURI)
-                            
+                            self.playlistItemURIs.insert(trackURI)
+
                             let cdPlaylistItem = cdPlaylistItems.first(
                                 where: { $0.uri == trackURI }
                             ) ?? CDPlaylistItem(context: self.viewConext)
@@ -3691,9 +3739,94 @@ class PlayerManager: ObservableObject {
                 .store(in: &self.indexAlbumTracksCancellables)
 
         }
+        
+        return Future { promise in
+            dispatchGroup.notify(queue: .main) {
+                Loggers.coreData.trace(
+                    "--- did finish indexing album tracks ---"
+                )
+                promise(.success(()))
+            }
+        }
+        .eraseToAnyPublisher()
 
     }
     
+    /// Remove the items that the user deleted from their Spotify library from
+    /// spotlight and core data.
+    func removeDeletedItemsFromSpotlightAndCoreData() {
+        
+        guard let cdPlaylistItems = self.fetchPlaylistItems() else {
+            return
+        }
+        
+        var searchItemsToRemove: [String] = []
+        
+        for cdPlaylistItem in cdPlaylistItems {
+            
+//            Loggers.coreData.trace(
+//                """
+//                name: '\(cdPlaylistItem.name ?? "nil")'; \
+//                uri: \(cdPlaylistItem.uri ?? "nil"); \
+//                album: '\(cdPlaylistItem.album?.name ?? "nil")'; \
+//                playlist: '\(cdPlaylistItem.playlist?.name ?? "nil")'
+//                """
+//            )
+            
+            guard let cdPlaylistItemURI = cdPlaylistItem.uri else {
+                self.viewConext.delete(cdPlaylistItem)
+                continue
+            }
+
+            if cdPlaylistItem.album == nil && cdPlaylistItem.playlist == nil {
+                Loggers.coreData.trace(
+                    """
+                    will delete '\(cdPlaylistItem.name ?? "nil")' because \
+                    album and playlist is nil
+                    """
+                )
+                searchItemsToRemove.append(cdPlaylistItemURI)
+                self.viewConext.delete(cdPlaylistItem)
+            }
+            
+            if !self.playlistItemURIs.contains(cdPlaylistItemURI) {
+                Loggers.coreData.trace(
+                    """
+                    will delete '\(cdPlaylistItem.name ?? "nil")' because \
+                    not contained in playlistItemURIs
+                    """
+                )
+                searchItemsToRemove.append(cdPlaylistItemURI)
+                self.viewConext.delete(cdPlaylistItem)
+            }
+            
+                
+        }
+        
+        CSSearchableIndex.default().deleteSearchableItems(
+            withIdentifiers: searchItemsToRemove
+        ) { error in
+            
+            if let error = error {
+                Loggers.spotlight.error(
+                    """
+                    couldn't remove deleted playlist items from spotlight \
+                    index: \(error)
+                    """
+                )
+            }
+            else {
+                Loggers.spotlight.trace(
+                    "removed deleted playlist items from spotlight index"
+                )
+            }
+
+        }
+
+        self.saveViewContext()
+
+    }
+
     func deleteSpotlightIndex() {
         
         CSSearchableIndex.default().deleteAllSearchableItems { error in
@@ -3774,6 +3907,8 @@ class PlayerManager: ObservableObject {
             }
         }
         
+        self.saveViewContext()
+
         Loggers.coreData.notice("deleted all core data objects")
 
     }
