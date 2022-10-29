@@ -2862,12 +2862,16 @@ class PlayerManager: ObservableObject {
                 Loggers.keyEvent.trace("increase sound volume")
                 let newSoundVolume = (self.soundVolume + 5)
                     .clamped(to: 0...100)
-                self.soundVolume = newSoundVolume
+                withAnimation {
+                    self.soundVolume = newSoundVolume
+                }
             case .volumeDown:
                 Loggers.keyEvent.trace("decrease sound volume")
                 let newSoundVolume = (self.soundVolume - 5)
                     .clamped(to: 0...100)
-                self.soundVolume = newSoundVolume
+                withAnimation {
+                    self.soundVolume = newSoundVolume
+                }
             case .showLibrary:
                 if self.isShowingLibraryView {
                     self.dismissLibraryView(animated: true)
