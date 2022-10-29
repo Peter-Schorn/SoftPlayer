@@ -19,6 +19,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     static let popoverHeight: CGFloat = 460
     
     var settingsWindow: NSWindow? = nil
+    var mainWindow: NSWindow? = nil
 
     var popover: NSPopover!
     var statusBarItem: NSStatusItem!
@@ -57,8 +58,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         
         // MARK: Root View
         let rootView = RootView()
-            .environmentObject(spotify)
-            .environmentObject(playerManager)
+            .environmentObject(self.spotify)
+            .environmentObject(self.playerManager)
             
         let popover = NSPopover()
         popover.contentSize = CGSize(
@@ -137,6 +138,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             )
         }
         
+        self.contextMenu.addItem(
+            withTitle: NSLocalizedString("Open in Window", comment: ""),
+            action: #selector(self.openInWindow),
+            keyEquivalent: ""
+        )
+
         self.contextMenu.addItem(
             withTitle: NSLocalizedString("Settings", comment: ""),
             action: #selector(self.openSettingsWindow),
@@ -218,14 +225,48 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             "AppDelegate.settingsWindow was nil"
         )
         
-        self.settingsWindow?.orderFrontRegardless()
-//        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-//            self.settingsWindow?.makeKey()
-//        }
-//        NSApplication.shared.activate(ignoringOtherApps: true)
-//        self.settingsWindow?.makeKey()
-        
+        NSApplication.shared.activate(ignoringOtherApps: true)
+        self.settingsWindow?.makeKeyAndOrderFront(nil)
 
+    }
+    
+    @objc func openInWindow() {
+        
+        self.closePopover()
+
+        if self.mainWindow == nil {
+            
+            let rootView = RootView()
+                .environmentObject(self.spotify)
+                .environmentObject(self.playerManager)
+            
+            self.mainWindow = NSWindow(
+                contentRect: CGRect(
+                    x: 0,
+                    y: 0,
+                    width: AppDelegate.popoverWidth,
+                    height: AppDelegate.popoverHeight
+                ),
+                styleMask: [
+                    .titled,
+                    .closable,
+                    .miniaturizable,
+                    .fullSizeContentView
+                ],
+                backing: .buffered,
+                defer: false
+            )
+            
+            self.mainWindow?.title = "Soft Player"
+            self.mainWindow?.setFrameAutosaveName("Soft Player")
+            self.mainWindow?.isReleasedWhenClosed = false
+            self.mainWindow?.center()
+            self.mainWindow?.contentView = NSHostingView(rootView: rootView)
+        }
+        
+        NSApplication.shared.activate(ignoringOtherApps: true)
+        self.mainWindow?.makeKeyAndOrderFront(nil)
+        
     }
     
     /// Global variables are lazily initialized, but this program relies on the
@@ -315,6 +356,25 @@ extension AppDelegate: NSPopoverDelegate {
 
     func popoverDidClose(_ notification: Notification) {
         self.playerManager.popoverDidClose.send()
+    }
+
+}
+
+// MARK: - Lifecyle -
+
+extension AppDelegate {
+    
+    func applicationWillBecomeActive(_ notification: Notification) {
+        print("applicationWillBecomeActive")
+    }
+    func applicationDidBecomeActive(_ notification: Notification) {
+        print("applicationDidBecomeActive")
+    }
+    func applicationWillResignActive(_ notification: Notification) {
+        print("applicationWillResignActive")
+    }
+    func applicationDidResignActive(_ notification: Notification) {
+        print("applicationDidResignActive")
     }
 
 }

@@ -104,12 +104,12 @@ enum Loggers {
     
     static let spotlight = Logger(
         label: "Spotlight",
-        level: .trace
+        level: .warning
     )
     
     static let coreData = Logger(
         label: "CoreData",
-        level: .trace
+        level: .warning
     )
 
 }
