@@ -9,7 +9,7 @@ struct BubblingHeartsView: View, Animatable {
         set { self.animationProgress = newValue }
     }
 
-    let sizeMultiplier: CGFloat = 0.3
+    let sizeMultiplier: CGFloat = 0.6
 
     var body: some View {
         GeometryReader { geometry in
@@ -100,8 +100,8 @@ struct BubblingHeartsView: View, Animatable {
         let centerXOffsetPercent = self.animationProgress
         let centerYOffsetPercent = pow(self.animationProgress, 2)
 
-        let centerXOffset = centerXOffsetPercent * (frame.width / 2)
-        let centerYOffset = centerYOffsetPercent * (frame.height / 2)
+        let centerXOffset = centerXOffsetPercent * frame.width
+        let centerYOffset = centerYOffsetPercent * frame.height
 
         return CGPoint(
             x: frame.midX - centerXOffset,
@@ -116,8 +116,8 @@ struct BubblingHeartsView: View, Animatable {
         let centerXOffsetPercent = 0.7 * progress
         let centerYOffsetPercent = pow(progress, 2)
 
-        let centerXOffset = centerXOffsetPercent * (frame.width / 2)
-        let centerYOffset = centerYOffsetPercent * (frame.height / 2)
+        let centerXOffset = centerXOffsetPercent * frame.width
+        let centerYOffset = centerYOffsetPercent * frame.height
 
         return CGPoint(
             x: frame.midX + centerXOffset,
@@ -132,8 +132,8 @@ struct BubblingHeartsView: View, Animatable {
         let centerXOffsetPercent = 0.5 * progress / 2
         let centerYOffsetPercent = 4 * pow(progress / 2, 2)
 
-        let centerXOffset = centerXOffsetPercent * (frame.width / 2)
-        let centerYOffset = centerYOffsetPercent * (frame.height / 2)
+        let centerXOffset = centerXOffsetPercent * frame.width
+        let centerYOffset = centerYOffsetPercent * frame.height
 
         return CGPoint(
             x: frame.midX - centerXOffset,
@@ -148,8 +148,8 @@ struct BubblingHeartsView: View, Animatable {
         let centerXOffsetPercent = progress / 2
         let centerYOffsetPercent = 4 * pow(progress / 2, 2)
 
-        let centerXOffset = centerXOffsetPercent * (frame.width / 2)
-        let centerYOffset = centerYOffsetPercent * (frame.height / 2)
+        let centerXOffset = centerXOffsetPercent * frame.width
+        let centerYOffset = centerYOffsetPercent * frame.height
 
         return CGPoint(
             x: frame.midX + centerXOffset,

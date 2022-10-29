@@ -7,9 +7,9 @@ struct HeartButton: View {
     let action: () -> Void
     
     @State var unlikeAnimationProgress: CGFloat = 1
-    let unlikeAnimation = Animation.linear(duration: 0.4)
+    let unlikeAnimation = Animation.linear(duration: 0.5)
 
-    let likeAnimation = Animation.easeOut(duration: 0.7)
+    let likeAnimation = Animation.easeOut(duration: 1)
     @State var likeAnimationProgress: CGFloat = 1
 
     let scaleAnimation = Animation.easeOut(duration: 0.2)
@@ -28,7 +28,7 @@ struct HeartButton: View {
             let frame = geometry.frame(in: .local)
             HeartShape()
                 .inset(by: frame.width * 0.1)
-                .scale(isScaled ? 0.9 : 1)
+                .scale(isScaled ? 0.8 : 1)
                 .style(
                     fill: fillShape ? .green : .clear,
                     stroke: fillShape ? .clear : .primary,
@@ -72,13 +72,13 @@ struct HeartButton: View {
         .aspectRatio(1, contentMode: .fit)
 //        .border(Color.primary)
         .onAppear(perform: onAppear)
-        .onChange(of: isHearted) { isLiked in
-            self.fillShape = isLiked
+        .onChange(of: isHearted) { isHearted in
+            self.fillShape = isHearted
         }
     }
     
     func circleLineWidth(_ geometry: GeometryProxy) -> CGFloat {
-        let base = geometry.size.width * 0.05
+        let base = geometry.size.width * 0.1
         return base * (1 - self.likeAnimationProgress)
     }
 
@@ -87,7 +87,7 @@ struct HeartButton: View {
     }
     
     func circleScale() -> CGFloat {
-        return 0.5 + self.likeAnimationProgress * 0.5
+        return 0.5 + self.likeAnimationProgress
     }
     
     func circleOpacity() -> CGFloat {
