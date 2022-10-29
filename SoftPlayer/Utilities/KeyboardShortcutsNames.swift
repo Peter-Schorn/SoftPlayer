@@ -5,6 +5,10 @@ extension KeyboardShortcuts.Name {
     static let openApp = Self(
         "openApp", isGlobal: true
     )
+    static let openInWindow = Self(
+        "openInWindow",
+        default: .init(.o, modifiers: [.command])
+    )
     static let showLibrary = Self(
         "showLibrary",
         default: .init(.l, modifiers: [.command])

@@ -14,6 +14,10 @@ struct KeyboardShortcutsView: View {
                     label: Text("Open App (global)")
                 )
                 shortcutView(
+                    for: .openInWindow,
+                    label: Text("Open in WIndow")
+                )
+                shortcutView(
                     for: .showLibrary,
                     label: Text("Show Library")
                 )
@@ -45,12 +49,12 @@ struct KeyboardShortcutsView: View {
                     for: .volumeDown,
                     label: Text("Volume down")
                 )
+            }
+            Group {
                 shortcutView(
                     for: .volumeUp,
                     label: Text("Volume Up")
                 )
-            }
-            Group {
                 shortcutView(
                     for: .onlyShowMyPlaylists,
                        label: Text("Toggle only show my playlists")
@@ -117,7 +121,7 @@ struct KeyboardShortcutsView_Previews: PreviewProvider {
             
         }
         .padding()
-        .frame(width: 450, height: 550)
+        .frame(width: 450, height: 600)
     }
 
 }

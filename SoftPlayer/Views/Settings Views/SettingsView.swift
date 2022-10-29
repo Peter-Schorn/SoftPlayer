@@ -34,7 +34,7 @@ struct SettingsView: View {
         .padding(20)
         .frame(
             width:  450,
-            height: selectedTab == .keyboardShortcuts ? 550 : 300
+            height: selectedTab == .keyboardShortcuts ? 600 : 300
         )
         .background(
             KeyEventHandler(name: "SettingsView") { event in

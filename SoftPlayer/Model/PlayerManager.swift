@@ -2909,6 +2909,8 @@ class PlayerManager: ObservableObject {
                 else {
                     return false
                 }
+            case .openInWindow:
+                AppDelegate.shared.openInWindow()
             default:
                 return false
         }

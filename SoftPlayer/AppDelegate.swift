@@ -143,6 +143,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             action: #selector(self.openInWindow),
             keyEquivalent: ""
         )
+        .setShortcut(for: .openInWindow)
 
         self.contextMenu.addItem(
             withTitle: NSLocalizedString("Settings", comment: ""),
@@ -275,6 +276,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         typealias Name = KeyboardShortcuts.Name
         var sink = ""
         print(Name.openApp, to: &sink)
+        print(Name.openInWindow, to: &sink)
         print(Name.showLibrary, to: &sink)
         print(Name.previousTrack, to: &sink)
         print(Name.playPause, to: &sink)
