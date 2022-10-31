@@ -258,3 +258,12 @@ enum AlertType {
     case notification
     case appModalDialog
 }
+
+extension FloatingPoint {
+    
+    mutating func add(_ value: Self, clampingTo clamp: Self) {
+        let newValue = self + value
+        self = min(newValue, clamp)
+    }
+
+}

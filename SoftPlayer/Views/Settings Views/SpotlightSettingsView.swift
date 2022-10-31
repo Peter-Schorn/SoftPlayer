@@ -86,15 +86,19 @@ struct SpotlightSettingsView: View {
                 }
             }
             .padding(.vertical, 5)
-            .padding(.trailing, 35)
-            .versionedOverlay(alignment: .trailing) {
-                if playerManager.isIndexingSpotlight {
-                    ProgressView()
-                        .scaleEffect(0.5)
-                }
-            }
 //            .border(Color.green)
             
+            HStack {
+                if playerManager.isIndexingSpotlight {
+                    ProgressView(
+                        "\(playerManager.spotlightIndexingProgress)",
+                        value: playerManager.spotlightIndexingProgress
+                    )
+                }
+            }
+            .frame(width: 250, height: 40)
+//            .border(Color.green)
+
         }
         .padding(20)
         .onAppear(perform: onAppear)

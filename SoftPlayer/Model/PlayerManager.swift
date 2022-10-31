@@ -328,11 +328,20 @@ class PlayerManager: ObservableObject {
     
     // MARK: - Spotlight and Core Data -
 
+    @Published var spotlightIndexingProgress: Double = 0 {
+        didSet {
+            Loggers.spotlight.trace(
+                "spotlightIndexingProgress: \(spotlightIndexingProgress)"
+            )
+        }
+    }
+
     @Published var isIndexingSpotlight = false {
         didSet {
             if !self.isIndexingSpotlight {
                 self.indexAlbumTracksCancellables = []
                 self.indexPlaylistItemsCancellables = []
+                self.spotlightIndexingProgress = 0
             }
         }
     }
@@ -1330,8 +1339,21 @@ class PlayerManager: ObservableObject {
         self.retrieveSavedAlbumsCancellable = spotify.api
             .currentUserSavedAlbums(limit: 50)
             .extendPagesConcurrently(spotify.api)
-            .collectAndSortByOffset()
             .receive(on: RunLoop.main)
+            .handleEvents(receiveOutput: { albumsPage in
+                if useDispatchGroup {
+                    Loggers.spotlight.trace(
+                        "saved albums page \(albumsPage.estimatedIndex)"
+                    )
+                    let progressIcrement = (
+                        1 / Double(albumsPage.estimatedTotalPages)
+                    ) * 0.1
+                    self.spotlightIndexingProgress.add(
+                        progressIcrement, clampingTo: 1
+                    )
+                }
+            })
+            .collectAndSortByOffset()
             .handleAuthenticationError(spotify: self.spotify)
             .sink(
                 receiveCompletion: { completion in
@@ -1600,8 +1622,21 @@ class PlayerManager: ObservableObject {
         self.retrievePlaylistsCancellable = self.spotify.api
             .currentUserPlaylists(limit: 50)
             .extendPagesConcurrently(self.spotify.api)
-            .collectAndSortByOffset()
             .receive(on: RunLoop.main)
+            .handleEvents(receiveOutput: { playlistsPage in
+                if useDispatchGroup {
+                    Loggers.spotlight.trace(
+                        "playlists page \(playlistsPage.estimatedIndex)"
+                    )
+                    let progressIcrement = (
+                        1 / Double(playlistsPage.estimatedTotalPages)
+                    ) * 0.1
+                    self.spotlightIndexingProgress.add(
+                        progressIcrement, clampingTo: 1
+                    )
+                }
+            })
+            .collectAndSortByOffset()
             .handleAuthenticationError(spotify: self.spotify)
             .sink(
                 receiveCompletion: { completion in
@@ -3034,6 +3069,7 @@ class PlayerManager: ObservableObject {
 
         self.lastTimeIndexedSpotlight = Date()
         
+        self.spotlightIndexingProgress = 0
         self.isIndexingSpotlight = true
         self.playlistItemURIs = []
 
@@ -3616,7 +3652,15 @@ class PlayerManager: ObservableObject {
                     }
                 },
                 receiveValue: { tracksPage in
-                    
+
+                    let progressIncrement = ((
+                        1 / Double(tracksPage.estimatedTotalPages)
+                    ) / Double(self.playlists.count)) * 0.4
+
+                    self.spotlightIndexingProgress.add(
+                        progressIncrement, clampingTo: 1
+                    )
+
                     for track in tracksPage.items.map(\.item) {
                         
                         guard let trackURI = track.uri, !track.isLocal else {
@@ -3728,6 +3772,14 @@ class PlayerManager: ObservableObject {
                     },
                     receiveValue: { playlistItemsPage in
                         
+                        let progressIncrement = ((
+                            1 / Double(playlistItemsPage.estimatedTotalPages)
+                        ) / Double(self.playlists.count)) * 0.4
+
+                        self.spotlightIndexingProgress.add(
+                            progressIncrement, clampingTo: 1
+                        )
+
                         for playlistItem in playlistItemsPage.items.compactMap(\.item) {
                             
                             guard let playlistItemURI = playlistItem.uri else {
@@ -3876,6 +3928,14 @@ class PlayerManager: ObservableObject {
                     },
                     receiveValue: { tracksPage in
                         
+                        let progressIncrement = ((
+                            1 / Double(tracksPage.estimatedTotalPages)
+                        ) / Double(self.savedAlbums.count)) * 0.4
+
+                        self.spotlightIndexingProgress.add(
+                            progressIncrement, clampingTo: 1
+                        )
+
                         for track in tracksPage.items {
                             
                             guard let trackURI = track.uri, !track.isLocal else {
