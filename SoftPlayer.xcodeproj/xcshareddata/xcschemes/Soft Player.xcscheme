@@ -82,6 +82,16 @@
             value = "1"
             isEnabled = "NO">
          </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "TOKENS_URL"
+            value = "http://127.0.0.1:7000/authorization-code-flow-pkce/retrieve-tokens"
+            isEnabled = "NO">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "TOKENS_REFRESH_URL"
+            value = "http://127.0.0.1:7000/authorization-code-flow-pkce/refresh-tokens"
+            isEnabled = "NO">
+         </EnvironmentVariable>
       </EnvironmentVariables>
    </LaunchAction>
    <ProfileAction

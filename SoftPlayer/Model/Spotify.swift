@@ -133,7 +133,9 @@ final class Spotify: ObservableObject {
             backend: AuthorizationCodeFlowPKCEProxyBackend(
                 clientId: Spotify.clientId,
                 tokensURL: Spotify.tokensURL,
-                tokenRefreshURL: Spotify.tokensRefreshURL
+                tokenRefreshURL: Spotify.tokensRefreshURL,
+                decodeServerError: VaporServerError
+                    .decodeFromNetworkResponse(data:response:)
             )
         )
     )
@@ -195,7 +197,8 @@ final class Spotify: ObservableObject {
                     "found authorization information in keychain"
                 )
                 
-                // update client id, tokens URL, and token refresh URL
+                // update client id, tokens URL, token refresh URL, and
+                // `decodeServerError`
                 authorizationManager.backend = self.api.authorizationManager.backend
 
                 /*

@@ -388,3 +388,47 @@ extension SpotifyUser {
     )
 
 }
+
+public struct VaporServerError: LocalizedError, Codable {
+    
+    /// Always set to `true` to indicate that the JSON payload represents an
+    /// error response.
+    public let error: Bool
+
+    /// The reason for the error.
+    public let reason: String
+    
+    
+    public var errorDescription: String? {
+        self.reason
+    }
+
+}
+
+extension VaporServerError: CustomStringConvertible {
+    
+    public var description: String {
+        return """
+            \(Self.self)(reason: "\(self.reason)")
+            """
+    }
+    
+}
+
+extension VaporServerError {
+    
+    public static func decodeFromNetworkResponse(
+        data: Data, response: HTTPURLResponse
+    ) -> Error? {
+        
+        guard (400..<600).contains(response.statusCode) else {
+            return nil
+        }
+        
+        return try? JSONDecoder().decode(
+            Self.self, from: data
+        )
+        
+    }
+    
+}
