@@ -14,6 +14,11 @@ enum Loggers {
     
     static let appDelegate = Logger(
         label: "AppDelegate",
+        level: .trace
+    )
+    
+    static let lifeCycle = Logger(
+        label: "LifeCycle",
         level: .warning
     )
     

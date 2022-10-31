@@ -171,12 +171,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     func application(_ application: NSApplication, open urls: [URL]) {
         
         guard let url = urls.first else {
-            Loggers.appDelegate.trace("application open urls: urls was empty")
+            Loggers.appDelegate.error("application open urls: urls was empty")
             return
         }
         
         guard url.scheme == spotify.loginCallbackURL.scheme else {
-            Loggers.appDelegate.trace("unsupported URL: \(url)")
+            Loggers.appDelegate.error("unsupported URL: \(url)")
             return
         }
         
@@ -367,16 +367,16 @@ extension AppDelegate: NSPopoverDelegate {
 extension AppDelegate {
     
     func applicationWillBecomeActive(_ notification: Notification) {
-        print("applicationWillBecomeActive")
+        Loggers.lifeCycle.trace("applicationWillBecomeActive")
     }
     func applicationDidBecomeActive(_ notification: Notification) {
-        print("applicationDidBecomeActive")
+        Loggers.lifeCycle.trace("applicationDidBecomeActive")
     }
     func applicationWillResignActive(_ notification: Notification) {
-        print("applicationWillResignActive")
+        Loggers.lifeCycle.trace("applicationWillResignActive")
     }
     func applicationDidResignActive(_ notification: Notification) {
-        print("applicationDidResignActive")
+        Loggers.lifeCycle.trace("applicationDidResignActive")
     }
 
 }
