@@ -70,12 +70,19 @@ struct SpotlightSettingsView: View {
             Spacer()
             
             HStack {
-                Button(action: reIndexSpotlight, label: {
-                    Text("Re-index Spotlight")
-                })
-                .disabled(indexSpotlightButtonIsDisabled)
-                .if(!playerManager.spotify.isAuthorized) { view in
-                    view.help(mustLoginText)
+                if playerManager.isIndexingSpotlight {
+                    Button(action: cancelIndexingSpotlight, label: {
+                        Text("Cancel Indexing Spotlight")
+                    })
+                }
+                else {
+                    Button(action: reIndexSpotlight, label: {
+                        Text("Re-index Spotlight")
+                    })
+                    .disabled(indexSpotlightButtonIsDisabled)
+                    .if(!playerManager.spotify.isAuthorized) { view in
+                        view.help(mustLoginText)
+                    }
                 }
             }
             .padding(.vertical, 5)
@@ -87,7 +94,6 @@ struct SpotlightSettingsView: View {
                 }
             }
 //            .border(Color.green)
-            
             
         }
         .padding(20)
@@ -122,6 +128,10 @@ struct SpotlightSettingsView: View {
         self.playerManager.deleteSpotlightIndex()
         self.playerManager.indexSpotlight()
         
+    }
+    
+    func cancelIndexingSpotlight() {
+        self.playerManager.isIndexingSpotlight = false
     }
     
 }

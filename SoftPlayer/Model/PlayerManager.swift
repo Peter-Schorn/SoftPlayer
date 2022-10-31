@@ -328,12 +328,19 @@ class PlayerManager: ObservableObject {
     
     // MARK: - Spotlight and Core Data -
 
-    @Published var isIndexingSpotlight = false
+    @Published var isIndexingSpotlight = false {
+        didSet {
+            if !self.isIndexingSpotlight {
+                self.indexAlbumTracksCancellables = []
+                self.indexPlaylistItemsCancellables = []
+            }
+        }
+    }
     
     /// The last time the spotlight data was indexed.
     var lastTimeIndexedSpotlight: Date? = nil
 
-    let retrievePlaylistsAndAlbumsDispatchGroup = DispatchGroup()
+    var retrievePlaylistsAndAlbumsDispatchGroup = DispatchGroup()
 
     /// The URIs of the items in all the playlists and albums.
     var playlistItemURIs: Set<String> = []
@@ -1313,11 +1320,13 @@ class PlayerManager: ObservableObject {
     
     // MARK: - Albums -
     
-    func retrieveSavedAlbums() {
+    func retrieveSavedAlbums(useDispatchGroup: Bool = false) {
         
         self.isLoadingSavedAlbums = true
         
-        self.retrievePlaylistsAndAlbumsDispatchGroup.enter()
+        if useDispatchGroup {
+            self.retrievePlaylistsAndAlbumsDispatchGroup.enter()
+        }
         self.retrieveSavedAlbumsCancellable = spotify.api
             .currentUserSavedAlbums(limit: 50)
             .extendPagesConcurrently(spotify.api)
@@ -1326,7 +1335,10 @@ class PlayerManager: ObservableObject {
             .handleAuthenticationError(spotify: self.spotify)
             .sink(
                 receiveCompletion: { completion in
-                    self.retrievePlaylistsAndAlbumsDispatchGroup.leave()
+                    Loggers.spotlight.trace("did retrieve saved albums")
+                    if useDispatchGroup {
+                        self.retrievePlaylistsAndAlbumsDispatchGroup.leave()
+                    }
                     self.isLoadingSavedAlbums = false
                     self.didRetrieveAlbums = true
                     if self.didRetrievePlaylists {
@@ -1578,11 +1590,13 @@ class PlayerManager: ObservableObject {
     }
     
     /// Retrieve the current user's playlists.
-    func retrievePlaylists() {
+    func retrievePlaylists(useDispatchGroup: Bool = false) {
         
         self.isLoadingPlaylists = true
 
-        self.retrievePlaylistsAndAlbumsDispatchGroup.enter()
+        if useDispatchGroup {
+            self.retrievePlaylistsAndAlbumsDispatchGroup.enter()
+        }
         self.retrievePlaylistsCancellable = self.spotify.api
             .currentUserPlaylists(limit: 50)
             .extendPagesConcurrently(self.spotify.api)
@@ -1591,7 +1605,10 @@ class PlayerManager: ObservableObject {
             .handleAuthenticationError(spotify: self.spotify)
             .sink(
                 receiveCompletion: { completion in
-                    self.retrievePlaylistsAndAlbumsDispatchGroup.leave()
+                    Loggers.spotlight.trace("did retrieve playlists")
+                    if useDispatchGroup {
+                        self.retrievePlaylistsAndAlbumsDispatchGroup.leave()
+                    }
                     self.isLoadingPlaylists = false
                     self.didRetrievePlaylists = true
                     if self.didRetrieveAlbums {
@@ -3013,9 +3030,12 @@ class PlayerManager: ObservableObject {
 
     func indexSpotlight() {
         
+        Loggers.spotlight.trace("indexing spotlight")
+
         self.lastTimeIndexedSpotlight = Date()
         
         self.isIndexingSpotlight = true
+        self.playlistItemURIs = []
 
         if !self.indexPlaylists {
             self.removePlaylistsFromSpotlight()
@@ -3030,10 +3050,11 @@ class PlayerManager: ObservableObject {
             self.removeAlbumTracksFromSpotlight()
         }
         
-        self.playlistItemURIs = []
 
-        self.retrievePlaylists()
-        self.retrieveSavedAlbums()
+        self.retrievePlaylistsAndAlbumsDispatchGroup = DispatchGroup()
+
+        self.retrievePlaylists(useDispatchGroup: true)
+        self.retrieveSavedAlbums(useDispatchGroup: true)
         
         // wait for the playlists and saved albums to be retrieved
         self.retrievePlaylistsAndAlbumsDispatchGroup.notify(queue: .main) {
@@ -3041,6 +3062,10 @@ class PlayerManager: ObservableObject {
             Loggers.spotlight.trace(
                 "did retrieve playlists and saved albums"
             )
+
+            guard self.isIndexingSpotlight else {
+                return
+            }
 
             self.updateCoreDataAndSpotlightPlaylists()
             self.updateCoreDataAndSpotlightAlbums()
@@ -3053,10 +3078,10 @@ class PlayerManager: ObservableObject {
                             return self.updateCoreDataAndSpotlightAlbumTracks()
                         }
                         else {
-                            return Empty().eraseToAnyPublisher()
+                            return Just(()).eraseToAnyPublisher()
                         }
                     }
-                    .sink(receiveCompletion: { _ in
+                    .sink(receiveValue: { _ in
                         self.removeDeletedItemsFromSpotlightAndCoreData()
                     })
                     .store(in: &self.cancellables)
@@ -3064,7 +3089,7 @@ class PlayerManager: ObservableObject {
             }
             else if self.indexAlbumTracks {
                 self.updateCoreDataAndSpotlightAlbumTracks()
-                    .sink(receiveCompletion: { _ in
+                    .sink(receiveValue: { _ in
                         self.removeDeletedItemsFromSpotlightAndCoreData()
                     })
                     .store(in: &self.cancellables)
@@ -3533,15 +3558,20 @@ class PlayerManager: ObservableObject {
     /// Returns a publisher that completes when indexing is finished.
     func updateCoreDataAndSpotlightPlaylistItems() -> AnyPublisher<Void, Never> {
         
+        guard self.isIndexingSpotlight else {
+            return Just(())
+                .eraseToAnyPublisher()
+        }
+
         guard let cdPlaylists = self.fetchCDPlaylists() else {
             self.isIndexingSpotlight = false
-            return Empty()
+            return Just(())
                 .eraseToAnyPublisher()
         }
         
         guard let cdPlaylistItems = self.fetchCDPlaylistItems() else {
             self.isIndexingSpotlight = false
-            return Empty()
+            return Just(())
                 .eraseToAnyPublisher()
         }
         
@@ -3559,8 +3589,6 @@ class PlayerManager: ObservableObject {
             .receive(on: RunLoop.main)
             .sink(
                 receiveCompletion: { completion in
-                    
-                    self.saveViewContext()
                     
                     CSSearchableIndex.default().indexSearchableItems(
                         savedTracksCSSearchableItems
@@ -3632,6 +3660,8 @@ class PlayerManager: ObservableObject {
                         savedTracksCSSearchableItems.append(csSearchableItem)
 
                     }
+                    
+                    self.saveViewContext()
 
                 }
             )
@@ -3775,13 +3805,13 @@ class PlayerManager: ObservableObject {
         
         guard let cdAlbums = self.fetchCDAlbums() else {
             self.isIndexingSpotlight = false
-            return Empty()
+            return Just(())
                 .eraseToAnyPublisher()
         }
         
         guard let cdPlaylistItems = self.fetchCDPlaylistItems() else {
             self.isIndexingSpotlight = false
-            return Empty()
+            return Just(())
                 .eraseToAnyPublisher()
         }
 
@@ -3813,8 +3843,6 @@ class PlayerManager: ObservableObject {
                 .sink(
                     receiveCompletion: { completion in
 
-                        self.saveViewContext()
-                        
                         CSSearchableIndex.default().indexSearchableItems(
                             csSearchableItems
                         ) { error in
@@ -3888,6 +3916,8 @@ class PlayerManager: ObservableObject {
                             csSearchableItems.append(csSearchableItem)
                             
                         }
+                        
+                        self.saveViewContext()
 
                     }
                 )
@@ -4123,6 +4153,8 @@ class PlayerManager: ObservableObject {
         }
 
         self.saveViewContext()
+
+        Loggers.spotlight.trace("finished indexing spotlight")
 
         self.isIndexingSpotlight = false
 
