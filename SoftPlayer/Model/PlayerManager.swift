@@ -341,6 +341,7 @@ class PlayerManager: ObservableObject {
             if !self.isIndexingSpotlight {
                 self.indexAlbumTracksCancellables = []
                 self.indexPlaylistItemsCancellables = []
+                self.retrievePlaylistsAndAlbumsCancellable = nil
                 self.spotlightIndexingProgress = 0
             }
         }
@@ -348,8 +349,6 @@ class PlayerManager: ObservableObject {
     
     /// The last time the spotlight data was indexed.
     var lastTimeIndexedSpotlight: Date? = nil
-
-    var retrievePlaylistsAndAlbumsDispatchGroup = DispatchGroup()
 
     /// The URIs of the items in all the playlists and albums.
     var playlistItemURIs: Set<String> = []
@@ -375,7 +374,8 @@ class PlayerManager: ObservableObject {
     private var retrieveQueueCancellable: AnyCancellable? = nil
     private var indexAlbumTracksCancellables: Set<AnyCancellable> = []
     private var indexPlaylistItemsCancellables: Set<AnyCancellable> = []
-    
+    private var retrievePlaylistsAndAlbumsCancellable: AnyCancellable? = nil
+
     init(
         spotify: Spotify,
         viewContext: NSManagedObjectContext
@@ -395,7 +395,6 @@ class PlayerManager: ObservableObject {
         self.checkIfNotAuthorizedForNewScopes()
         self.checkIfSpotifyIsInstalled()
         self.observeColorScheme()
-        
         self.playerStateDidChangeCancellable = self.playerStateDidChange
             .receive(on: RunLoop.main)
             .sink(receiveValue: self.receivePlayerStateDidChange(notification:))
@@ -1329,19 +1328,22 @@ class PlayerManager: ObservableObject {
     
     // MARK: - Albums -
     
-    func retrieveSavedAlbums(useDispatchGroup: Bool = false) {
+    @discardableResult
+    func retrieveSavedAlbums(
+        forSpotlight: Bool = false
+    ) -> AnyPublisher<Void, Never> {
         
         self.isLoadingSavedAlbums = true
         
-        if useDispatchGroup {
-            self.retrievePlaylistsAndAlbumsDispatchGroup.enter()
-        }
+        let dispatchGroup = DispatchGroup()
+
+        dispatchGroup.enter()
         self.retrieveSavedAlbumsCancellable = spotify.api
             .currentUserSavedAlbums(limit: 50)
             .extendPagesConcurrently(spotify.api)
             .receive(on: RunLoop.main)
             .handleEvents(receiveOutput: { albumsPage in
-                if useDispatchGroup {
+                if forSpotlight {
                     Loggers.spotlight.trace(
                         "saved albums page \(albumsPage.estimatedIndex)"
                     )
@@ -1357,10 +1359,7 @@ class PlayerManager: ObservableObject {
             .handleAuthenticationError(spotify: self.spotify)
             .sink(
                 receiveCompletion: { completion in
-                    Loggers.spotlight.trace("did retrieve saved albums")
-                    if useDispatchGroup {
-                        self.retrievePlaylistsAndAlbumsDispatchGroup.leave()
-                    }
+                    dispatchGroup.leave()
                     self.isLoadingSavedAlbums = false
                     self.didRetrieveAlbums = true
                     if self.didRetrievePlaylists {
@@ -1410,6 +1409,14 @@ class PlayerManager: ObservableObject {
 
                 }
             )
+        
+        return Future { promise in
+            dispatchGroup.notify(queue: .main) {
+                Loggers.spotlight.trace("did retrieve saved albums")
+                promise(.success(()))
+            }
+        }
+        .eraseToAnyPublisher()
         
     }
     
@@ -1612,19 +1619,22 @@ class PlayerManager: ObservableObject {
     }
     
     /// Retrieve the current user's playlists.
-    func retrievePlaylists(useDispatchGroup: Bool = false) {
+    @discardableResult
+    func retrievePlaylists(
+        forSpotlight: Bool = false
+    ) -> AnyPublisher<Void, Never> {
         
         self.isLoadingPlaylists = true
 
-        if useDispatchGroup {
-            self.retrievePlaylistsAndAlbumsDispatchGroup.enter()
-        }
+        let dispatchGroup = DispatchGroup()
+
+        dispatchGroup.enter()
         self.retrievePlaylistsCancellable = self.spotify.api
             .currentUserPlaylists(limit: 50)
             .extendPagesConcurrently(self.spotify.api)
             .receive(on: RunLoop.main)
             .handleEvents(receiveOutput: { playlistsPage in
-                if useDispatchGroup {
+                if forSpotlight {
                     Loggers.spotlight.trace(
                         "playlists page \(playlistsPage.estimatedIndex)"
                     )
@@ -1640,10 +1650,7 @@ class PlayerManager: ObservableObject {
             .handleAuthenticationError(spotify: self.spotify)
             .sink(
                 receiveCompletion: { completion in
-                    Loggers.spotlight.trace("did retrieve playlists")
-                    if useDispatchGroup {
-                        self.retrievePlaylistsAndAlbumsDispatchGroup.leave()
-                    }
+                    dispatchGroup.leave()
                     self.isLoadingPlaylists = false
                     self.didRetrievePlaylists = true
                     if self.didRetrieveAlbums {
@@ -1704,6 +1711,14 @@ class PlayerManager: ObservableObject {
 //                    }
                 }
             )
+        
+        return Future { promise in
+            dispatchGroup.notify(queue: .main) {
+                Loggers.spotlight.trace("did retrieve playlists")
+                promise(.success(()))
+            }
+        }
+        .eraseToAnyPublisher()
         
     }
     
@@ -3086,15 +3101,23 @@ class PlayerManager: ObservableObject {
             self.removeAlbumTracksFromSpotlight()
         }
         
-
-        self.retrievePlaylistsAndAlbumsDispatchGroup = DispatchGroup()
-
-        self.retrievePlaylists(useDispatchGroup: true)
-        self.retrieveSavedAlbums(useDispatchGroup: true)
+        let retrievePlaylistsPublisher = self.retrievePlaylists(
+            forSpotlight: true
+        )
+        let retrieveSavedAlbumsPublisher = self.retrieveSavedAlbums(
+            forSpotlight: true
+        )
         
-        // wait for the playlists and saved albums to be retrieved
-        self.retrievePlaylistsAndAlbumsDispatchGroup.notify(queue: .main) {
-            
+        let retrievePlaylistsAndAlbumsPublisher = Publishers.Zip(
+            retrievePlaylistsPublisher,
+            retrieveSavedAlbumsPublisher
+        )
+
+        self.retrievePlaylistsAndAlbumsCancellable =
+                retrievePlaylistsAndAlbumsPublisher.sink(receiveValue: { _ in
+                    
+            // wait for the playlists and saved albums to be retrieved
+                
             Loggers.spotlight.trace(
                 "did retrieve playlists and saved albums"
             )
@@ -3135,7 +3158,7 @@ class PlayerManager: ObservableObject {
                 self.removeDeletedItemsFromSpotlightAndCoreData()
             }
             
-        }
+        })
         
     }
 
@@ -3842,7 +3865,7 @@ class PlayerManager: ObservableObject {
         
         return Future { promise in
             dispatchGroup.notify(queue: .main) {
-                Loggers.coreData.trace(
+                Loggers.spotlight.trace(
                     "--- did finish indexing playlist items ---"
                 )
                 promise(.success(()))
@@ -3855,6 +3878,11 @@ class PlayerManager: ObservableObject {
     /// Returns a publisher that completes when indexing is finished.
     func updateCoreDataAndSpotlightAlbumTracks() -> AnyPublisher<Void, Never> {
         
+        guard self.isIndexingSpotlight else {
+            return Just(())
+                .eraseToAnyPublisher()
+        }
+
         guard let cdAlbums = self.fetchCDAlbums() else {
             self.isIndexingSpotlight = false
             return Just(())
@@ -3987,7 +4015,7 @@ class PlayerManager: ObservableObject {
         
         return Future { promise in
             dispatchGroup.notify(queue: .main) {
-                Loggers.coreData.trace(
+                Loggers.spotlight.trace(
                     "--- did finish indexing album tracks ---"
                 )
                 promise(.success(()))
