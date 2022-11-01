@@ -353,7 +353,27 @@ class PlayerManager: ObservableObject {
     /// The URIs of the items in all the playlists and albums.
     var playlistItemURIs: Set<String> = []
     
+    let playlistsPercent = 0.1
+    let albumsPercent = 0.1
+    let playlistItemsPercent = 0.4
+    let albumTracksPercent = 0.4
+
+    var spotlightIndexingProgressPercentTotal: Double {
+        
+        var total = playlistsPercent + albumsPercent
+        
+        if self.indexPlaylistItems {
+            total += playlistItemsPercent
+        }
+        if self.indexAlbumTracks {
+            total += albumTracksPercent
+        }
+        
+        return total
+    }
+    
     // MARK: - Cancellables -
+    
     private var cancellables: Set<AnyCancellable> = []
     private var retrieveAvailableDevicesCancellable: AnyCancellable? = nil
     private var loadArtworkImageCancellable: AnyCancellable? = nil
@@ -1347,9 +1367,11 @@ class PlayerManager: ObservableObject {
                     Loggers.spotlight.trace(
                         "saved albums page \(albumsPage.estimatedIndex)"
                     )
+                    let percent = self.albumsPercent /
+                        self.spotlightIndexingProgressPercentTotal
                     let progressIcrement = (
                         1 / Double(albumsPage.estimatedTotalPages)
-                    ) * 0.1
+                    ) * percent
                     self.spotlightIndexingProgress.add(
                         progressIcrement, clampingTo: 1
                     )
@@ -1638,9 +1660,11 @@ class PlayerManager: ObservableObject {
                     Loggers.spotlight.trace(
                         "playlists page \(playlistsPage.estimatedIndex)"
                     )
+                    let percent = self.playlistsPercent /
+                        self.spotlightIndexingProgressPercentTotal
                     let progressIcrement = (
                         1 / Double(playlistsPage.estimatedTotalPages)
-                    ) * 0.1
+                    ) * percent
                     self.spotlightIndexingProgress.add(
                         progressIcrement, clampingTo: 1
                     )
@@ -3676,9 +3700,12 @@ class PlayerManager: ObservableObject {
                 },
                 receiveValue: { tracksPage in
 
+                    let percent = self.playlistItemsPercent /
+                        self.spotlightIndexingProgressPercentTotal
+
                     let progressIncrement = ((
                         1 / Double(tracksPage.estimatedTotalPages)
-                    ) / Double(self.playlists.count)) * 0.4
+                    ) / Double(self.playlists.count)) * percent
 
                     self.spotlightIndexingProgress.add(
                         progressIncrement, clampingTo: 1
@@ -3795,9 +3822,12 @@ class PlayerManager: ObservableObject {
                     },
                     receiveValue: { playlistItemsPage in
                         
+                        let percent = self.playlistItemsPercent /
+                            self.spotlightIndexingProgressPercentTotal
+
                         let progressIncrement = ((
                             1 / Double(playlistItemsPage.estimatedTotalPages)
-                        ) / Double(self.playlists.count)) * 0.4
+                        ) / Double(self.playlists.count)) * percent
 
                         self.spotlightIndexingProgress.add(
                             progressIncrement, clampingTo: 1
@@ -3956,9 +3986,12 @@ class PlayerManager: ObservableObject {
                     },
                     receiveValue: { tracksPage in
                         
+                        let percent = self.albumTracksPercent /
+                            self.spotlightIndexingProgressPercentTotal
+                            
                         let progressIncrement = ((
                             1 / Double(tracksPage.estimatedTotalPages)
-                        ) / Double(self.savedAlbums.count)) * 0.4
+                        ) / Double(self.savedAlbums.count)) * percent
 
                         self.spotlightIndexingProgress.add(
                             progressIncrement, clampingTo: 1
