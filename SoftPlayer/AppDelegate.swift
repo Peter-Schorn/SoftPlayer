@@ -36,7 +36,16 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 fatalError("Unable to load persistent stores: \(error)")
             }
         }
+        
+        container.newBackgroundContext()
+
         return container
+    }()
+    
+    lazy var backgroundContext: NSManagedObjectContext = {
+        let context = self.persistentContainer.newBackgroundContext()
+        context.automaticallyMergesChangesFromParent = true
+        return context
     }()
 
     func applicationDidFinishLaunching(_ notification: Notification) {
@@ -52,8 +61,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         self.spotify = Spotify()
 
         self.playerManager = PlayerManager(
-            spotify: spotify,
-            viewContext: self.persistentContainer.viewContext
+            spotify: spotify
         )
         
         // MARK: Root View

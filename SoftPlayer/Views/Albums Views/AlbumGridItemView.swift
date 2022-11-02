@@ -96,10 +96,7 @@ struct AlbumGridItemView: View {
 
 struct AlbumGridItemView_Previews: PreviewProvider {
     
-    static let playerManager = PlayerManager(
-        spotify: Spotify(),
-        viewContext: AppDelegate.shared.persistentContainer.viewContext
-    )
+    static let playerManager = PlayerManager(spotify: Spotify())
     
     static var previews: some View {
         AlbumGridItemView(

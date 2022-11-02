@@ -33,10 +33,7 @@ struct ShuffleButton: View {
 
 struct ShuffleButton_Previews: PreviewProvider {
     
-    static let playerManager = PlayerManager(
-        spotify: Spotify(),
-        viewContext: AppDelegate.shared.persistentContainer.viewContext
-    )
+    static let playerManager = PlayerManager(spotify: Spotify())
 
     static var previews: some View {
         ShuffleButton()
