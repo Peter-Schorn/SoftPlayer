@@ -88,12 +88,18 @@ struct SpotlightSettingsView: View {
             .padding(.vertical, 5)
 //            .border(Color.green)
             
-            HStack {
+            VStack {
                 if playerManager.isIndexingSpotlight {
                     ProgressView(
-                        "\(playerManager.spotlightIndexingProgress)",
+//                        "\(playerManager.spotlightIndexingProgress)",
                         value: playerManager.spotlightIndexingProgress
                     )
+                    HStack {
+                        Text("Indexing Spotlight")
+                            .font(.footnote)
+                            .foregroundColor(.secondary)
+                        Spacer()
+                    }
                 }
             }
             .frame(width: 250, height: 40)
