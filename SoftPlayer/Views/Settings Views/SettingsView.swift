@@ -34,7 +34,7 @@ struct SettingsView: View {
         .padding(20)
         .frame(
             width:  450,
-            height: selectedTab == .keyboardShortcuts ? 600 : 300
+            height: selectedTab == .keyboardShortcuts ? 600 : 330
         )
         .background(
             KeyEventHandler(name: "SettingsView") { event in
@@ -46,6 +46,10 @@ struct SettingsView: View {
             .touchBar(content: PlayPlaylistsTouchBarView.init)
         )
         .preferredColorScheme(playerManager.colorScheme)
+        .onReceive(
+            spotify.redirectURLSubject,
+            perform: playerManager.handleRedirectURL(_:)
+        )
         
     }
     

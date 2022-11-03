@@ -67,11 +67,16 @@ extension View {
         @ViewBuilder content: () -> V
     ) -> some View where V : View {
         
+        #if compiler(<5.4)
+        self.overlay(content(), alignment: alignment)
+        #else
         if #available(macOS 12.0, *) {
             self.overlay(alignment: alignment, content: content)
         } else {
             self.overlay(content(), alignment: alignment)
         }
+        #endif
+        
 
     }
     

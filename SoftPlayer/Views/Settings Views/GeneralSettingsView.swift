@@ -39,16 +39,29 @@ struct GeneralSettingsView: View {
 //            .border(Color.green)
             
             
-            Button(action: spotify.api.authorizationManager.deauthorize, label: {
-                Text("Logout from Spotify")
-            })
-            .disabled(!spotify.isAuthorized)
-            Text(
-                "All user data will be removed"
-            )
-            .font(.footnote)
-            .foregroundColor(.secondary)
+            if spotify.isAuthorized {
+                
+                Button(action: spotify.api.authorizationManager.deauthorize, label: {
+                    Text("Logout from Spotify")
+                })
+                Text(
+                    "All user data will be removed"
+                )
+                .font(.footnote)
+                .foregroundColor(.secondary)
+                
+            }
+            else {
+                
+                Button(action: spotify.authorize) {
+                    // MARK: TODO: Add Cool green color gradient
+                    Text("Login to Spotify")
+                }
+                .padding(.vertical, 5)
+                .disabled(spotify.isRetrievingTokens)
 
+            }
+            
             Button(action: {
                 NSApplication.shared.terminate(nil)
             }, label: {

@@ -11,6 +11,8 @@ struct SpotlightSettingsView: View {
     @State private var indexAlbums = true
     @State private var indexAlbumTracks = true
 
+    @State private var isHovering = false
+
     /// Whether or not the user has changed the settings for which items to
     /// index since the last time spotlight has been re-indexed.
     var hasChanges: Bool {
@@ -34,6 +36,22 @@ struct SpotlightSettingsView: View {
         You must log in with Spotify to enable spotlight indexing
         """
     )
+    
+    var formattedProgress: String {
+        if #available(macOS 12.0, *) {
+            return self.playerManager.spotlightIndexingProgress
+                .formatted(.percent)
+        } else {
+            let formatter = NumberFormatter()
+            formatter.numberStyle = .percent
+            return formatter.string(from:
+                NSNumber(value:
+                    self.playerManager.spotlightIndexingProgress
+                )
+            ) ?? ""
+            
+        }
+    }
 
     var body: some View {
         Form {
@@ -100,6 +118,22 @@ struct SpotlightSettingsView: View {
                             .foregroundColor(.secondary)
                         Spacer()
                     }
+                    .onHover { isHovering in
+                        self.isHovering = isHovering
+                    }
+                    .if(isHovering) { view in
+                        if isHovering {
+                            view.versionedOverlay {
+                                Text(formattedProgress)
+                                    .font(.footnote)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                        else {
+                            view
+                        }
+                    }
+                    
                 }
             }
             .frame(width: 250, height: 40)

@@ -376,6 +376,7 @@ class PlayerManager: ObservableObject {
     // MARK: - Cancellables -
     
     private var cancellables: Set<AnyCancellable> = []
+    private var requestTokensCancellable: AnyCancellable? = nil
     private var retrieveAvailableDevicesCancellable: AnyCancellable? = nil
     private var loadArtworkImageCancellable: AnyCancellable? = nil
     private var retrieveCurrentlyPlayingContextCancellable: AnyCancellable? = nil
@@ -507,6 +508,7 @@ class PlayerManager: ObservableObject {
         self.spotify.api.authorizationManager.didDeauthorize
             .receive(on: RunLoop.main)
             .sink {
+                self.isIndexingSpotlight = false
                 self.currentlyPlayingContext = nil
                 self.availableDevices = []
                 self.currentUser = nil
@@ -595,6 +597,120 @@ class PlayerManager: ObservableObject {
         
         alert.runModal()
         
+    }
+    
+    // MARK: Handle Redirect
+
+    func handleRedirectURL(_ url: URL) {
+
+        Loggers.general.trace("received redirect URL: \(url)")
+
+        // peter-schorn-soft-player://login-callback
+
+        guard url.scheme == self.spotify.loginCallbackURL.scheme,
+              url.host == self.spotify.loginCallbackURL.host else {
+                  
+            self.showAppModalAlert(
+                title: NSLocalizedString(
+                    "Unexpected URL",
+                    comment: ""
+                ),
+                message: NSLocalizedString(
+                    "This URL could not be handled.",
+                    comment: ""
+                )
+            )
+                    
+            return
+        }
+
+        if self.spotify.isAuthorized {
+            self.showAppModalAlert(
+                title: NSLocalizedString(
+                    "Your Spotify Account is Already Connected",
+                    comment: ""
+                ),
+                message: NSLocalizedString(
+                    """
+                    If you would like to use another account, please log out \
+                    first.
+                    """,
+                    comment: ""
+                )
+            )
+            return
+        }
+
+        AppDelegate.shared.openPopover()
+
+        self.spotify.isRetrievingTokens = true
+        
+        self.requestTokensCancellable = self.spotify.api.authorizationManager
+            .requestAccessAndRefreshTokens(
+                redirectURIWithQuery: url,
+                codeVerifier: self.spotify.codeVerifier,
+                state: self.spotify.authorizationState
+            )
+            .receive(on: RunLoop.main)
+            .sink(receiveCompletion: self.receiveRequestTokensCompletion(_:))
+        
+        self.spotify.generateNewAuthorizationParameters()
+
+    }
+    
+    func receiveRequestTokensCompletion(
+        _ completion: Subscribers.Completion<Error>
+    ) {
+        Loggers.spotify.trace("request tokens completion: \(completion)")
+        self.spotify.isRetrievingTokens = false
+
+        let alert = NSAlert()
+        let alertTitle: String
+        let alertMessage: String
+        
+        switch completion {
+            case .finished:
+                alertTitle = NSLocalizedString(
+                    "Successfully Connected to Your Spotify Account",
+                    comment: ""
+                )
+                alertMessage = NSLocalizedString(
+                    "You may close the authorization page in your browser.",
+                    comment: ""
+                )
+                alert.alertStyle = .informational
+            case .failure(let error):
+                alert.alertStyle = .warning
+                alertTitle = NSLocalizedString(
+                    "Could not Authorize with your Spotify Account",
+                    comment: ""
+                )
+                if let authError = error as? SpotifyAuthorizationError,
+                   authError.accessWasDenied {
+                    alertMessage = NSLocalizedString(
+                        "You denied the Authorization Request :(",
+                        comment: ""
+                    )
+                }
+                else {
+                    alertMessage = error.customizedLocalizedDescription
+                }
+        }
+
+        self.showAppModalAlert(title: alertTitle, message: alertMessage)
+        
+    }
+    
+    func showAppModalAlert(
+        title: String,
+        message: String
+    ) {
+        
+        let alert = NSAlert()
+        alert.messageText = title
+        alert.informativeText = message
+        alert.runModal()
+
     }
     
     // MARK: - Playback State -
@@ -3456,6 +3572,10 @@ class PlayerManager: ObservableObject {
 
     func updateCoreDataAndSpotlightPlaylists() {
         
+        guard self.isIndexingSpotlight else {
+            return
+        }
+
         self.backgroundContext.performAndWait {
             
             guard let cdPlaylists = self.fetchCDPlaylists() else {
@@ -3572,6 +3692,10 @@ class PlayerManager: ObservableObject {
     
     func updateCoreDataAndSpotlightAlbums() {
         
+        guard self.isIndexingSpotlight else {
+            return
+        }
+
         self.backgroundContext.performAndWait {
             
             guard let cdAlbums = self.fetchCDAlbums() else {
@@ -3688,202 +3812,75 @@ class PlayerManager: ObservableObject {
         
         let dispatchGroup = DispatchGroup()
         
-        self.backgroundContext.performAndWait {
+        if self.isIndexingSpotlight {
             
-            guard self.isIndexingSpotlight else {
-                return
-            }
-            
-            guard let cdPlaylists = self.fetchCDPlaylists() else {
-                DispatchQueue.main.async {
-                    self.isIndexingSpotlight = false
+            self.backgroundContext.performAndWait {
+                
+                guard self.isIndexingSpotlight else {
+                    return
                 }
-                return
-            }
-            
-            guard let cdPlaylistItems = self.fetchCDPlaylistItems() else {
-                DispatchQueue.main.async {
-                    self.isIndexingSpotlight = false
-                }
-                return
-            }
-            
-            
-            let savedTracksCDPlaylist = cdPlaylists.first(
-                where: { $0.uri?.isSavedTracksURI == true }
-            )
-            
-            var savedTracksCSSearchableItems: [CSSearchableItem] = []
-            
-            dispatchGroup.enter()
-            self.spotify.api.currentUserSavedTracks(limit: 50)
-                .extendPages(self.spotify.api)
-                .sink(
-                    receiveCompletion: { completion in
-                        
-                        CSSearchableIndex.default().indexSearchableItems(
-                            savedTracksCSSearchableItems
-                        ) { error in
-                            
-                            if let error = error {
-                                Loggers.spotlight.error(
-                                    "error indexing saved tracks: \(error)"
-                                )
-                            }
-                            else {
-                                Loggers.spotlight.trace(
-                                    "did index saved tracks"
-                                )
-                            }
-                            dispatchGroup.leave()
-                        }
-                        switch completion {
-                            case .finished:
-                                break
-                            case .failure(let error):
-                                Loggers.spotlight.error(
-                                    "couldn't retrieve saved tracks: \(error)"
-                                )
-                        }
-                    },
-                    receiveValue: { tracksPage in
-                        
-                        self.backgroundContext.performAndWait {
-                            
-                            let percent = self.playlistItemsPercent /
-                                self.spotlightIndexingProgressPercentTotal
-                            
-                            let progressIncrement = ((
-                                1 / Double(tracksPage.estimatedTotalPages)
-                            ) / Double(self.playlists.count)) * percent
-                            
-                            DispatchQueue.main.async {
-                                self.spotlightIndexingProgress.add(
-                                    progressIncrement, clampingTo: 1
-                                )
-                            }
-                            
-                            for track in tracksPage.items.map(\.item) {
-                                
-                                guard let trackURI = track.uri, !track.isLocal else {
-                                    continue
-                                }
-                                
-                                DispatchQueue.main.async {
-                                    self.playlistItemURIs.insert(trackURI)
-                                }
-                                
-                                let cdPlaylistItem = cdPlaylistItems.first(
-                                    where: { $0.uri == trackURI }
-                                ) ?? CDPlaylistItem(
-                                    context: self.backgroundContext
-                                )
-                                
-                                cdPlaylistItem.uri = trackURI
-                                cdPlaylistItem.name = track.name
-                                cdPlaylistItem.playlist = savedTracksCDPlaylist
-                                
-                                let attributeSet = CSSearchableItemAttributeSet(
-                                    contentType: .text
-                                )
-                                attributeSet.title = track.name
-                                attributeSet.album = track.album?.name
-                                attributeSet.artist = track.album?.artists?.first?.name
-                                
-                                if
-                                    let albumId = track.album?.id,
-                                    let albumsFolder = self.imageFolderURL(for: .album)
-                                {
-                                    let imageURL = albumsFolder.appendingPathComponent(
-                                        "\(albumId).tiff",
-                                        isDirectory: false
-                                    )
-                                    attributeSet.thumbnailURL = imageURL
-                                }
-                                
-                                let csSearchableItem = CSSearchableItem(
-                                    uniqueIdentifier: trackURI,
-                                    domainIdentifier: "playlistItem",
-                                    attributeSet: attributeSet
-                                )
-                                
-                                savedTracksCSSearchableItems.append(csSearchableItem)
-                                
-                            }
-                            
-                            self.saveBackgroundContext()
-                            
-                        }
-                        
+                
+                guard let cdPlaylists = self.fetchCDPlaylists() else {
+                    DispatchQueue.main.async {
+                        self.isIndexingSpotlight = false
                     }
+                    return
+                }
+                
+                guard let cdPlaylistItems = self.fetchCDPlaylistItems() else {
+                    DispatchQueue.main.async {
+                        self.isIndexingSpotlight = false
+                    }
+                    return
+                }
+                
+                
+                let savedTracksCDPlaylist = cdPlaylists.first(
+                    where: { $0.uri?.isSavedTracksURI == true }
                 )
-                .store(in: &self.indexPlaylistItemsCancellables)
-            
-            
-            for playlist in self.playlists {
                 
-                if playlist.uri.isSavedTracksURI {
-                    continue
-                }
-                
-                guard let cdPlaylist = cdPlaylists.first(
-                    where: { $0.uri == playlist.uri }
-                ) else {
-                    continue
-                }
-                
-                var csSearchableItems: [CSSearchableItem] = []
+                var savedTracksCSSearchableItems: [CSSearchableItem] = []
                 
                 dispatchGroup.enter()
-                self.spotify.api.playlistItems(playlist)
-                    // reduce concurrent requests by not using
-                    // `extendPagesConcurrently`
+                self.spotify.api.currentUserSavedTracks(limit: 50)
                     .extendPages(self.spotify.api)
                     .sink(
                         receiveCompletion: { completion in
                             
                             CSSearchableIndex.default().indexSearchableItems(
-                                csSearchableItems
+                                savedTracksCSSearchableItems
                             ) { error in
                                 
                                 if let error = error {
                                     Loggers.spotlight.error(
-                                    """
-                                    error indexing items for playlist \
-                                    '\(playlist.name)': \(error)
-                                    """
+                                        "error indexing saved tracks: \(error)"
                                     )
                                 }
                                 else {
                                     Loggers.spotlight.trace(
-                                    """
-                                    did index items for playlist \
-                                    '\(playlist.name)'
-                                    """
+                                        "did index saved tracks"
                                     )
                                 }
                                 dispatchGroup.leave()
-                                
                             }
-                            
                             switch completion {
                                 case .finished:
                                     break
                                 case .failure(let error):
                                     Loggers.spotlight.error(
-                                        "couldn't retrieve playlist items: \(error)"
+                                        "couldn't retrieve saved tracks: \(error)"
                                     )
                             }
                         },
-                        receiveValue: { playlistItemsPage in
+                        receiveValue: { tracksPage in
                             
                             self.backgroundContext.performAndWait {
                                 
                                 let percent = self.playlistItemsPercent /
-                                    self.spotlightIndexingProgressPercentTotal
+                                self.spotlightIndexingProgressPercentTotal
                                 
                                 let progressIncrement = ((
-                                    1 / Double(playlistItemsPage.estimatedTotalPages)
+                                    1 / Double(tracksPage.estimatedTotalPages)
                                 ) / Double(self.playlists.count)) * percent
                                 
                                 DispatchQueue.main.async {
@@ -3892,189 +3889,7 @@ class PlayerManager: ObservableObject {
                                     )
                                 }
                                 
-                                for playlistItem in playlistItemsPage.items.compactMap(\.item) {
-                                    
-                                    guard let playlistItemURI = playlistItem.uri else {
-                                        continue
-                                    }
-                                    
-                                    if case .track(let track) = playlistItem,
-                                       track.isLocal {
-                                        continue
-                                    }
-                                    
-                                    DispatchQueue.main.async {
-                                        self.playlistItemURIs.insert(playlistItemURI)
-                                    }
-                                    
-                                    let cdPlaylistItem = cdPlaylistItems.first(
-                                        where: { $0.uri == playlistItemURI }
-                                    ) ?? CDPlaylistItem(
-                                        context: self.backgroundContext
-                                    )
-                                    
-                                    cdPlaylistItem.uri = playlistItemURI
-                                    cdPlaylistItem.name = playlistItem.name
-                                    cdPlaylistItem.playlist = cdPlaylist
-                                    
-                                    let attributeSet = CSSearchableItemAttributeSet(
-                                        contentType: .text
-                                    )
-                                    
-                                    attributeSet.title = playlistItem.name
-                                    
-                                    switch playlistItem {
-                                        case .track(let track):
-                                            attributeSet.album = track.album?.name
-                                            attributeSet.artist = track.artists?.first?.name
-                                            if let albumsFolder = self.imageFolderURL(
-                                                for: .album
-                                            ), let albumId = track.album?.id {
-                                                let imageURL = albumsFolder.appendingPathComponent(
-                                                    "\(albumId).tiff",
-                                                    isDirectory: false
-                                                )
-                                                attributeSet.thumbnailURL = imageURL
-                                            }
-                                        case .episode(_):
-                                            break
-                                    }
-                                    
-                                    let csSearchableItem = CSSearchableItem(
-                                        uniqueIdentifier: playlistItemURI,
-                                        domainIdentifier: "playlistItem",
-                                        attributeSet: attributeSet
-                                    )
-                                    
-                                    csSearchableItems.append(csSearchableItem)
-                                    
-                                }
-                                
-                                self.saveBackgroundContext()
-
-                            }
-                            
-                        }
-                    )
-                    .store(in: &self.indexPlaylistItemsCancellables)
-                
-            }
-            
-        }
-        
-        return Future { promise in
-            dispatchGroup.notify(queue: .main) {
-                Loggers.spotlight.trace(
-                    "--- did finish indexing playlist items ---"
-                )
-                promise(.success(()))
-            }
-        }
-        .eraseToAnyPublisher()
-
-    }
-
-    /// Returns a publisher that completes when indexing is finished.
-    func updateCoreDataAndSpotlightAlbumTracks() -> AnyPublisher<Void, Never> {
-        
-        let dispatchGroup = DispatchGroup()
-
-        self.backgroundContext.performAndWait {
-    
-            
-            guard self.isIndexingSpotlight else {
-                return
-            }
-            
-            guard let cdAlbums = self.fetchCDAlbums() else {
-                DispatchQueue.main.async {
-                    self.isIndexingSpotlight = false
-                }
-                return
-            }
-            
-            guard let cdPlaylistItems = self.fetchCDPlaylistItems() else {
-                DispatchQueue.main.async {
-                    self.isIndexingSpotlight = false
-                }
-                return
-            }
-            
-            
-            for album in self.savedAlbums {
-                
-                guard
-                    let albumURI = album.uri,
-                    let albumIdentifier = try? SpotifyIdentifier(uri: albumURI)
-                else {
-                    continue
-                }
-                
-                guard let cdAlbum = cdAlbums.first(
-                    where: { $0.uri == albumURI }
-                ) else {
-                    continue
-                }
-                
-                var csSearchableItems: [CSSearchableItem] = []
-                
-                dispatchGroup.enter()
-                self.spotify.api.albumTracks(albumURI, limit: 50)
-                    // reduce concurrent requests by not using
-                    // `extendPagesConcurrently`
-                    .extendPages(self.spotify.api)
-                    .sink(
-                        receiveCompletion: { completion in
-                            
-                            CSSearchableIndex.default().indexSearchableItems(
-                                csSearchableItems
-                            ) { error in
-                                
-                                if let error = error {
-                                    Loggers.spotlight.error(
-                                    """
-                                    error indexing tracks for album \
-                                    '\(album.name)': \(error)
-                                    """
-                                    )
-                                }
-                                else {
-                                    Loggers.spotlight.trace(
-                                    """
-                                    did index tracks for album \
-                                    '\(album.name)'
-                                    """
-                                    )
-                                }
-                                dispatchGroup.leave()
-                            }
-                            switch completion {
-                                case .finished:
-                                    break
-                                case .failure(let error):
-                                    Loggers.spotlight.error(
-                                        "couldn't retrieve album tracks: \(error)"
-                                    )
-                            }
-                        },
-                        receiveValue: { tracksPage in
-                            
-                            self.backgroundContext.performAndWait {
-                                
-                                let percent = self.albumTracksPercent /
-                                self.spotlightIndexingProgressPercentTotal
-                                
-                                let progressIncrement = ((
-                                    1 / Double(tracksPage.estimatedTotalPages)
-                                ) / Double(self.savedAlbums.count)) * percent
-                                
-                                DispatchQueue.main.async {
-                                    self.spotlightIndexingProgress.add(
-                                        progressIncrement, clampingTo: 1
-                                    )
-                                }
-                                
-                                for track in tracksPage.items {
+                                for track in tracksPage.items.map(\.item) {
                                     
                                     guard let trackURI = track.uri, !track.isLocal else {
                                         continue
@@ -4092,18 +3907,21 @@ class PlayerManager: ObservableObject {
                                     
                                     cdPlaylistItem.uri = trackURI
                                     cdPlaylistItem.name = track.name
-                                    cdPlaylistItem.album = cdAlbum
+                                    cdPlaylistItem.playlist = savedTracksCDPlaylist
                                     
                                     let attributeSet = CSSearchableItemAttributeSet(
                                         contentType: .text
                                     )
                                     attributeSet.title = track.name
-                                    attributeSet.album = album.name
-                                    attributeSet.artist = album.artists?.first?.name
+                                    attributeSet.album = track.album?.name
+                                    attributeSet.artist = track.album?.artists?.first?.name
                                     
-                                    if let albumsFolder = self.imageFolderURL(for: .album) {
+                                    if
+                                        let albumId = track.album?.id,
+                                        let albumsFolder = self.imageFolderURL(for: .album)
+                                    {
                                         let imageURL = albumsFolder.appendingPathComponent(
-                                            "\(albumIdentifier.id).tiff",
+                                            "\(albumId).tiff",
                                             isDirectory: false
                                         )
                                         attributeSet.thumbnailURL = imageURL
@@ -4115,7 +3933,7 @@ class PlayerManager: ObservableObject {
                                         attributeSet: attributeSet
                                     )
                                     
-                                    csSearchableItems.append(csSearchableItem)
+                                    savedTracksCSSearchableItems.append(csSearchableItem)
                                     
                                 }
                                 
@@ -4125,12 +3943,326 @@ class PlayerManager: ObservableObject {
                             
                         }
                     )
-                    .store(in: &self.indexAlbumTracksCancellables)
+                    .store(in: &self.indexPlaylistItemsCancellables)
+                
+                
+                for playlist in self.playlists {
+                    
+                    if playlist.uri.isSavedTracksURI {
+                        continue
+                    }
+                    
+                    guard let cdPlaylist = cdPlaylists.first(
+                        where: { $0.uri == playlist.uri }
+                    ) else {
+                        continue
+                    }
+                    
+                    var csSearchableItems: [CSSearchableItem] = []
+                    
+                    dispatchGroup.enter()
+                    self.spotify.api.playlistItems(playlist)
+                    // reduce concurrent requests by not using
+                    // `extendPagesConcurrently`
+                        .extendPages(self.spotify.api)
+                        .sink(
+                            receiveCompletion: { completion in
+                                
+                                CSSearchableIndex.default().indexSearchableItems(
+                                    csSearchableItems
+                                ) { error in
+                                    
+                                    if let error = error {
+                                        Loggers.spotlight.error(
+                                    """
+                                    error indexing items for playlist \
+                                    '\(playlist.name)': \(error)
+                                    """
+                                        )
+                                    }
+                                    else {
+                                        Loggers.spotlight.trace(
+                                    """
+                                    did index items for playlist \
+                                    '\(playlist.name)'
+                                    """
+                                        )
+                                    }
+                                    dispatchGroup.leave()
+                                    
+                                }
+                                
+                                switch completion {
+                                    case .finished:
+                                        break
+                                    case .failure(let error):
+                                        Loggers.spotlight.error(
+                                            "couldn't retrieve playlist items: \(error)"
+                                        )
+                                }
+                            },
+                            receiveValue: { playlistItemsPage in
+                                
+                                self.backgroundContext.performAndWait {
+                                    
+                                    let percent = self.playlistItemsPercent /
+                                    self.spotlightIndexingProgressPercentTotal
+                                    
+                                    let progressIncrement = ((
+                                        1 / Double(playlistItemsPage.estimatedTotalPages)
+                                    ) / Double(self.playlists.count)) * percent
+                                    
+                                    DispatchQueue.main.async {
+                                        self.spotlightIndexingProgress.add(
+                                            progressIncrement, clampingTo: 1
+                                        )
+                                    }
+                                    
+                                    for playlistItem in playlistItemsPage.items.compactMap(\.item) {
+                                        
+                                        guard let playlistItemURI = playlistItem.uri else {
+                                            continue
+                                        }
+                                        
+                                        if case .track(let track) = playlistItem,
+                                           track.isLocal {
+                                            continue
+                                        }
+                                        
+                                        DispatchQueue.main.async {
+                                            self.playlistItemURIs.insert(playlistItemURI)
+                                        }
+                                        
+                                        let cdPlaylistItem = cdPlaylistItems.first(
+                                            where: { $0.uri == playlistItemURI }
+                                        ) ?? CDPlaylistItem(
+                                            context: self.backgroundContext
+                                        )
+                                        
+                                        cdPlaylistItem.uri = playlistItemURI
+                                        cdPlaylistItem.name = playlistItem.name
+                                        cdPlaylistItem.playlist = cdPlaylist
+                                        
+                                        let attributeSet = CSSearchableItemAttributeSet(
+                                            contentType: .text
+                                        )
+                                        
+                                        attributeSet.title = playlistItem.name
+                                        
+                                        switch playlistItem {
+                                            case .track(let track):
+                                                attributeSet.album = track.album?.name
+                                                attributeSet.artist = track.artists?.first?.name
+                                                if let albumsFolder = self.imageFolderURL(
+                                                    for: .album
+                                                ), let albumId = track.album?.id {
+                                                    let imageURL = albumsFolder.appendingPathComponent(
+                                                        "\(albumId).tiff",
+                                                        isDirectory: false
+                                                    )
+                                                    attributeSet.thumbnailURL = imageURL
+                                                }
+                                            case .episode(_):
+                                                break
+                                        }
+                                        
+                                        let csSearchableItem = CSSearchableItem(
+                                            uniqueIdentifier: playlistItemURI,
+                                            domainIdentifier: "playlistItem",
+                                            attributeSet: attributeSet
+                                        )
+                                        
+                                        csSearchableItems.append(csSearchableItem)
+                                        
+                                    }
+                                    
+                                    self.saveBackgroundContext()
+                                    
+                                }
+                                
+                            }
+                        )
+                        .store(in: &self.indexPlaylistItemsCancellables)
+                    
+                }
                 
             }
             
         }
+
+        return Future { promise in
+            dispatchGroup.notify(queue: .main) {
+                Loggers.spotlight.trace(
+                    "--- did finish indexing playlist items ---"
+                )
+                promise(.success(()))
+            }
+        }
+        .eraseToAnyPublisher()
+
+    }
+
+    /// Returns a publisher that completes when indexing is finished.
+    func updateCoreDataAndSpotlightAlbumTracks() -> AnyPublisher<Void, Never> {
         
+        let dispatchGroup = DispatchGroup()
+
+        if self.isIndexingSpotlight {
+            
+            self.backgroundContext.performAndWait {
+                
+                
+                guard self.isIndexingSpotlight else {
+                    return
+                }
+                
+                guard let cdAlbums = self.fetchCDAlbums() else {
+                    DispatchQueue.main.async {
+                        self.isIndexingSpotlight = false
+                    }
+                    return
+                }
+                
+                guard let cdPlaylistItems = self.fetchCDPlaylistItems() else {
+                    DispatchQueue.main.async {
+                        self.isIndexingSpotlight = false
+                    }
+                    return
+                }
+                
+                
+                for album in self.savedAlbums {
+                    
+                    guard
+                        let albumURI = album.uri,
+                        let albumIdentifier = try? SpotifyIdentifier(uri: albumURI)
+                    else {
+                        continue
+                    }
+                    
+                    guard let cdAlbum = cdAlbums.first(
+                        where: { $0.uri == albumURI }
+                    ) else {
+                        continue
+                    }
+                    
+                    var csSearchableItems: [CSSearchableItem] = []
+                    
+                    dispatchGroup.enter()
+                    self.spotify.api.albumTracks(albumURI, limit: 50)
+                    // reduce concurrent requests by not using
+                    // `extendPagesConcurrently`
+                        .extendPages(self.spotify.api)
+                        .sink(
+                            receiveCompletion: { completion in
+                                
+                                CSSearchableIndex.default().indexSearchableItems(
+                                    csSearchableItems
+                                ) { error in
+                                    
+                                    if let error = error {
+                                        Loggers.spotlight.error(
+                                    """
+                                    error indexing tracks for album \
+                                    '\(album.name)': \(error)
+                                    """
+                                        )
+                                    }
+                                    else {
+                                        Loggers.spotlight.trace(
+                                    """
+                                    did index tracks for album \
+                                    '\(album.name)'
+                                    """
+                                        )
+                                    }
+                                    dispatchGroup.leave()
+                                }
+                                switch completion {
+                                    case .finished:
+                                        break
+                                    case .failure(let error):
+                                        Loggers.spotlight.error(
+                                            "couldn't retrieve album tracks: \(error)"
+                                        )
+                                }
+                            },
+                            receiveValue: { tracksPage in
+                                
+                                self.backgroundContext.performAndWait {
+                                    
+                                    let percent = self.albumTracksPercent /
+                                    self.spotlightIndexingProgressPercentTotal
+                                    
+                                    let progressIncrement = ((
+                                        1 / Double(tracksPage.estimatedTotalPages)
+                                    ) / Double(self.savedAlbums.count)) * percent
+                                    
+                                    DispatchQueue.main.async {
+                                        self.spotlightIndexingProgress.add(
+                                            progressIncrement, clampingTo: 1
+                                        )
+                                    }
+                                    
+                                    for track in tracksPage.items {
+                                        
+                                        guard let trackURI = track.uri, !track.isLocal else {
+                                            continue
+                                        }
+                                        
+                                        DispatchQueue.main.async {
+                                            self.playlistItemURIs.insert(trackURI)
+                                        }
+                                        
+                                        let cdPlaylistItem = cdPlaylistItems.first(
+                                            where: { $0.uri == trackURI }
+                                        ) ?? CDPlaylistItem(
+                                            context: self.backgroundContext
+                                        )
+                                        
+                                        cdPlaylistItem.uri = trackURI
+                                        cdPlaylistItem.name = track.name
+                                        cdPlaylistItem.album = cdAlbum
+                                        
+                                        let attributeSet = CSSearchableItemAttributeSet(
+                                            contentType: .text
+                                        )
+                                        attributeSet.title = track.name
+                                        attributeSet.album = album.name
+                                        attributeSet.artist = album.artists?.first?.name
+                                        
+                                        if let albumsFolder = self.imageFolderURL(for: .album) {
+                                            let imageURL = albumsFolder.appendingPathComponent(
+                                                "\(albumIdentifier.id).tiff",
+                                                isDirectory: false
+                                            )
+                                            attributeSet.thumbnailURL = imageURL
+                                        }
+                                        
+                                        let csSearchableItem = CSSearchableItem(
+                                            uniqueIdentifier: trackURI,
+                                            domainIdentifier: "playlistItem",
+                                            attributeSet: attributeSet
+                                        )
+                                        
+                                        csSearchableItems.append(csSearchableItem)
+                                        
+                                    }
+                                    
+                                    self.saveBackgroundContext()
+                                    
+                                }
+                                
+                            }
+                        )
+                        .store(in: &self.indexAlbumTracksCancellables)
+                    
+                }
+                
+            }
+            
+        }
+
         return Future { promise in
             dispatchGroup.notify(queue: .main) {
                 Loggers.spotlight.trace(
