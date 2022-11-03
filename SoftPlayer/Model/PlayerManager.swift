@@ -3206,22 +3206,41 @@ class PlayerManager: ObservableObject {
             return false
         }
         
-        let corruptedAlert = NSAlert()
-        corruptedAlert.messageText = NSLocalizedString(
-            "Could not Play this Content",
-            comment: ""
-        )
-        corruptedAlert.informativeText = NSLocalizedString(
+        func showCorruptedAlert(name: String? = nil) {
+            
+            let corruptedAlert = NSAlert()
+            
+            if let name = name, !name.isEmpty {
+                corruptedAlert.messageText = String.localizedStringWithFormat(
+                    NSLocalizedString(
+                        #"Could not play "%@""#,
+                        comment: "Could not play [Spotify content item name]"
+                    ),
+                    name
+                )
+            }
+            else {
+                corruptedAlert.messageText = NSLocalizedString(
+                    "Could not Play this Content",
+                    comment: ""
+                )
+            }
+            
+            corruptedAlert.informativeText = NSLocalizedString(
             """
-            This item is corrupted. If the issue persists, try logging out \
-            of Spotify in this app; then, log in again.
+            This item is corrupted. Try re-indexing spotlight in settings.
             """,
             comment: ""
-        )
+            )
+            
+            corruptedAlert.runModal()
+            
+        }
+
         
         guard let uri = userActivity
                 .userInfo?[CSSearchableItemActivityIdentifier] as? String else {
-            corruptedAlert.runModal()
+            showCorruptedAlert()
             return false
         }
         
@@ -3240,7 +3259,7 @@ class PlayerManager: ObservableObject {
         }
 
         guard let spotifyIdentifier = try? SpotifyIdentifier(uri: uri) else {
-            corruptedAlert.runModal()
+            showCorruptedAlert()
             return false
         }
         
@@ -3338,7 +3357,6 @@ class PlayerManager: ObservableObject {
             default:
                 // should be a playlist item or album track
                 
-                
                 let fetchRequest = CDPlaylistItem.fetchRequest()
                 let playlistItems: [CDPlaylistItem]
                 
@@ -3364,13 +3382,13 @@ class PlayerManager: ObservableObject {
                 guard let playlistItem = playlistItems.first(
                     where: { $0.uri == uri }
                 ) else {
-                    corruptedAlert.runModal()
+                    showCorruptedAlert()
                     return false
                 }
 
                 if let playlist = playlistItem.playlist {
                     guard let playlistURI = playlist.uri else {
-                        corruptedAlert.runModal()
+                        showCorruptedAlert(name: playlistItem.name)
                         return false
                     }
                     self.spotifyApplication?.playTrack(
@@ -3379,7 +3397,7 @@ class PlayerManager: ObservableObject {
                 }
                 else if let album = playlistItem.album {
                     guard let albumURI = album.uri else {
-                        corruptedAlert.runModal()
+                        showCorruptedAlert(name: playlistItem.name)
                         return false
                     }
                     self.spotifyApplication?.playTrack(
@@ -3387,7 +3405,7 @@ class PlayerManager: ObservableObject {
                     )
                 }
                 else {
-                    corruptedAlert.runModal()
+                    showCorruptedAlert(name: playlistItem.name)
                     return false
                 }
                 
@@ -4272,7 +4290,6 @@ class PlayerManager: ObservableObject {
         }
 
     }
-    
     
     /// Remove the items that the user deleted from their Spotify library from
     /// spotlight and core data. **MUST** be called from the backround
