@@ -29,6 +29,20 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var spotify: Spotify!
     var playerManager: PlayerManager!
 
+    lazy var versionBuildIdentifier: String = {
+        let dictionary = Bundle.main.infoDictionary ?? [:]
+        let version = dictionary["CFBundleShortVersionString"] as? String
+        let build = dictionary["CFBundleVersion"] as? String
+        var result = ""
+        if let version = version {
+            result += version
+        }
+        if let build = build {
+            result += " (\(build))"
+        }
+        return result
+    }()
+
     lazy var persistentContainer: NSPersistentContainer = {
         let container = NSPersistentContainer.init(name: "DataModel")
         container.loadPersistentStores { description, error in
@@ -102,6 +116,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
         
         self.registerGlobalKeyboardShortcutHandler()
+
+        let _ = self.versionBuildIdentifier
 
     }
     

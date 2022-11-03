@@ -59,6 +59,11 @@ struct GeneralSettingsView: View {
             )
             .font(.footnote)
             .foregroundColor(.secondary)
+            Spacer()
+            let version = AppDelegate.shared.versionBuildIdentifier
+            Text("Version: \(version)")
+                .font(.callout)
+                .foregroundColor(.secondary)
             
         }
         .padding(20)
@@ -95,7 +100,7 @@ struct GeneralSettingsView_Previews: PreviewProvider {
             
         }
         .padding()
-        .frame(width: 400, height: 250)
+        .frame(width: 400, height: 330)
     }
     
 }
