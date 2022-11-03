@@ -34,6 +34,7 @@ class PlayerManager: ObservableObject {
     @AppStorage("indexPlaylistItems") var indexPlaylistItems = true
     @AppStorage("indexAlbumTracks") var indexAlbumTracks = true
     
+
     var colorSchemeObservation: NSKeyValueObservation? = nil
     
     var colorScheme: ColorScheme {
@@ -58,6 +59,8 @@ class PlayerManager: ObservableObject {
     /// library view.
     @Published var didScrollToAlbumsSearchBar = false
     
+    @Published var indexingSpotlightStatus: String? = nil
+
     // MARK: Touch Bar
     
     @Published var touchbarPlaylistsOffset = 0
@@ -535,6 +538,8 @@ class PlayerManager: ObservableObject {
             .store(in: &self.cancellables)
         
 //        self.debug()
+        
+        SoftPlayerLogHandler.playerManager = self
         
     }
     

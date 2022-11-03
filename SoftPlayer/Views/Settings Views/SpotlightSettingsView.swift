@@ -40,7 +40,7 @@ struct SpotlightSettingsView: View {
     var formattedProgress: String {
         if #available(macOS 12.0, *) {
             return self.playerManager.spotlightIndexingProgress
-                .formatted(.percent)
+                .formatted(.percent.precision(.fractionLength(0)))
         } else {
             let formatter = NumberFormatter()
             formatter.numberStyle = .percent
@@ -108,31 +108,40 @@ struct SpotlightSettingsView: View {
             
             VStack {
                 if playerManager.isIndexingSpotlight {
+                    
                     ProgressView(
 //                        "\(playerManager.spotlightIndexingProgress)",
                         value: playerManager.spotlightIndexingProgress
                     )
-                    HStack {
-                        Text("Indexing Spotlight")
-                            .font(.footnote)
-                            .foregroundColor(.secondary)
-                        Spacer()
-                    }
-                    .onHover { isHovering in
-                        self.isHovering = isHovering
-                    }
-                    .if(isHovering) { view in
-                        if isHovering {
-                            view.versionedOverlay {
-                                Text(formattedProgress)
-                                    .font(.footnote)
-                                    .foregroundColor(.secondary)
-                            }
+                    .modify { view in
+                        if #available(macOS 13.0, *) {
+                            view.tint(Color.green)
                         }
                         else {
                             view
                         }
                     }
+                    HStack {
+                        Text("Indexing Spotlight")
+                            .font(.footnote)
+                            .foregroundColor(.secondary)
+                        if isHovering {
+                            Text(formattedProgress)
+                                .font(.footnote)
+                                .foregroundColor(.secondary)
+                        }
+                        Spacer()
+                    }
+                    .onHover(
+                        enterDelay: 0.5,
+                        exitDelay: 0.1
+                    ) { isHovering in
+                        self.isHovering = isHovering
+                    }
+                    
+//                    Text(verbatim: playerManager.indexingSpotlightStatus ?? "")
+//                        .font(.footnote)
+//                        .fixedSize(horizontal: true, vertical: false)
                     
                 }
             }
