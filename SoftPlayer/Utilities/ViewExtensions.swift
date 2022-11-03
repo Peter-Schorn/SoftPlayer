@@ -171,26 +171,6 @@ extension View {
         }
     }
     
-    /// Returns jpeg image data of this view.
-    func imageDataSnapshot() -> Data? {
-        
-        let nsView = NSHostingView(rootView: self)
-        
-        guard let bitmapRep = nsView.bitmapImageRepForCachingDisplay(
-            in: nsView.bounds
-        ) else {
-            return nil
-        }
-        
-        bitmapRep.size = nsView.bounds.size
-        nsView.cacheDisplay(in: nsView.bounds, to: bitmapRep)
-        
-        return bitmapRep.representation(using: .jpeg, properties: [:])
-        
-    }
-    
-   
-
 }
 
 struct TapAndLongPressGestureState: Hashable {

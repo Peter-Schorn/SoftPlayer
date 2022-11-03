@@ -3398,6 +3398,7 @@ class PlayerManager: ObservableObject {
         
     }
     
+    /// **MUST** be called from the backround managed object context thread.
     func fetchCDPlaylists() -> [CDPlaylist]? {
         do {
             let fetchRequest = CDPlaylist.fetchRequest()
@@ -3409,6 +3410,7 @@ class PlayerManager: ObservableObject {
         }
     }
 
+    /// **MUST** be called from the backround managed object context thread.
     func fetchCDAlbums() -> [CDAlbum]? {
         do {
             let fetchRequest = CDAlbum.fetchRequest()
@@ -3420,6 +3422,7 @@ class PlayerManager: ObservableObject {
         }
     }
     
+    /// **MUST** be called from the backround managed object context thread.
     func fetchCDPlaylistItems() -> [CDPlaylistItem]? {
         do {
             let fetchRequest = CDPlaylistItem.fetchRequest()
@@ -3467,11 +3470,12 @@ class PlayerManager: ObservableObject {
                     
                     if let playlistsFolder = self.imageFolderURL(for: .playlist) {
                         if playlist.uri.isSavedTracksURI {
-//                            if let imageData = DispatchQueue.main.sync(execute: {
-//                                SavedTracksImage().imageDataSnapshot()
-//                            }) {
-//                                attributeSet.thumbnailData = imageData
-//                            }
+                            if let imageURL = Bundle.main.url(
+                                forResource: "SavedTracksImage",
+                                withExtension: "png"
+                            ) {
+                                attributeSet.thumbnailURL = imageURL
+                            }
                         }
                         else {
                             let imageURL = playlistsFolder.appendingPathComponent(
@@ -4271,7 +4275,8 @@ class PlayerManager: ObservableObject {
     
     
     /// Remove the items that the user deleted from their Spotify library from
-    /// spotlight and core data.
+    /// spotlight and core data. **MUST** be called from the backround
+    /// managed object context thread.
     func removeDeletedItemsFromSpotlightAndCoreData() {
         
         guard let cdPlaylistItems = self.fetchCDPlaylistItems() else {
@@ -4392,6 +4397,7 @@ class PlayerManager: ObservableObject {
 
     }
     
+    /// **MUST** be called from the backround managed object context thread.
     func saveBackgroundContext() {
         
         guard self.backgroundContext.hasChanges else {

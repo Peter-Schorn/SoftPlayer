@@ -17,6 +17,7 @@
 		471CD4EA26883037009176F2 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 471CD4E826883037009176F2 /* InfoPlist.strings */; };
 		471CD4ED26883037009176F2 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 471CD4EB26883037009176F2 /* Localizable.strings */; };
 		471CD4EF26883AC5009176F2 /* AlertItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 471CD4EE26883AC5009176F2 /* AlertItem.swift */; };
+		472901AD29134E3D00279E12 /* SavedTracksImage.png in Resources */ = {isa = PBXBuildFile; fileRef = 472901AC29134E3D00279E12 /* SavedTracksImage.png */; };
 		472A742A25859431008998C5 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 472A742925859431008998C5 /* SettingsView.swift */; };
 		47343A642582C86600EF6750 /* PlaylistsScrollView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47343A632582C86600EF6750 /* PlaylistsScrollView.swift */; };
 		4735521827A351B7009C967A /* XShape.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4735521727A351B7009C967A /* XShape.swift */; };
@@ -96,6 +97,7 @@
 		471CD4E926883037009176F2 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		471CD4EC26883037009176F2 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/Localizable.strings; sourceTree = "<group>"; };
 		471CD4EE26883AC5009176F2 /* AlertItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlertItem.swift; sourceTree = "<group>"; };
+		472901AC29134E3D00279E12 /* SavedTracksImage.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = SavedTracksImage.png; sourceTree = "<group>"; };
 		472A742925859431008998C5 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		47343A632582C86600EF6750 /* PlaylistsScrollView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaylistsScrollView.swift; sourceTree = "<group>"; };
 		4735521727A351B7009C967A /* XShape.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XShape.swift; sourceTree = "<group>"; };
@@ -179,6 +181,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		472901AB29134E2C00279E12 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				472901AC29134E3D00279E12 /* SavedTracksImage.png */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
 		47343A662582C90F00EF6750 /* Playlists Views */ = {
 			isa = PBXGroup;
 			children = (
@@ -216,6 +226,7 @@
 		47832F462566474300AADEA3 /* SoftPlayer */ = {
 			isa = PBXGroup;
 			children = (
+				472901AB29134E2C00279E12 /* Resources */,
 				47A89ED62908EBE2007C0BA7 /* Core Data */,
 				47832F472566474300AADEA3 /* AppDelegate.swift */,
 				47D8CF85256664C90034FA1E /* Model */,
@@ -460,6 +471,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				471CD4ED26883037009176F2 /* Localizable.strings in Resources */,
+				472901AD29134E3D00279E12 /* SavedTracksImage.png in Resources */,
 				47832F552566474600AADEA3 /* Main.storyboard in Resources */,
 				471CD4EA26883037009176F2 /* InfoPlist.strings in Resources */,
 				47832F522566474600AADEA3 /* Preview Assets.xcassets in Resources */,
