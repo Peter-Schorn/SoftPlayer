@@ -34,7 +34,7 @@ class PlayerManager: ObservableObject {
     @AppStorage("indexPlaylistItems") var indexPlaylistItems = true
     @AppStorage("indexAlbumTracks") var indexAlbumTracks = true
     
-
+    
     var colorSchemeObservation: NSKeyValueObservation? = nil
     
     var colorScheme: ColorScheme {
@@ -60,7 +60,7 @@ class PlayerManager: ObservableObject {
     @Published var didScrollToAlbumsSearchBar = false
     
     @Published var indexingSpotlightStatus: String? = nil
-
+    
     // MARK: Touch Bar
     
     @Published var touchbarPlaylistsOffset = 0
@@ -331,7 +331,7 @@ class PlayerManager: ObservableObject {
     private var didUpdateCurrentlyPlayingContext = PassthroughSubject<Void, Never>()
     
     // MARK: - Spotlight and Core Data -
-
+    
     @Published var spotlightIndexingProgress: Double = 0 {
         didSet {
             Loggers.spotlight.trace(
@@ -339,7 +339,7 @@ class PlayerManager: ObservableObject {
             )
         }
     }
-
+    
     @Published var isIndexingSpotlight = false {
         didSet {
             if !self.isIndexingSpotlight {
@@ -353,7 +353,7 @@ class PlayerManager: ObservableObject {
     
     /// The last time the spotlight data was indexed.
     var lastTimeIndexedSpotlight: Date? = nil
-
+    
     /// The URIs of the items in all the playlists and albums.
     var playlistItemURIs: Set<String> = []
     
@@ -361,7 +361,7 @@ class PlayerManager: ObservableObject {
     let albumsPercent = 0.1
     let playlistItemsPercent = 0.4
     let albumTracksPercent = 0.4
-
+    
     var spotlightIndexingProgressPercentTotal: Double {
         
         var total = playlistsPercent + albumsPercent
@@ -400,7 +400,7 @@ class PlayerManager: ObservableObject {
     private var indexAlbumTracksCancellables: Set<AnyCancellable> = []
     private var indexPlaylistItemsCancellables: Set<AnyCancellable> = []
     private var retrievePlaylistsAndAlbumsCancellable: AnyCancellable? = nil
-
+    
     init(
         spotify: Spotify
     ) {
@@ -408,7 +408,7 @@ class PlayerManager: ObservableObject {
         self.spotify = spotify
         self.viewConext = AppDelegate.shared.persistentContainer.viewContext
         self.backgroundContext = AppDelegate.shared.backgroundContext
-
+        
         self.albumsLastModifiedDates = UserDefaults.standard.dictionary(
             forKey: self.albumsLastModifiedDatesKey
         ) as? [String: Date] ?? [:]
@@ -432,7 +432,7 @@ class PlayerManager: ObservableObject {
             self.objectWillChange.send()
         }
         .store(in: &self.cancellables)
-
+        
         self.popoverWillShow.sink {
             
             if self.spotify.isAuthorized {
@@ -500,7 +500,7 @@ class PlayerManager: ObservableObject {
                 .sink { _ in
                     self.indexSpotlightIfNeeded()
                 }
-
+                
             }
             else {
                 self.indexSpotlightIfNeededCancellable = nil
@@ -605,16 +605,16 @@ class PlayerManager: ObservableObject {
     }
     
     // MARK: Handle Redirect
-
+    
     func handleRedirectURL(_ url: URL) {
-
+        
         Loggers.general.trace("received redirect URL: \(url)")
-
+        
         // peter-schorn-soft-player://login-callback
-
+        
         guard url.scheme == self.spotify.loginCallbackURL.scheme,
               url.host == self.spotify.loginCallbackURL.host else {
-                  
+            
             self.showAppModalAlert(
                 title: NSLocalizedString(
                     "Unexpected URL",
@@ -625,10 +625,10 @@ class PlayerManager: ObservableObject {
                     comment: ""
                 )
             )
-                    
+            
             return
         }
-
+        
         if self.spotify.isAuthorized {
             self.showAppModalAlert(
                 title: NSLocalizedString(
@@ -645,9 +645,9 @@ class PlayerManager: ObservableObject {
             )
             return
         }
-
+        
         AppDelegate.shared.openPopover()
-
+        
         self.spotify.isRetrievingTokens = true
         
         self.requestTokensCancellable = self.spotify.api.authorizationManager
@@ -660,7 +660,7 @@ class PlayerManager: ObservableObject {
             .sink(receiveCompletion: self.receiveRequestTokensCompletion(_:))
         
         self.spotify.generateNewAuthorizationParameters()
-
+        
     }
     
     func receiveRequestTokensCompletion(
@@ -668,7 +668,7 @@ class PlayerManager: ObservableObject {
     ) {
         Loggers.spotify.trace("request tokens completion: \(completion)")
         self.spotify.isRetrievingTokens = false
-
+        
         let alert = NSAlert()
         let alertTitle: String
         let alertMessage: String
@@ -701,7 +701,7 @@ class PlayerManager: ObservableObject {
                     alertMessage = error.customizedLocalizedDescription
                 }
         }
-
+        
         self.showAppModalAlert(title: alertTitle, message: alertMessage)
         
     }
@@ -715,7 +715,7 @@ class PlayerManager: ObservableObject {
         alert.messageText = title
         alert.informativeText = message
         alert.runModal()
-
+        
     }
     
     // MARK: - Playback State -
@@ -751,7 +751,7 @@ class PlayerManager: ObservableObject {
         let formatter: DateComponentsFormatter = number >= 3600 ?
             .playbackTimeWithHours : .playbackTime
         return formatter.string(from: Double(number))
-            ?? Self.noPlaybackPositionPlaceholder
+        ?? Self.noPlaybackPositionPlaceholder
     }
     
     func setAlbumArtistTitle() {
@@ -980,7 +980,7 @@ class PlayerManager: ObservableObject {
             self.artworkImage = Image(.spotifyAlbumPlaceholder)
             return
         }
-//        Loggers.playerManager.trace("loading artwork image from '\(url)'")
+//      Loggers.playerManager.trace("loading artwork image from '\(url)'")
         self.loadArtworkImageCancellable = URLSession.shared
             .dataTaskPublisher(for: url)
             .receive(on: RunLoop.main)
@@ -1335,7 +1335,7 @@ class PlayerManager: ObservableObject {
     
     func addCurrentTrackToSavedTracks() {
         guard let trackURI = self.currentTrack?.identifier,
-                trackURI.idCategory == .track else {
+              trackURI.idCategory == .track else {
             return
         }
         self.addTrackToSavedTracks(trackURI)
@@ -1528,29 +1528,29 @@ class PlayerManager: ObservableObject {
                 receiveValue: { savedAlbums in
                     var savedAlbums = savedAlbums
                         .map(\.item)
-                        /*
-                         Remove albums that have a `nil` id so that this
-                         property can be used as the id in a ForEach.
-                         (The id must be unique; otherwise, the app will crash.)
-                         In theory, the id should never be `nil` when the albums
-                         are retrieved using the `currentUserSavedAlbums()`
-                         endpoint.
-                         
-                         Using \.self in the ForEach is extremely expensive as
-                         this involves calculating the hash of the entire
-                         `Album` instance, which is very large.
-                         */
+                    /*
+                     Remove albums that have a `nil` id so that this
+                     property can be used as the id in a ForEach.
+                     (The id must be unique; otherwise, the app will crash.)
+                     In theory, the id should never be `nil` when the albums
+                     are retrieved using the `currentUserSavedAlbums()`
+                     endpoint.
+                     
+                     Using \.self in the ForEach is extremely expensive as
+                     this involves calculating the hash of the entire
+                     `Album` instance, which is very large.
+                     */
                         .filter { $0.id != nil }
                     
                     self.sortAlbumsByLastModifiedDate(&savedAlbums)
                     self.savedAlbums = savedAlbums
                     self.retrieveAlbumImages()
-//                    for album in self.savedAlbums {
-//                        Loggers.playerManager.trace(
-//                            "\(album.name): \(album.uri ?? "nil")"
-//                        )
-//                    }
-
+                    //                    for album in self.savedAlbums {
+                    //                        Loggers.playerManager.trace(
+                    //                            "\(album.name): \(album.uri ?? "nil")"
+                    //                        )
+                    //                    }
+                    
                 }
             )
         
@@ -1850,11 +1850,11 @@ class PlayerManager: ObservableObject {
                     self.sortPlaylistsByLastModifiedDate(&playlists)
                     self.playlists = playlists
                     self.retrievePlaylistImages()
-//                    for playlist in self.playlists {
-//                        Loggers.playerManager.trace(
-//                            "\(playlist.name): \(playlist.uri)"
-//                        )
-//                    }
+                    //                    for playlist in self.playlists {
+                    //                        Loggers.playerManager.trace(
+                    //                            "\(playlist.name): \(playlist.uri)"
+                    //                        )
+                    //                    }
                 }
             )
         
@@ -3602,7 +3602,8 @@ class PlayerManager: ObservableObject {
                 cdPlaylist.uri = playlist.uri
                 // the user could have renamed the playlist
                 cdPlaylist.name = playlist.name
-                
+                cdPlaylist.snapshotId = playlist.snapshotId
+
                 if self.indexPlaylists {
                     
                     let attributeSet = CSSearchableItemAttributeSet(

@@ -19,6 +19,7 @@ extension CDPlaylist {
     @NSManaged public var name: String?
     @NSManaged public var uri: String?
     @NSManaged public var items: NSSet?
+    @NSManaged public var snapshotId: String?
     
     var itemsSet: Set<CDPlaylistItem> {
         self.items as? Set<CDPlaylistItem> ?? []

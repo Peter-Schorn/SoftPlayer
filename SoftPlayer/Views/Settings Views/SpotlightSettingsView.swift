@@ -103,7 +103,8 @@ struct SpotlightSettingsView: View {
                     }
                 }
             }
-            .padding(.vertical, 5)
+//            .padding(.bottom, 5)
+            .padding(.top, 20)
 //            .border(Color.green)
             
             VStack {
@@ -132,24 +133,23 @@ struct SpotlightSettingsView: View {
                         }
                         Spacer()
                     }
-                    .onHover(
-                        enterDelay: 0.5,
-                        exitDelay: 0.1
-                    ) { isHovering in
-                        self.isHovering = isHovering
-                    }
-                    
-//                    Text(verbatim: playerManager.indexingSpotlightStatus ?? "")
-//                        .font(.footnote)
-//                        .fixedSize(horizontal: true, vertical: false)
                     
                 }
+                
             }
             .frame(width: 250, height: 40)
+            .padding(.vertical, 10)
+            .padding(.bottom, 20)
 //            .border(Color.green)
+            .onHover(
+                enterDelay: 0.5,
+                exitDelay: 0.1
+            ) { isHovering in
+                self.isHovering = isHovering
+            }
 
         }
-        .padding(20)
+        .padding([.horizontal, .top], 20)
         .onAppear(perform: onAppear)
         .background(
             KeyEventHandler(name: "SpotlightSettingsView") { event in
@@ -201,7 +201,7 @@ struct SpotlightSettingsView_Previews: PreviewProvider {
                 .tabItem { Text("Spotlight") }
         }
         .padding()
-        .frame(width: 400, height: 250)
+        .frame(width: 400, height: 330)
     }
 }
 
