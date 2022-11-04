@@ -133,6 +133,7 @@ struct SpotlightSettingsView: View {
                         }
                         Spacer()
                     }
+                    .padding(.top, 5)
                     
                 }
                 else {

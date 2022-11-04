@@ -3978,6 +3978,20 @@ class PlayerManager: ObservableObject {
                             skip indexing '\(playlist.name)' because not changed
                             """
                         )
+                        
+                        let percent = self.playlistItemsPercent /
+                            self.spotlightIndexingProgressPercentTotal
+                        
+                        let progressIncrement = (
+                            1 / Double(self.playlists.count)
+                        ) * percent
+                        
+                        DispatchQueue.main.async {
+                            self.spotlightIndexingProgress.add(
+                                progressIncrement, clampingTo: 1
+                            )
+                        }
+
                         continue
                     }
                     
