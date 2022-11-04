@@ -320,6 +320,8 @@ class PlayerManager: ObservableObject {
     /// Emits after the popover dismisses.
     let popoverDidClose = PassthroughSubject<Void, Never>()
     
+    var popoverisOpen = false
+
     /// A publisher that emits when the Spotify player state changes.
     let playerStateDidChange = DistributedNotificationCenter
         .default().publisher(for: .spotifyPlayerStateDidChange)

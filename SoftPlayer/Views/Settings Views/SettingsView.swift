@@ -48,9 +48,12 @@ struct SettingsView: View {
         )
         .preferredColorScheme(playerManager.colorScheme)
         .onReceive(
-            spotify.redirectURLSubject,
-            perform: playerManager.handleRedirectURL(_:)
-        )
+            spotify.redirectURLSubject
+        ) { url in
+            if !playerManager.popoverisOpen {
+                playerManager.handleRedirectURL(url)
+            }
+        }
         
     }
     

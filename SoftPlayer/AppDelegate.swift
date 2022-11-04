@@ -378,10 +378,12 @@ extension AppDelegate: NSPopoverDelegate {
     
     func popoverWillShow(_ notification: Notification) {
         self.playerManager.popoverWillShow.send()
+        self.playerManager.popoverisOpen = true
     }
 
     func popoverDidClose(_ notification: Notification) {
         self.playerManager.popoverDidClose.send()
+        self.playerManager.popoverisOpen = false
     }
 
 }

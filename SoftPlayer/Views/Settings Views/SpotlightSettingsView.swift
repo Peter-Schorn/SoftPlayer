@@ -200,7 +200,6 @@ struct SpotlightSettingsView: View {
             }
             .touchBar(content: PlayPlaylistsTouchBarView.init)
         )
-        
     }
     
     func onAppear() {
