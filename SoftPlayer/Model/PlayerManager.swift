@@ -543,8 +543,6 @@ class PlayerManager: ObservableObject {
         
         //        self.debug()
         
-        SoftPlayerLogHandler.playerManager = self
-        
     }
     
     /// Newer versions of this app have added new authorization scopes. Check

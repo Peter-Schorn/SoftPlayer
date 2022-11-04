@@ -172,8 +172,6 @@ struct SoftPlayerLogHandler: LogHandler {
     
     var metadata: Logger.Metadata
     
-    static var playerManager: PlayerManager? = nil
-
     private let osLogger: OSLogger
 
     /**
@@ -230,18 +228,6 @@ struct SoftPlayerLogHandler: LogHandler {
         let osLogLevel = Self.convertToOSLogLevel(level)
         self.osLogger.log(level: osLogLevel, "\(logMessage, privacy: .public)")
         #endif
-        
-
-        if [
-            Loggers.spotlight.label,
-            Loggers.coreData.label
-        ].contains(self.label) {
-            
-            DispatchQueue.main.async {
-                Self.playerManager?.indexingSpotlightStatus = logMessage
-            }
-
-        }
 
     }
     
