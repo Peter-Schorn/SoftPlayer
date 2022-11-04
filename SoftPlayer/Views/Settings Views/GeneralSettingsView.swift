@@ -35,6 +35,7 @@ struct GeneralSettingsView: View {
             )
             .font(.footnote)
             .foregroundColor(.secondary)
+            .padding(.bottom, 10)
             .fixedSize(horizontal: false, vertical: true)
 //            .border(Color.green)
             
@@ -49,6 +50,7 @@ struct GeneralSettingsView: View {
                 )
                 .font(.footnote)
                 .foregroundColor(.secondary)
+                .padding(.bottom, 10)
                 
             }
             else {
@@ -58,6 +60,7 @@ struct GeneralSettingsView: View {
                     Text("Login to Spotify")
                 }
                 .padding(.vertical, 5)
+                .padding(.bottom, 10)
                 .disabled(spotify.isRetrievingTokens)
 
             }
