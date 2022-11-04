@@ -60,7 +60,7 @@ struct SpotlightSettingsView: View {
             
             Text(
                 """
-                When playing content contained in both a playlist and album:
+                When playing a track contained in both a playlist and album:
                 """
             )
             .lineLimit(3)
@@ -148,7 +148,7 @@ struct SpotlightSettingsView: View {
                             view.tint(Color.green)
                         }
                         else {
-                            view
+                            view.accentColor(Color.green)
                         }
                     }
                     HStack {
