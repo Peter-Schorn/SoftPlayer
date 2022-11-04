@@ -33,7 +33,7 @@ class PlayerManager: ObservableObject {
     @AppStorage("indexPlaylists") var indexPlaylists = true
     @AppStorage("indexPlaylistItems") var indexPlaylistItems = true
     @AppStorage("indexAlbumTracks") var indexAlbumTracks = true
-    
+    @AppStorage("playInPlaylistFirst") var playInPlaylistFirst = true
     
     var colorSchemeObservation: NSKeyValueObservation? = nil
     
@@ -3513,29 +3513,49 @@ class PlayerManager: ObservableObject {
                     return false
                 }
 
-                if let playlist = playlistItem.playlist {
-                    guard let playlistURI = playlist.uri else {
-                        showCorruptedAlert(name: playlistItem.name)
-                        return false
+                func playInPlaylist() -> Bool {
+                    if let playlist = playlistItem.playlist {
+                        guard let playlistURI = playlist.uri else {
+                            return false
+                        }
+                        self.spotifyApplication?.playTrack(
+                            uri, inContext: playlistURI
+                        )
+                        return true
                     }
-                    self.spotifyApplication?.playTrack(
-                        uri, inContext: playlistURI
-                    )
-                }
-                else if let album = playlistItem.album {
-                    guard let albumURI = album.uri else {
-                        showCorruptedAlert(name: playlistItem.name)
-                        return false
-                    }
-                    self.spotifyApplication?.playTrack(
-                        uri, inContext: albumURI
-                    )
-                }
-                else {
-                    showCorruptedAlert(name: playlistItem.name)
                     return false
                 }
+
                 
+                func playInAlbum() -> Bool {
+                    if let album = playlistItem.album {
+                        guard let albumURI = album.uri else {
+                            return false
+                        }
+                        self.spotifyApplication?.playTrack(
+                            uri, inContext: albumURI
+                        )
+                        return true
+                    }
+                    else {
+                        return false
+                    }
+                }
+                
+                if self.playInPlaylistFirst {
+                    if !playInPlaylist() {
+                        if !playInAlbum() {
+                            showCorruptedAlert(name: playlistItem.name)
+                        }
+                    }
+                }
+                else {
+                    if !playInAlbum() {
+                        if !playInPlaylist() {
+                            showCorruptedAlert(name: playlistItem.name)
+                        }
+                    }
+                }
                 
         }
         

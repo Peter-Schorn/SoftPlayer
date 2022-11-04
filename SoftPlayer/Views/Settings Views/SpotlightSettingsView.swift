@@ -13,6 +13,8 @@ struct SpotlightSettingsView: View {
 
     @State private var isHovering = false
 
+    @State private var playSelection = "playlist"
+
     /// Whether or not the user has changed the settings for which items to
     /// index since the last time spotlight has been re-indexed.
     var hasChanges: Bool {
@@ -55,6 +57,33 @@ struct SpotlightSettingsView: View {
 
     var body: some View {
         Form {
+            
+            Text(
+                """
+                When playing content contained in both a playlist and album:
+                """
+            )
+            .lineLimit(3)
+            .multilineTextAlignment(.center)
+            .fixedSize(horizontal: false, vertical: true)
+            
+            Picker("", selection: $playSelection) {
+                Text("play in playlist")
+                    .tag("playlist")
+                Text("play in album")
+                    .tag("album")
+            }
+            .pickerStyle(.radioGroup)
+            .horizontalRadioGroupLayout()
+            .padding(.vertical, 5)
+//            .padding(.leading)
+//            .border(Color.red)
+            .onChange(of: playSelection) { _ in
+                self.onChangePlaySelection()
+            }
+
+            Divider()
+
             Group {
                 Toggle(
                     "Index Playlists",
@@ -175,12 +204,25 @@ struct SpotlightSettingsView: View {
     }
     
     func onAppear() {
+        self.playSelection = self.playerManager.playInPlaylistFirst ?
+            "playlist" : "album"
         self.indexPlaylists = self.playerManager.indexPlaylists
         self.indexPlaylistItems = self.playerManager.indexPlaylistItems
         self.indexAlbums = self.playerManager.indexAlbums
         self.indexAlbumTracks = self.playerManager.indexAlbumTracks
     }
     
+    func onChangePlaySelection() {
+        switch self.playSelection {
+            case "playlist":
+                self.playerManager.playInPlaylistFirst = true
+            case "album":
+                self.playerManager.playInPlaylistFirst = false
+            default:
+                break
+        }
+    }
+
     func reIndexSpotlight() {
         
         self.playerManager.indexPlaylists = self.indexPlaylists
@@ -214,7 +256,7 @@ struct SpotlightSettingsView_Previews: PreviewProvider {
                 .tabItem { Text("Spotlight") }
         }
         .padding()
-        .frame(width: 400, height: 330)
+        .frame(width: 400, height: 400)
     }
 }
 
