@@ -107,7 +107,7 @@ struct SpotlightSettingsView: View {
             .padding(.top, 20)
 //            .border(Color.green)
             
-            VStack {
+            VStack(spacing: 0) {
                 if playerManager.isIndexingSpotlight {
                     
                     ProgressView(
@@ -135,10 +135,20 @@ struct SpotlightSettingsView: View {
                     }
                     
                 }
+                else {
+                    HStack {
+                        Text("Indexes automatically every hour")
+                            .font(.footnote)
+                            .foregroundColor(.secondary)
+                        Spacer()
+                    }
+//                    .border(Color.green)
+                    Spacer()
+                }
                 
             }
             .frame(width: 250, height: 40)
-            .padding(.vertical, 10)
+//            .padding(.vertical, 10)
             .padding(.bottom, 20)
 //            .border(Color.green)
             .onHover(
@@ -185,6 +195,8 @@ struct SpotlightSettingsView: View {
     
     func cancelIndexingSpotlight() {
         self.playerManager.isIndexingSpotlight = false
+        self.playerManager.deleteAllCoreDataObjects()
+        self.playerManager.deleteSpotlightIndex()
     }
     
 }

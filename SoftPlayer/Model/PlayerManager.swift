@@ -351,6 +351,8 @@ class PlayerManager: ObservableObject {
         }
     }
     
+    @Published var spotlightDataIsDeleted = false
+
     /// The last time the spotlight data was indexed.
     var lastTimeIndexedSpotlight: Date? = nil
     
@@ -537,7 +539,7 @@ class PlayerManager: ObservableObject {
             }
             .store(in: &self.cancellables)
         
-//        self.debug()
+        //        self.debug()
         
         SoftPlayerLogHandler.playerManager = self
         
@@ -3211,14 +3213,14 @@ class PlayerManager: ObservableObject {
     func indexSpotlightIfNeeded() {
         
         if let date = self.lastTimeIndexedSpotlight {
-            // only index spotlig indexht every hour
+            // only automatically index spotlight every hour
             if date.addingTimeInterval(3_600) > Date() {
-                Loggers.spotlight.trace("will NOT index spotlight")
+                Loggers.spotlight.trace("--- will NOT index spotlight ---")
                 return
             }
         }
         
-        Loggers.spotlight.trace("WILL index spotlight")
+        Loggers.spotlight.trace("--- WILL index spotlight ---")
         
         self.indexSpotlight()
 
@@ -3226,6 +3228,10 @@ class PlayerManager: ObservableObject {
 
     func indexSpotlight() {
         
+        if ProcessInfo.processInfo.isPreviewing {
+            return
+        }
+
         Loggers.spotlight.trace("indexing spotlight")
 
         self.lastTimeIndexedSpotlight = Date()
@@ -3602,7 +3608,6 @@ class PlayerManager: ObservableObject {
                 cdPlaylist.uri = playlist.uri
                 // the user could have renamed the playlist
                 cdPlaylist.name = playlist.name
-                cdPlaylist.snapshotId = playlist.snapshotId
 
                 if self.indexPlaylists {
                     
@@ -3840,7 +3845,6 @@ class PlayerManager: ObservableObject {
                     return
                 }
                 
-                
                 let savedTracksCDPlaylist = cdPlaylists.first(
                     where: { $0.uri?.isSavedTracksURI == true }
                 )
@@ -3958,9 +3962,22 @@ class PlayerManager: ObservableObject {
                         continue
                     }
                     
+
                     guard let cdPlaylist = cdPlaylists.first(
                         where: { $0.uri == playlist.uri }
                     ) else {
+                        continue
+                    }
+                    
+                    if
+//                        !self.spotlightDataIsDeleted,
+                        playlist.snapshotId == cdPlaylist.snapshotId
+                    {
+                        Loggers.coreData.trace(
+                            """
+                            skip indexing '\(playlist.name)' because not changed
+                            """
+                        )
                         continue
                     }
                     
@@ -3993,6 +4010,10 @@ class PlayerManager: ObservableObject {
                                     '\(playlist.name)'
                                     """
                                         )
+                                    }
+                                    self.backgroundContext.performAndWait {
+                                        cdPlaylist.snapshotId = playlist.snapshotId
+                                        self.saveBackgroundContext()
                                     }
                                     dispatchGroup.leave()
                                     
@@ -4512,6 +4533,7 @@ class PlayerManager: ObservableObject {
         
         DispatchQueue.main.async {
             self.isIndexingSpotlight = false
+            self.spotlightDataIsDeleted = false
         }
         
         
@@ -4625,6 +4647,10 @@ class PlayerManager: ObservableObject {
             self.saveBackgroundContext()
             
             Loggers.coreData.notice("deleted all core data objects")
+            
+            DispatchQueue.main.async {
+                self.spotlightDataIsDeleted = true
+            }
             
         }
 
