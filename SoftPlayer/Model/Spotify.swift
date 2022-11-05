@@ -98,8 +98,6 @@ final class Spotify: ObservableObject {
     var codeVerifier: String
     var codeChallenge: String
     
-    let redirectURLSubject = PassthroughSubject<URL, Never>()
-    
     /**
      Whether or not the application has been authorized. If `true`,
      then you can begin making requests to the Spotify web API

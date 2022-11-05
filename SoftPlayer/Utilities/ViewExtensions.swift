@@ -54,11 +54,15 @@ extension View {
         @ViewBuilder content: () -> V
     ) -> some View where V : View {
         
+        #if compiler(<5.4)
+        self.background(content(), alignment: alignment)
+        #else
         if #available(macOS 12.0, *) {
             self.background(alignment: alignment, content: content)
         } else {
             self.background(content(), alignment: alignment)
         }
+        #endif
 
     }
     

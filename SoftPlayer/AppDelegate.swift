@@ -204,7 +204,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             return
         }
         
-        spotify.redirectURLSubject.send(url)
+        self.playerManager.handleRedirectURL(url)
         
     }
 

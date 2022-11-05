@@ -161,6 +161,7 @@ struct BubblingHeartsView: View, Animatable {
 }
 
 
+#if compiler(>=5.4)
 @available(macOS 12.0, *)
 struct BubblingHeartsView_Previews: PreviewProvider {
     
@@ -207,3 +208,4 @@ struct BubblingHeartsView_Previews: PreviewProvider {
         Preview()
     }
 }
+#endif

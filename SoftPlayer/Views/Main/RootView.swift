@@ -27,15 +27,7 @@ struct RootView: View {
             width: CGFloat(AppDelegate.popoverWidth),
             height: CGFloat(AppDelegate.popoverHeight)
         )
-        .onReceive(
-            spotify.redirectURLSubject
-        ) { url in
-            if playerManager.popoverisOpen {
-                playerManager.handleRedirectURL(url)
-            }
-        }
         .preferredColorScheme(playerManager.colorScheme)
-        
     }
 }
 

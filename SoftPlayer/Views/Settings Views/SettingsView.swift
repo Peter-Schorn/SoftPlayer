@@ -47,13 +47,13 @@ struct SettingsView: View {
             .touchBar(content: PlayPlaylistsTouchBarView.init)
         )
         .preferredColorScheme(playerManager.colorScheme)
-        .onReceive(
-            spotify.redirectURLSubject
-        ) { url in
-            if !playerManager.popoverisOpen {
-                playerManager.handleRedirectURL(url)
-            }
-        }
+//        .onReceive(
+//            spotify.redirectURLSubject
+//        ) { url in
+//            if !playerManager.popoverisOpen {
+//                playerManager.handleRedirectURL(url)
+//            }
+//        }
         
     }
     
