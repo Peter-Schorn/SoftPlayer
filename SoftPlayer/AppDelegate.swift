@@ -281,7 +281,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 backing: .buffered,
                 defer: false
             )
-            
+
+            // MARK: Configure toolbar
+//            let toolbar = NSToolbar(identifier: .mainWindow)
+//            toolbar.displayMode = .iconOnly
+//            toolbar.delegate = self
+//            self.mainWindow?.toolbar = toolbar
+//            self.mainWindow?.toolbarStyle = .unified
+
             self.mainWindow?.title = "Soft Player"
             self.mainWindow?.setFrameAutosaveName("Soft Player")
             self.mainWindow?.isReleasedWhenClosed = false
@@ -384,6 +391,57 @@ extension AppDelegate: NSPopoverDelegate {
     func popoverDidClose(_ notification: Notification) {
         self.playerManager.popoverDidClose.send()
         self.playerManager.popoverisOpen = false
+    }
+
+}
+
+// MARK: - Toolbar -
+
+extension AppDelegate: NSToolbarDelegate {
+    
+    func toolbarAllowedItemIdentifiers(
+        _ toolbar: NSToolbar
+    ) -> [NSToolbarItem.Identifier] {
+        return [.stayOnTop]
+    }
+
+    func toolbarDefaultItemIdentifiers(
+        _ toolbar: NSToolbar
+    ) -> [NSToolbarItem.Identifier] {
+        return [.stayOnTop]
+    }
+    
+    func toolbar(
+        _ toolbar: NSToolbar,
+        itemForItemIdentifier itemIdentifier: NSToolbarItem.Identifier,
+        willBeInsertedIntoToolbar flag: Bool
+    ) -> NSToolbarItem? {
+        
+        switch itemIdentifier {
+            case .stayOnTop:
+                let toolbarItem = NSToolbarItem(itemIdentifier: .stayOnTop)
+                toolbarItem.label = "Stap on top"
+                toolbarItem.image = NSImage(
+                    systemSymbolName: "square.on.square",
+                    accessibilityDescription: nil
+                )
+                toolbarItem.target = self
+                toolbarItem.action = #selector(toggleStayOnTop)
+                let menuItem = NSMenuItem()
+                menuItem.submenu = nil
+                menuItem.title = "Stay on top"
+                menuItem.target = self
+                menuItem.action = #selector(toggleStayOnTop)
+                toolbarItem.menuFormRepresentation = menuItem
+                return toolbarItem
+            default:
+                return nil
+        }
+
+    }
+    
+    @objc func toggleStayOnTop() {
+        
     }
 
 }

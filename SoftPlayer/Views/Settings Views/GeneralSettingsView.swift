@@ -42,9 +42,12 @@ struct GeneralSettingsView: View {
             
             if spotify.isAuthorized {
                 
-                Button(action: spotify.api.authorizationManager.deauthorize, label: {
-                    Text("Logout from Spotify")
-                })
+                Button(
+                    action: spotify.api.authorizationManager.deauthorize,
+                    label: {
+                        Text("Logout from Spotify")
+                    }
+                )
                 Text(
                     "All user data will be removed"
                 )

@@ -167,7 +167,7 @@ struct SpotlightSettingsView: View {
                 }
                 else {
                     HStack {
-                        Text("Indexes automatically every hour")
+                        Text("Indexes automatically every hour and at launch")
                             .font(.footnote)
                             .foregroundColor(.secondary)
                         Spacer()
@@ -177,7 +177,6 @@ struct SpotlightSettingsView: View {
                 }
                 
             }
-            .frame(width: 250, height: 40)
 //            .padding(.vertical, 10)
             .padding(.bottom, 20)
 //            .border(Color.green)

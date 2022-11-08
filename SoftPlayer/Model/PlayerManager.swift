@@ -3981,7 +3981,6 @@ class PlayerManager: ObservableObject {
                     if playlist.uri.isSavedTracksURI {
                         continue
                     }
-                    
 
                     guard let cdPlaylist = cdPlaylists.first(
                         where: { $0.uri == playlist.uri }
