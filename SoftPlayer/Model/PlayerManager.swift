@@ -16,8 +16,8 @@ class PlayerManager: ObservableObject {
         category: .pointsOfInterest
     )
     
-    let viewConext: NSManagedObjectContext
-    let backgroundContext: NSManagedObjectContext
+    let viewConext = AppDelegate.shared.persistentContainer.viewContext
+    let backgroundContext = AppDelegate.shared.backgroundContext
     
     let spotify: Spotify
     
@@ -349,6 +349,9 @@ class PlayerManager: ObservableObject {
                 self.indexPlaylistItemsCancellables = []
                 self.retrievePlaylistsAndAlbumsCancellable = nil
                 self.spotlightIndexingProgress = 0
+                self.backgroundContext.performAndWait {
+                    self.saveBackgroundContext()
+                }
             }
         }
     }
@@ -410,8 +413,6 @@ class PlayerManager: ObservableObject {
     ) {
         
         self.spotify = spotify
-        self.viewConext = AppDelegate.shared.persistentContainer.viewContext
-        self.backgroundContext = AppDelegate.shared.backgroundContext
         
         self.albumsLastModifiedDates = UserDefaults.standard.dictionary(
             forKey: self.albumsLastModifiedDatesKey
@@ -4770,26 +4771,7 @@ private extension PlayerManager {
     }
     
     func debug() {
-        
-//        self.$savedAlbumsGridViewIsFirstResponder.sink { isFirstResponder in
-//            Loggers.firstResponder.trace(
-//                "savedAlbumsGridViewIsFirstResponder: \(isFirstResponder)"
-//            )
-//        }
-//        .store(in: &self.cancellables)
-//
-//        self.$playlistsScrollViewIsFirstResponder.sink { isFirstResponder in
-//            Loggers.firstResponder.trace(
-//                "playlistsScrollViewIsFirstResponder: \(isFirstResponder)"
-//            )
-//        }
-//        .store(in: &self.cancellables)
-        
-//        self.$isIndexingSpotlight.sink { isIndexing in
-//            Loggers.spotlight.trace("isIndexingSpotlight: \(isIndexing)")
-//        }
-//        .store(in: &self.cancellables)
-        
+
     }
 
 }

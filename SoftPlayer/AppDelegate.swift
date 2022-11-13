@@ -50,14 +50,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 fatalError("Unable to load persistent stores: \(error)")
             }
         }
-        
-        container.newBackgroundContext()
-
+        container.viewContext.mergePolicy = NSMergePolicy
+            .mergeByPropertyObjectTrump
+        container.viewContext.automaticallyMergesChangesFromParent = true
         return container
     }()
     
     lazy var backgroundContext: NSManagedObjectContext = {
         let context = self.persistentContainer.newBackgroundContext()
+        context.mergePolicy = NSMergePolicy.mergeByPropertyObjectTrump
         context.automaticallyMergesChangesFromParent = true
         return context
     }()

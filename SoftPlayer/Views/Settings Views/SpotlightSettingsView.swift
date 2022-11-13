@@ -39,22 +39,6 @@ struct SpotlightSettingsView: View {
         """
     )
     
-    var formattedProgress: String {
-        if #available(macOS 12.0, *) {
-            return self.playerManager.spotlightIndexingProgress
-                .formatted(.percent.precision(.fractionLength(0)))
-        } else {
-            let formatter = NumberFormatter()
-            formatter.numberStyle = .percent
-            return formatter.string(from:
-                NSNumber(value:
-                    self.playerManager.spotlightIndexingProgress
-                )
-            ) ?? ""
-            
-        }
-    }
-
     var body: some View {
         Form {
             
@@ -155,11 +139,6 @@ struct SpotlightSettingsView: View {
                         Text("Indexing Spotlight")
                             .font(.footnote)
                             .foregroundColor(.secondary)
-                        if isHovering {
-                            Text(formattedProgress)
-                                .font(.footnote)
-                                .foregroundColor(.secondary)
-                        }
                         Spacer()
                     }
                     .padding(.top, 5)
@@ -180,12 +159,6 @@ struct SpotlightSettingsView: View {
 //            .padding(.vertical, 10)
             .padding(.bottom, 20)
 //            .border(Color.green)
-            .onHover(
-                enterDelay: 0.5,
-                exitDelay: 0.1
-            ) { isHovering in
-                self.isHovering = isHovering
-            }
 
         }
         .padding([.horizontal, .top], 20)
@@ -236,8 +209,6 @@ struct SpotlightSettingsView: View {
     
     func cancelIndexingSpotlight() {
         self.playerManager.isIndexingSpotlight = false
-        self.playerManager.deleteAllCoreDataObjects()
-        self.playerManager.deleteSpotlightIndex()
     }
     
 }
