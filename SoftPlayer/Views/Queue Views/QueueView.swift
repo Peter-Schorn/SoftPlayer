@@ -129,11 +129,8 @@ struct QueueView: View {
                             }
                         )
                         .touchBar(content: PlayPlaylistsTouchBarView.init)
-                        .padding(.leading, -5)
                         .padding(.top, 7)
                         .padding(.trailing, 5)
-//                        .padding([.horizontal, .top], 5)
-//                        .padding(.bottom, -5)
                         .id(searchFieldId)
                         
                         if filteredQueueItems.isEmpty {
