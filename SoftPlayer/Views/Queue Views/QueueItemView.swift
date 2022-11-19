@@ -11,6 +11,7 @@ struct QueueItemView: View {
 
     let item: PlaylistItem
     let index: Int
+    let isSelected: Bool
 
     @State private var playQueueCancellable: AnyCancellable? = nil
 
@@ -30,7 +31,9 @@ struct QueueItemView: View {
     }
 
     var body: some View {
-        Button(action: self.play, label: {
+        Button(action: {
+            playerManager.playQueueItem(item)
+        }, label: {
             HStack {
                 image
                     .resizable()
@@ -62,6 +65,7 @@ struct QueueItemView: View {
                 return nil
             }
         })
+        .disabled(isSelected)
         .buttonStyle(PlainButtonStyle())
         .contextMenu(menuItems: contextMenu)
 
@@ -81,37 +85,6 @@ struct QueueItemView: View {
         }
     }
     
-    func play() {
-        
-        let errorTitle = String.localizedStringWithFormat(
-            NSLocalizedString(
-                "Couldn't Play \"%@\"",
-                comment: "Couldn't Play [queue item name]"
-            ),
-            self.item.name
-        )
-
-        guard let uri = self.item.uri else {
-            Loggers.queue.error(
-                "\(errorTitle): no URI"
-            )
-            let message = "Missing data"
-            self.playerManager.notificationSubject.send(
-                AlertItem(title: errorTitle, message: message)
-            )
-            return
-        }
-        
-        let contextURI = self.playerManager.currentlyPlayingContext?
-                .context?.uri
-
-        self.playerManager.spotifyApplication?.playTrack(
-            uri, inContext: contextURI
-        )
-        
-        self.playerManager.retrieveQueue()
-
-    }
 }
 
 struct QueueItemView_Previews: PreviewProvider {
@@ -121,7 +94,8 @@ struct QueueItemView_Previews: PreviewProvider {
     static var previews: some View {
         QueueItemView(
             item: PlaylistItem.track(.comeTogether),
-            index: 0
+            index: 0,
+            isSelected: false
         )
         .frame(
             width: AppDelegate.popoverWidth

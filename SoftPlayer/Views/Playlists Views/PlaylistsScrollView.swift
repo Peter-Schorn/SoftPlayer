@@ -168,8 +168,8 @@ struct PlaylistsScrollView: View {
                                 playlist: playlist.element,
                                 isSelected: selectedPlaylistURI == playlist.element.uri
                             )
-                            .if(playlist.offset == 0) {
-                                $0.padding(.top, 10)
+                            .if(playlist.offset == 0) { view in
+                                view.padding(.top, 10)
                             }
                             .id(playlist.offset)
                         }
@@ -244,7 +244,7 @@ struct PlaylistsScrollView: View {
 
         // don't handle the key event if the
         // `SavedAlbumsGridView` page is being shown
-        if playerManager.libraryPage == .albums {
+        if playerManager.libraryPage != .playlists {
             Loggers.keyEvent.debug(
                 "PlaylistsScrollView not handling event because not shown"
             )
@@ -287,7 +287,7 @@ struct PlaylistsScrollView: View {
         }
         
         if let firstPlaylist = self.filteredPlaylists.first?.element {
-            withAnimation(highlightAnimation) {
+            withAnimation(self.highlightAnimation) {
                 self.selectedPlaylistURI = firstPlaylist.uri
             }
             Loggers.playlistsScrollView.trace(
@@ -296,13 +296,13 @@ struct PlaylistsScrollView: View {
             self.playPlaylist(firstPlaylist)
 
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                withAnimation(highlightAnimation) {
+                withAnimation(self.highlightAnimation) {
                     self.selectedPlaylistURI = nil
                 }
             }
         }
         else {
-            withAnimation(highlightAnimation) {
+            withAnimation(self.highlightAnimation) {
                 self.selectedPlaylistURI = nil
             }
         }

@@ -59,6 +59,10 @@ class PlayerManager: ObservableObject {
     /// library view.
     @Published var didScrollToAlbumsSearchBar = false
     
+    /// Only scroll to the queue search bar once after presenting the
+    /// library view.
+    @Published var didScrollToQueueSearchBar = false
+
     @Published var indexingSpotlightStatus: String? = nil
     
     // MARK: Touch Bar
@@ -70,7 +74,7 @@ class PlayerManager: ObservableObject {
     @Published var playerViewIsFirstResponder: Bool? = nil
     @Published var playlistsScrollViewIsFirstResponder = false
     @Published var savedAlbumsGridViewIsFirstResponder = false
-    @Published var queueViewIsFirstResponder: Bool? = false
+    @Published var queueViewIsFirstResponder = false
     
     // MARK: - Images -
     
@@ -2289,6 +2293,37 @@ class PlayerManager: ObservableObject {
         
     }
     
+    func playQueueItem(_ item: PlaylistItem) {
+        
+        let errorTitle = String.localizedStringWithFormat(
+            NSLocalizedString(
+                "Couldn't Play \"%@\"",
+                comment: "Couldn't Play [queue item name]"
+            ),
+            item.name
+        )
+
+        guard let uri = item.uri else {
+            Loggers.queue.error(
+                "\(errorTitle): no URI"
+            )
+            let message = "Missing data"
+            self.notificationSubject.send(
+                AlertItem(title: errorTitle, message: message)
+            )
+            return
+        }
+        
+        let contextURI = self.currentlyPlayingContext?.context?.uri
+
+        self.spotifyApplication?.playTrack(
+            uri, inContext: contextURI
+        )
+        
+        self.retrieveQueue()
+
+    }
+    
     // MARK: - User -
     
     func retrieveCurrentUser() {
@@ -3196,6 +3231,7 @@ class PlayerManager: ObservableObject {
         
         self.didScrollToAlbumsSearchBar = false
         self.didScrollToPlaylistsSearchBar = false
+        self.didScrollToQueueSearchBar = false
         
         self.savedAlbumsGridViewIsFirstResponder = false
         self.playlistsScrollViewIsFirstResponder = false

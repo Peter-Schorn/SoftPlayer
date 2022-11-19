@@ -149,8 +149,8 @@ struct SavedAlbumsGridView: View {
                                 album: album,
                                 isSelected: selectedAlbumURI == album.uri
                             )
-                            .if((0...2).contains(offset)) {
-                                $0.padding(.top, 7)
+                            .if((0...2).contains(offset)) { view in
+                                view.padding(.top, 7)
                             }
                             .id(offset)
                         }
@@ -182,7 +182,7 @@ struct SavedAlbumsGridView: View {
 ////                print("SavedAlbumsGridView disapeared")
 //                playerManager.savedAlbumsGridViewIsFirstResponder = false
 //            }
-            .onChange(of: searchText) { text in
+            .onChange(of: searchText) { _ in
                 scrollView.scrollTo(searchFieldId, anchor: .top)
             }
             
@@ -199,7 +199,7 @@ struct SavedAlbumsGridView: View {
         
         // don't handle the key event if the
         // `PlaylistsScrollView` page is being shown
-        if playerManager.libraryPage == .playlists {
+        if playerManager.libraryPage != .albums {
             Loggers.keyEvent.debug(
                 "SavedAlbumsGridView not handling event because not shown"
             )
@@ -236,12 +236,12 @@ struct SavedAlbumsGridView: View {
 
     func searchFieldDidCommit() {
         guard self.playerManager.isShowingLibraryView,
-              playerManager.libraryPage == .albums else {
+                playerManager.libraryPage == .albums else {
             return
         }
         
         if let firstAlbum = self.filteredAlbums.first?.element {
-            withAnimation(highlightAnimation) {
+            withAnimation(self.highlightAnimation) {
                 self.selectedAlbumURI = firstAlbum.uri
             }
             Loggers.savedAlbumsGridView.trace(
@@ -249,13 +249,13 @@ struct SavedAlbumsGridView: View {
             )
             self.playAlbum(firstAlbum)
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                withAnimation(highlightAnimation) {
+                withAnimation(self.highlightAnimation) {
                     self.selectedAlbumURI = nil
                 }
             }
         }
         else {
-            withAnimation(highlightAnimation) {
+            withAnimation(self.highlightAnimation) {
                 self.selectedAlbumURI = nil
             }
         }

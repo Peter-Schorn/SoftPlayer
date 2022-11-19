@@ -48,8 +48,8 @@ struct SaveTrackButton_Previews: PreviewProvider {
 
     static var previews: some View {
         SaveTrackButton(debugIsShowing: true)
-            .padding()
-            .frame(width: 100, height: 100)
+            .padding(50)
+            .frame(width: 200, height: 200)
             .environmentObject(playerManager)
             .environmentObject(playerManager.spotify)
     }
