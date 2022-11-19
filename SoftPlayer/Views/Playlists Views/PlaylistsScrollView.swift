@@ -193,11 +193,7 @@ struct PlaylistsScrollView: View {
                 Loggers.firstResponder.trace(
                     "PlaylistsScrollView.onAppear"
                 )
-                if !self.playerManager.didScrollToPlaylistsSearchBar {
-                    scrollView.scrollTo(0, anchor: .top)
-                    self.playerManager.didScrollToPlaylistsSearchBar = true
-                }
-//                playerManager.playlistsScrollViewIsFirstResponder = true
+                scrollView.scrollTo(0, anchor: .top)
             }
 //            .onDisappear {
 ////                print("PlaylistsScrollView disapeared")

@@ -51,18 +51,6 @@ class PlayerManager: ObservableObject {
     @Published var isDraggingPlaybackPositionView = false
     @Published var isDraggingSoundVolumeSlider = false
     
-    /// Only scroll to the playlists search bar once after presenting the
-    /// library view.
-    @Published var didScrollToPlaylistsSearchBar = false
-    
-    /// Only scroll to the albums search bar once after presenting the
-    /// library view.
-    @Published var didScrollToAlbumsSearchBar = false
-    
-    /// Only scroll to the queue search bar once after presenting the
-    /// library view.
-    @Published var didScrollToQueueSearchBar = false
-
     @Published var indexingSpotlightStatus: String? = nil
     
     // MARK: Touch Bar
@@ -3229,9 +3217,6 @@ class PlayerManager: ObservableObject {
             self.isShowingLibraryView = false
         }
         
-        self.didScrollToAlbumsSearchBar = false
-        self.didScrollToPlaylistsSearchBar = false
-        self.didScrollToQueueSearchBar = false
         
         self.savedAlbumsGridViewIsFirstResponder = false
         self.playlistsScrollViewIsFirstResponder = false

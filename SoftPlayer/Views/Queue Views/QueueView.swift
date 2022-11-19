@@ -175,10 +175,7 @@ struct QueueView: View {
                     }
                     .padding(.leading, 10)
                     .onAppear {
-                        if !self.playerManager.didScrollToQueueSearchBar {
-                            scrollView.scrollTo(0, anchor: .top)
-                            self.playerManager.didScrollToQueueSearchBar = true
-                        }
+                        scrollView.scrollTo(0, anchor: .top)
                     }
                     .onChange(of: searchText) { _ in
                         scrollView.scrollTo(searchFieldId, anchor: .top)

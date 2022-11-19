@@ -172,10 +172,7 @@ struct SavedAlbumsGridView: View {
 //                Loggers.firstResponder.trace(
 //                    "SavedAlbumsGridView.onAppear"
 //                )
-                if !self.playerManager.didScrollToAlbumsSearchBar {
-                    scrollView.scrollTo(0, anchor: .top)
-                    self.playerManager.didScrollToAlbumsSearchBar = true
-                }
+                scrollView.scrollTo(0, anchor: .top)
 //                playerManager.savedAlbumsGridViewIsFirstResponder = true
             }
 //            .onDisappear {
