@@ -22,7 +22,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var mainWindow: NSWindow? = nil
 
     var popover: NSPopover!
+    
     var statusBarItem: NSStatusItem!
+    var statusBarNormalImage: NSImage!
+    var statusBarLikedImage: NSImage!
+    var currentTrackIsSavedCancellable: AnyCancellable? = nil
+    
     var contextMenu: NSMenu!
     
     // MARK: Environment Objects
@@ -101,21 +106,27 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             withLength: NSStatusItem.squareLength
         )
 
-        if let button = self.statusBarItem.button {
-            // MARK: Menu Bar Icon Image
-            let menuBarIcon = NSImage(.musicNoteCircle)
+        // MARK: Menu Bar Icon Images
+        self.statusBarNormalImage = NSImage(.musicNoteCircle)
+        self.statusBarNormalImage.size = CGSize(width: 18, height: 18)
+        self.statusBarLikedImage = NSImage(.musicLikedNoteCircle)
+        self.statusBarLikedImage.size = CGSize(width: 18, height: 18)
 
-            menuBarIcon.size = CGSize(width: 18, height: 18)
-            button.image = menuBarIcon
+        if let button = self.statusBarItem.button {
+            self.playerManager.checkIfCurrentTrackIsSaved()
+            button.image = self.statusBarNormalImage
             button.action = #selector(togglePopover(_:))
             button.sendAction(on: [.leftMouseDown, .rightMouseDown])
+            self.currentTrackIsSavedCancellable = self.playerManager.$currentTrackIsSaved.sink() {
+                button.image = $0 ? self.statusBarLikedImage : self.statusBarNormalImage;
+            }
         }
         else {
             Loggers.appDelegate.critical(
                 "AppDelegate.statusBarItem.button was nil"
             )
         }
-        
+
         self.registerGlobalKeyboardShortcutHandler()
 
         let _ = self.versionBuildIdentifier
@@ -187,6 +198,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationWillTerminate(_ aNotification: Notification) {
+        self.currentTrackIsSavedCancellable = nil
         self.playerManager.spotifyApplication?.blockAppleEvents = true
         self.playerManager.playerStateDidChangeCancellable = nil
         self.playerManager.commitModifiedDates()
@@ -206,7 +218,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
         
         self.playerManager.handleRedirectURL(url)
-        
     }
 
 
@@ -332,7 +343,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 extension AppDelegate: NSPopoverDelegate {
     
     @objc func togglePopover(_ sender: AnyObject?) {
-
 
         if
             let event = NSApplication.shared.currentEvent,
