@@ -10,7 +10,12 @@ https://www.soft-player.com/
 
 ## Running From Xcode
 
-To run from Xcode, you must create a Spotify developer application on the [Spotify Developer Dashboard](https://developer.spotify.com/dashboard/login)., Then, you must configure and run an instance of [SpotifyAPI Server](https://github.com/Peter-Schorn/SpotifyAPIServer). You can run it locally from Xcode, as described in the README, at the same time you run Soft Player.
+To run from Xcode, you must create a Spotify developer application on the [Spotify Developer Dashboard](https://developer.spotify.com/dashboard/login). Add the following redirect URI:
+```
+peter-schorn-soft-player://login-callback
+```
+
+Then, you must configure and run an instance of [SpotifyAPI Server](https://github.com/Peter-Schorn/SpotifyAPIServer). You can run it locally from Xcode, as described in the README, at the same time you run Soft Player.
 
 Requires the following environment variables (in addition to those required by SpotifyAPI Server):
 
