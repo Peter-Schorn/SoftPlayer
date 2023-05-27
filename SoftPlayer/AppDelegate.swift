@@ -156,8 +156,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         )
         
         if ProcessInfo.processInfo.isPreviewing {
+            let pid = ProcessInfo.processInfo.processIdentifier
             self.contextMenu.addItem(
-                withTitle: "Preview Build",
+                withTitle: "Preview Build (PID: \(pid))",
                 action: nil,
                 keyEquivalent: ""
             )

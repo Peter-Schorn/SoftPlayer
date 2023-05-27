@@ -2,8 +2,6 @@ import SwiftUI
 
 struct SharingServicesMenu: View {
     
-    @FocusState var focus
-
     /// The items to share
     let items: [Any]
 

@@ -582,7 +582,7 @@ class PlayerManager: ObservableObject {
         
         let alert = NSAlert()
         alert.messageText = NSLocalizedString(
-            "Could not Connect to the Spotify Application",
+            "Could not Connect to the Spotify Desktop Application",
             comment: ""
         )
         alert.informativeText = NSLocalizedString(
@@ -665,39 +665,35 @@ class PlayerManager: ObservableObject {
         self.spotify.isRetrievingTokens = false
         
         let alert = NSAlert()
-        let alertTitle: String
-        let alertMessage: String
         
         switch completion {
             case .finished:
-                alertTitle = NSLocalizedString(
+                alert.messageText = NSLocalizedString(
                     "Successfully Connected to Your Spotify Account",
                     comment: ""
                 )
-                alertMessage = NSLocalizedString(
+                alert.informativeText = NSLocalizedString(
                     "You may close the authorization page in your browser.",
                     comment: ""
                 )
                 alert.alertStyle = .informational
             case .failure(let error):
                 alert.alertStyle = .warning
-                alertTitle = NSLocalizedString(
+                alert.messageText = NSLocalizedString(
                     "Could not Authorize with your Spotify Account",
                     comment: ""
                 )
                 if let authError = error as? SpotifyAuthorizationError,
                    authError.accessWasDenied {
-                    alertMessage = NSLocalizedString(
+                    alert.informativeText = NSLocalizedString(
                         "You denied the Authorization Request :(",
                         comment: ""
                     )
                 }
                 else {
-                    alertMessage = error.customizedLocalizedDescription
+                    alert.informativeText = error.customizedLocalizedDescription
                 }
         }
-        
-        self.showAppModalAlert(title: alertTitle, message: alertMessage)
         
     }
     
@@ -3421,34 +3417,34 @@ class PlayerManager: ObservableObject {
                 
                 let playlistName: String
                 
-            getName: do {
-                
-                do {
-                    if let name = try self.viewConext.fetch(fetchRequest)
-                            .first?.name {
-                        playlistName = name
-                        Loggers.coreData.trace(
-                            "got playlist name from core data"
+                getName: do {
+                    
+                    do {
+                        if let name = try self.viewConext.fetch(fetchRequest)
+                                .first?.name {
+                            playlistName = name
+                            Loggers.coreData.trace(
+                                "got playlist name from core data"
+                            )
+                            break getName
+                        }
+                        
+                    } catch {
+                        Loggers.coreData.error(
+                            "couldn't fetch playlists: \(error)"
                         )
-                        break getName
                     }
                     
-                } catch {
-                    Loggers.coreData.error(
-                        "couldn't fetch playlists: \(error)"
-                    )
+                    if let name = self.playlists.first(
+                        where: { $0.uri == uri }
+                    )?.name {
+                        playlistName = name
+                    }
+                    else {
+                        playlistName = uri
+                    }
+                    
                 }
-                
-                if let name = self.playlists.first(
-                    where: { $0.uri == uri }
-                )?.name {
-                    playlistName = name
-                }
-                else {
-                    playlistName = uri
-                }
-                
-            }
                 
                 self.playPlaylist(uri: uri, name: playlistName)
                     .sink(receiveCompletion: { completion in
@@ -3469,33 +3465,33 @@ class PlayerManager: ObservableObject {
                 
                 let albumName: String
                 
-            getName: do {
-                do {
-                    if let name = try self.viewConext.fetch(fetchRequest)
-                            .first?.name {
-                        albumName = name
-                        Loggers.coreData.trace(
-                            "got album name from core data"
+                getName: do {
+                    do {
+                        if let name = try self.viewConext.fetch(fetchRequest)
+                                .first?.name {
+                            albumName = name
+                            Loggers.coreData.trace(
+                                "got album name from core data"
+                            )
+                            break getName
+                        }
+                        
+                    } catch {
+                        Loggers.coreData.error(
+                            "couldn't fetch albums: \(error)"
                         )
-                        break getName
                     }
                     
-                } catch {
-                    Loggers.coreData.error(
-                        "couldn't fetch albums: \(error)"
-                    )
+                    if let name = self.savedAlbums.first(
+                        where: { $0.uri == uri }
+                    )?.name {
+                        albumName = name
+                    }
+                    else {
+                        albumName = uri
+                    }
+                    
                 }
-                
-                if let name = self.savedAlbums.first(
-                    where: { $0.uri == uri }
-                )?.name {
-                    albumName = name
-                }
-                else {
-                    albumName = uri
-                }
-                
-            }
                 
                 self.playAlbum(
                     uri,

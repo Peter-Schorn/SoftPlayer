@@ -32,7 +32,7 @@
 "Could not Authorize with your Spotify Account" = "No se puede autorizar con su cuenta de Spotify";
 
 /* No comment provided by engineer. */
-"Could not Connect to the Spotify Application" = "No se puede conectar a la aplicación de Spotify";
+"Could not Connect to the Spotify Desktop Application" = "No se pudo conectar a la aplicación de escritorio de Spotify";
 
 /* Couldn't Add [song name] to [playlist name] */
 "Couldn't Add \"%@\" to \"%@\"" = "No se puede añadir \"%1$@\" a \"%2$@\"";
