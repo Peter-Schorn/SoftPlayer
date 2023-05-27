@@ -695,6 +695,8 @@ class PlayerManager: ObservableObject {
                 }
         }
         
+        alert.runModal()
+        
     }
     
     func showAppModalAlert(
