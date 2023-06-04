@@ -16,59 +16,99 @@ final class Spotify: ObservableObject {
     
     private static let clientId: String = {
         
-
+        // modified by pre- and post-build scripts
+        // (See Scripts/pre_build.sh and Scripts/post_build.sh)
         let __clientId__ = ""
-        if __clientId__.isEmpty {
-            if let clientId = ProcessInfo.processInfo
-                    .environment["CLIENT_ID"] {
-                return clientId
-            }
-            fatalError(
-                "failed to inject value for client id in pre-build script"
-            )
+        
+        if !__clientId__.isEmpty {
+            return __clientId__
         }
-        return __clientId__
+
+        if let clientId = ProcessInfo.processInfo
+                .environment["CLIENT_ID"] {
+            return clientId
+        }
+        
+        if let clientId = UserDefaults.standard.string(forKey: "clientId") {
+            return clientId
+        }
+
+        fatalError(
+            """
+            failed to retrieve client id from pre-build script, environment, \
+            or user defaults
+            """
+        )
+        
     }()
     
     private static let tokensURL: URL = {
        
+        // modified by pre- and post-build scripts
+        // (See Scripts/pre_build.sh and Scripts/post_build.sh)
         let __tokensURL__ = ""
-        if __tokensURL__.isEmpty {
-            if let tokensURL = ProcessInfo.processInfo
-                    .environment["TOKENS_URL"] {
-                return URL(string: tokensURL)!
-            }
+
+        let tokensURLString: String
+        
+        if !__tokensURL__.isEmpty {
+            tokensURLString = __tokensURL__
+        }
+        else if let tokensURL = ProcessInfo.processInfo
+                .environment["TOKENS_URL"] {
+            tokensURLString = tokensURL
+        }
+        else if let tokensURL = UserDefaults.standard.string(forKey: "tokensURL") {
+            tokensURLString = tokensURL
+        }
+        else {
             fatalError(
-                "failed to inject value for tokens URL in pre-build script"
+                """
+                failed to retrieve tokens URL from pre-build script, environment, \
+                or user defaults
+                """
             )
         }
-        if let url = URL(string: __tokensURL__) {
+
+        if let url = URL(string: tokensURLString) {
             return url
         }
-        fatalError("could not convert to URL: '\(__tokensURL__)'")
+        fatalError("could not convert to URL: '\(tokensURLString)'")
 
     }()
     
     private static let tokensRefreshURL: URL = {
         
+        // modified by pre- and post-build scripts
+        // (See Scripts/pre_build.sh and Scripts/post_build.sh)
         let __tokensRefreshURL__ = ""
-        if __tokensRefreshURL__.isEmpty {
-            if let tokensRefreshURL = ProcessInfo.processInfo
-                    .environment["TOKENS_REFRESH_URL"] {
-                return URL(string: tokensRefreshURL)!
-            }
+
+        let tokensRefreshURLString: String
+        
+        if !__tokensRefreshURL__.isEmpty {
+            tokensRefreshURLString = __tokensRefreshURL__
+        }
+        else if let tokensRefreshURL = ProcessInfo.processInfo
+                .environment["TOKENS_REFRESH_URL"] {
+            tokensRefreshURLString = tokensRefreshURL
+        }
+        else if let tokensRefreshURL = UserDefaults.standard.string(forKey: "tokensRefreshURL") {
+            tokensRefreshURLString = tokensRefreshURL
+        }
+        else {
             fatalError(
-                "failed to inject value for tokens refresh URL in pre-build script"
+                """
+                failed to retrieve tokens refresh URL from pre-build script, \
+                environment, or user defaults
+                """
             )
         }
-        if let url = URL(string: __tokensRefreshURL__) {
+
+        if let url = URL(string: tokensRefreshURLString) {
             return url
         }
-        fatalError("could not convert to URL: '\(__tokensRefreshURL__)'")
+        fatalError("could not convert to URL: '\(tokensRefreshURLString)'")
         
     }()
-    
-
     
     /// The key in the keychain that is used to store the authorization
     /// information: "authorizationManager".
@@ -126,8 +166,20 @@ final class Spotify: ObservableObject {
     /// The keychain to store the authorization information in.
     let keychain = Keychain(service: "com.Peter-Schorn.SoftPlayer")
     
+#if LOCAL_AUTHORIZATION
+    
+    typealias AuthorizationManager = AuthorizationCodeFlowPKCEManager
+    
     let api = SpotifyAPI(
-        authorizationManager: AuthorizationCodeFlowPKCEBackendManager(
+        authorizationManager: AuthorizationManager(clientId: Spotify.clientId)
+    )
+    
+#else
+    
+    typealias AuthorizationManager = AuthorizationCodeFlowPKCEBackendManager<AuthorizationCodeFlowPKCEProxyBackend>
+
+    let api = SpotifyAPI(
+        authorizationManager: AuthorizationManager(
             backend: AuthorizationCodeFlowPKCEProxyBackend(
                 clientId: Spotify.clientId,
                 tokensURL: Spotify.tokensURL,
@@ -138,6 +190,8 @@ final class Spotify: ObservableObject {
         )
     )
     
+#endif
+
     var cancellables: Set<AnyCancellable> = []
     
     init() {
@@ -152,12 +206,13 @@ final class Spotify: ObservableObject {
         )
         self.authorizationState = String.randomURLSafe(length: 128)
         
-        let urlTypes = Bundle.main.object(
-            forInfoDictionaryKey: "CFBundleURLTypes"
-        ) as! [[String: Any]]
-        let urlScheme = (urlTypes[0]["CFBundleURLSchemes"] as! [String])[0]
         
         do {
+            let urlTypes = Bundle.main.object(
+                forInfoDictionaryKey: "CFBundleURLTypes"
+            ) as! [[String: Any]]
+            let urlScheme = (urlTypes[0]["CFBundleURLSchemes"] as! [String])[0]
+            
             var components = URLComponents()
             components.scheme = urlScheme
             components.host = "login-callback"
@@ -188,16 +243,19 @@ final class Spotify: ObservableObject {
             do {
                 // Try to decode the data.
                 let authorizationManager = try JSONDecoder().decode(
-                    AuthorizationCodeFlowPKCEBackendManager<AuthorizationCodeFlowPKCEProxyBackend>.self,
+                    AuthorizationManager.self,
                     from: authManagerData
                 )
                 Loggers.spotify.trace(
                     "found authorization information in keychain"
                 )
                 
+#if !LOCAL_AUTHORIZATION
                 // update client id, tokens URL, token refresh URL, and
                 // `decodeServerError`
                 authorizationManager.backend = self.api.authorizationManager.backend
+#endif
+
 
                 /*
                  This assignment causes `authorizationManagerDidChange`
