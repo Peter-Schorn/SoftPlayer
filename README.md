@@ -21,15 +21,15 @@ This application can be configured to use a backend server during the authorizat
 
 For convenience, however, you can also run Soft Player without relying on any backend server. To do this, use either the `Debug Local Authorization` or `Release Local Authorization` build configuration in your scheme:
 
-![scheme build configurations](/Users/pschorn/Code/Swift/Assets/Soft Player/docs/scheme build configurations.png)
+![scheme build configurations](https://github.com/Peter-Schorn/SoftPlayer/assets/58197311/e14dfa11-1c30-4373-bc3c-36033bf84cff)
 
 ## Environment
 
 Requires the following environment variables (in addition to those required by SpotifyAPI Server):
 
 | Name | Value |
-| --- | :-: |
-| `CLIENT_ID` | your client id |
+| --- | :-- |
+| `CLIENT_ID` | Your client id. |
 | `TOKENS_URL` | The URL for retrieving tokens. Not required if using the local authorization build configuration. If running SpotifyAPIServer locally on Xcode: `http://127.0.0.1:7000/authorization-code-flow-pkce/retrieve-tokens` |
 | `TOKENS_REFRESH_URL` | The URL for refreshing the access token. Not required if using the local authorization build configuration. If running SpotifyAPIServer locally on Xcode: `http://127.0.0.1:7000/authorization-code-flow-pkce/refresh-tokens` |
 
@@ -45,7 +45,7 @@ export TOKENS_REFRESH_URL='http://127.0.0.1:7000/authorization-code-flow-pkce/re
 
 Then, configure the `Scripts/pre_build.sh` to run in the build pre-actions and `Scripts/post_build.sh` to run in the build post-actions of the scheme:
 
-![Screenshot 2023-06-03 at 9.47.15 PM](/Users/pschorn/Library/Application Support/typora-user-images/Screenshot 2023-06-03 at 9.47.15 PM.png)
+![build actions in scheme](https://github.com/Peter-Schorn/SoftPlayer/assets/58197311/afef6c28-325f-45a9-8ad0-848193c5d75e)
 
 Lastly, you may also set these values at runtime using user defaults via the `defaults` bash utility. The keys are in lowerCamalCase: `clientId`,  `tokensURL`, `tokensRefreshURL`. For example:
 
