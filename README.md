@@ -63,4 +63,4 @@ defaults delete Peter-Schorn.SoftPlayer tokensRefreshURL
 defaults read Peter-Schorn.SoftPlayer
 ```
 
-The pre-build script, if configured, takes precedence over environment variables, which take precedence over user defaults. You must re-launch the app for changes to these values to take effect.
+The pre-build script, if configured, takes precedence over environment variables, which take precedence over user defaults. You must re-launch the app for changes to these values to take effect. See [SoftPlayer/Model/Spotify.swift](https://github.com/Peter-Schorn/SoftPlayer/blob/main/SoftPlayer/Model/Spotify.swift) for where these values are accessed in code.
